@@ -1,0 +1,21 @@
+{
+  "name": "ANSAR YUVA MANDAL — Smart Ledger",
+  "short_name": "Ansar Ledger",
+  "description": "ANSAR YUVA MANDAL નો ઓનલાઇન હિસાબ — સભ્ય ફી, વિતરણ, લોન, જામીનદાર, રિપોર્ટ અને લાઇવ ક્લાઉડ સિંક.",
+  "lang": "gu",
+  "dir": "ltr",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#06231F",
+  "theme_color": "#0E7569",
+  "categories": ["finance", "business", "productivity"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
