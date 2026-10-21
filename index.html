@@ -18942,6 +18942,35 @@ scheduleLoanBalanceRefresh();
       return true;
     } catch(e) { return false; }
   }
+  /* Cashbook-style sign-in: if the account is not on this device yet, fetch
+     the accounts from the cloud on the spot (any provider), then the login
+     wrapper retries once — a created admin can sign in on any device. */
+  async function nsLoginCloudPull(){
+    if (nsSyncBusy || !nsCloudEnabled()) return false;
+    nsSyncBusy = true;
+    var okDone = false;
+    try {
+      var p = cloudCfg.provider || 'jsonbin';
+      var rec = null;
+      if (p === 'github') {
+        var g = await nsGhGetRecord();
+        if (g) rec = g.record;
+      } else if (p === 'server') {
+        var sc = nsServerCfg();
+        var sr = await fetch(sc.url + '/api/data/' + encodeURIComponent(sc.key), { headers: { 'X-Access-Key': sc.token } });
+        if (sr.ok) { var sj = await sr.json(); rec = sj && sj.record; }
+      } else if (p === 'supabase') {
+        var rowFn = (typeof LedgerFeatures !== 'undefined' && LedgerFeatures.cloud) ? LedgerFeatures.cloud.supabaseFetchRow : null;
+        if (typeof rowFn === 'function') { var row = await rowFn(); if (row && row.data) rec = row.data; }
+      } else {
+        var jr = await fetch('https://api.jsonbin.io/v3/b/' + cloudCfg.binId + '/latest', { headers: { 'X-Master-Key': cloudCfg.apiKey } });
+        if (jr.ok) { var jj = await jr.json(); rec = jj && jj.record; }
+      }
+      if (rec) okDone = await nsDirectPull(rec);
+    } catch(e) {}
+    nsSyncBusy = false;
+    return okDone;
+  }
   async function nsAutoPullCheck(){
     if (document.hidden || nsSyncBusy || nsSyncTimer) return;
     if (Date.now() - nsLastChangeTs < 20000) return;
@@ -19496,6 +19525,31 @@ scheduleLoanBalanceRefresh();
       });
     } catch(e) {}
   }
+  /* Login anywhere: wrap doLogin so a first "not found" on a fresh device
+     quietly pulls the accounts from the cloud and retries once. */
+  try {
+    if (typeof LedgerFeatures !== 'undefined' && LedgerFeatures.identity && typeof LedgerFeatures.identity.doLogin === 'function' && !LedgerFeatures.identity.doLogin.__nsWrapped) {
+      var nsOrigDoLogin = LedgerFeatures.identity.doLogin;
+      var nsWrappedDoLogin = async function(){
+        var r = await nsOrigDoLogin.apply(this, arguments);
+        try {
+          var logged = false;
+          try { logged = (typeof currentSession !== 'undefined' && !!currentSession); } catch(e) {}
+          if (!logged && nsCloudEnabled()) {
+            try { showToast('🌐 ક્લાઉડથી એકાઉન્ટ મેળવીએ છીએ…'); } catch(e) {}
+            var got = await nsLoginCloudPull();
+            if (got) {
+              try { logged = (typeof currentSession !== 'undefined' && !!currentSession); } catch(e) {}
+              if (!logged) r = await nsOrigDoLogin.apply(this, arguments);
+            }
+          }
+        } catch(e) {}
+        return r;
+      };
+      nsWrappedDoLogin.__nsWrapped = true;
+      LedgerFeatures.identity.doLogin = nsWrappedDoLogin;
+    }
+  } catch(e) {}
   nsTryJoinFromHash();
   nsTrySyncConfigFile();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', nsServerUiInit); else nsServerUiInit();
