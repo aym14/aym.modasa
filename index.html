@@ -7816,6 +7816,34 @@ body.ns2026 #wsDock button{position:relative}
 .ns-sheet-item i{color:#0E7569;width:20px;text-align:center}
 .ns-sheet-item:active{background:#E3F2EE}
 .ns-dock-badge{background:#B13E3E;color:#fff;border-radius:999px;padding:0 6px;font-size:.62rem;font-weight:800;margin-left:4px}
+/* ---------- Print: one clean printable area for every page ----------
+   Every print option (reports, generated report, loan/GC forms, module
+   detail, party statement, and the browser print of any page) renders
+   into #nsPrintArea; in print media ONLY that area is shown, so the
+   preview is never blank and tables are never clipped by app layout. */
+#nsPrintArea{display:none}
+@media print{
+  @page{size:A4;margin:11mm}
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+  body>*:not(#nsPrintArea){display:none!important}
+  #nsPrintArea{display:block!important;position:static!important;width:100%!important;height:auto!important;overflow:visible!important;background:#fff!important;color:#111!important;font-size:11pt}
+  #nsPrintArea *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #nsPrintArea .ns-print-doc{width:100%}
+  #nsPrintArea .ns-print-head{display:flex;align-items:center;gap:10px;border-bottom:2.5px solid #0E7569;padding-bottom:8px;margin-bottom:12px}
+  #nsPrintArea .ns-print-head h1{font-size:15pt;margin:0;color:#0B2E29}
+  #nsPrintArea .ns-print-head .ns-print-sub{margin-left:auto;text-align:right;font-size:8.5pt;color:#555;line-height:1.5}
+  #nsPrintArea .ns-print-foot{margin-top:14px;padding-top:6px;border-top:1px dashed #999;font-size:8pt;color:#666;text-align:center}
+  #nsPrintArea table{width:100%!important;min-width:0!important;border-collapse:collapse!important;font-size:9pt}
+  #nsPrintArea th,#nsPrintArea td{border:1px solid #C9C9C9;padding:4px 6px;text-align:left;white-space:normal!important}
+  #nsPrintArea thead{display:table-header-group}
+  #nsPrintArea tr{break-inside:avoid}
+  #nsPrintArea img{max-width:100%}
+  #nsPrintArea input,#nsPrintArea select,#nsPrintArea textarea{border:none!important;background:transparent!important;box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important;font:inherit;color:inherit;padding:0!important;min-height:0!important;height:auto!important}
+  #nsPrintArea .no-print,#nsPrintArea button,#nsPrintArea .btn,#nsPrintArea .header-actions-right{display:none!important}
+  #nsPrintArea .card{box-shadow:none!important;border:none!important;padding:0!important;margin:0!important;background:#fff!important}
+  #nsPrintArea .table-wrapper{overflow:visible!important;max-height:none!important}
+}
+.ns-party-tasks-head .ns-tasks-print{margin-left:auto;border:1px solid #CFE0D8;background:#fff;color:#0E7569;border-radius:10px;padding:6px 12px;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
 @media print{ .ns-topnav{display:none!important} }
 </style>
 
@@ -18861,11 +18889,26 @@ scheduleLoanBalanceRefresh();
     var rec = JSON.parse(nsB64Decode(j.content));
     return { record: rec, sha: j.sha || '' };
   }
+  function nsSessionOn(){ try { return typeof currentSession !== 'undefined' && !!currentSession; } catch(e) { return false; } }
+  function nsCloudConfigured(){
+    try {
+      if (typeof cloudCfg === 'undefined' || !cloudCfg) return false;
+      var p = cloudCfg.provider || 'jsonbin';
+      if (p === 'supabase') return !!(cloudCfg.supabaseUrl && cloudCfg.supabaseAnonKey);
+      if (p === 'server') return nsServerReady();
+      if (p === 'github') return nsGhReady();
+      return !!(cloudCfg.apiKey && cloudCfg.binId);
+    } catch(e) { return false; }
+  }
   function nsCloudReady(){
     try {
       if (typeof cloudCfg === 'undefined' || !cloudCfg) return false;
       if (!cloudCfg.autoSync) return false;
-      if (typeof isAdmin !== 'function' || !isAdmin()) return false;
+      /* Full two-way sync: any logged-in role (admin/party/viewer) may
+         push; the merge engine below keeps every device safe. Never push
+         before login, so a fresh device can never overwrite the cloud
+         with its empty starter data. */
+      if (!nsSessionOn()) return false;
       var p = cloudCfg.provider || 'jsonbin';
       if (p === 'supabase') return !!(cloudCfg.supabaseUrl && cloudCfg.supabaseAnonKey);
       if (p === 'server') return nsServerReady();
@@ -18878,12 +18921,10 @@ scheduleLoanBalanceRefresh();
     if (nsSyncTimer) clearTimeout(nsSyncTimer);
     nsSyncTimer = setTimeout(function(){
       nsSyncTimer = null;
-      if (nsSyncBusy || !nsCloudReady()) return;
-      nsSyncBusy = true;
-      var done = function(){ nsSyncBusy = false; };
-      try {
-        Promise.resolve(syncPushToCloud()).then(done, done);
-      } catch(e) { done(); }
+      if (!nsCloudReady()) return;
+      /* nsFullPush manages nsSyncBusy itself — pre-setting it here would
+         make the push refuse to run. */
+      try { Promise.resolve(nsFullPush()).then(function(){}, function(){}); } catch(e) {}
     }, 5000);
   }
   if (typeof LedgerEvents !== 'undefined' && LedgerEvents && typeof LedgerEvents.on === 'function') {
@@ -18988,17 +19029,8 @@ scheduleLoanBalanceRefresh();
      (and the login screen itself, so accounts arrive before first login)
      apply the fetched record directly. Same guards, same apply function. */
   async function nsDirectPull(rec){
-    try {
-      if (!rec || typeof rec !== 'object') return false;
-      var applied = false;
-      if (typeof LedgerFeatures !== 'undefined' && LedgerFeatures.cloud && typeof LedgerFeatures.cloud.applyCloudData === 'function')
-        applied = LedgerFeatures.cloud.applyCloudData(rec);
-      if (!applied) return false;
-      if (typeof persistAll === 'function') persistAll();
-      nsNoteSynced();
-      nsRefreshAfterPull();
-      return true;
-    } catch(e) { return false; }
+    /* Kept for compatibility: now merge-applies like every other pull. */
+    return nsMergeApply(rec);
   }
   /* Cashbook-style sign-in: if the account is not on this device yet, fetch
      the accounts from the cloud on the spot (any provider), then the login
@@ -19024,76 +19056,254 @@ scheduleLoanBalanceRefresh();
         var jr = await fetch('https://api.jsonbin.io/v3/b/' + cloudCfg.binId + '/latest', { headers: { 'X-Master-Key': cloudCfg.apiKey } });
         if (jr.ok) { var jj = await jr.json(); rec = jj && jj.record; }
       }
-      if (rec) okDone = await nsDirectPull(rec);
+      if (rec) okDone = await nsMergeApply(rec);
     } catch(e) {}
     nsSyncBusy = false;
     return okDone;
   }
-  async function nsAutoPullCheck(){
-    if (document.hidden || nsSyncBusy || nsSyncTimer) return;
-    if (Date.now() - nsLastChangeTs < 20000) return;
-    if (!nsCloudEnabled()) return;
+  /* ================= Full two-way Auto Sync (all roles) =================
+     Every device now pushes AND pulls. Safety comes from a three-way
+     merge: local data, cloud data, and the last-synced snapshot (base)
+     are compared record by record (each record has an id):
+       - a record created on this device is added to the cloud copy;
+       - a record created elsewhere is added here;
+       - an edit wins on the side that changed since base (newer
+         timestamp if both changed);
+       - a record deleted on one side stays deleted on the other.
+     So a party phone carrying yesterday's data can never erase the
+     admin's new entries, and the admin's deletions never resurrect. */
+  var nsBase = null;
+  try { nsBase = JSON.parse(localStorage.getItem('fm_cloud_base_v1') || 'null'); } catch(e) { nsBase = null; }
+  function nsBaseSave(d){
+    nsBase = d;
+    try { localStorage.setItem('fm_cloud_base_v1', JSON.stringify(d)); } catch(e) {}
+  }
+  function nsFingerprint(d){
+    if (!d || typeof d !== 'object') return '';
+    var c = {};
+    Object.keys(d).forEach(function(k){ if (k !== '_meta') c[k] = d[k]; });
+    return JSON.stringify(c);
+  }
+  var NS_MERGE_ARRAY_KEYS = ['entries', 'parties', 'categories', 'users', 'messages', 'moduleRecords', 'customModules', 'loanForms', 'guarantorChangeForms'];
+  function nsRecKey(r){ return (r && r.id != null && r.id !== '') ? 'id:' + r.id : 'json:' + JSON.stringify(r); }
+  function nsRecTs(r){
+    if (!r) return 0;
+    var t = Date.parse(r.updatedAt || r.timestamp || r.createdAt || r.modifiedAt || '');
+    return isNaN(t) ? 0 : t;
+  }
+  function nsMergeArrays(L, C, B){
+    var lm = {}, cm = {}, bm = {};
+    (L || []).forEach(function(r){ var k = nsRecKey(r); if (!(k in lm)) lm[k] = r; });
+    (C || []).forEach(function(r){ var k = nsRecKey(r); if (!(k in cm)) cm[k] = r; });
+    (B || []).forEach(function(r){ var k = nsRecKey(r); if (!(k in bm)) bm[k] = r; });
+    var out = [], seen = {};
+    Object.keys(lm).concat(Object.keys(cm)).forEach(function(k){
+      if (seen[k]) return;
+      seen[k] = 1;
+      var l = lm[k], c = cm[k], b = bm[k];
+      if (l && c) {
+        var ls = JSON.stringify(l), cs = JSON.stringify(c), bs = b ? JSON.stringify(b) : null;
+        if (ls === cs) out.push(l);
+        else if (bs !== null && ls === bs) out.push(c);
+        else if (bs !== null && cs === bs) out.push(l);
+        else { var lt = nsRecTs(l), ct = nsRecTs(c); out.push(lt > ct ? l : c); }
+      } else if (l && !c) {
+        if (!b) out.push(l); /* new here — keep; in base but gone from cloud = deleted there — drop */
+      } else if (!l && c) {
+        if (!b) out.push(c); /* new there — keep; in base but gone here = deleted here — drop */
+      }
+    });
+    return out;
+  }
+  function nsMerge3(local, cloud, base){
+    if (!cloud || typeof cloud !== 'object') return local;
+    var out = {}, keys = {};
+    Object.keys(local || {}).concat(Object.keys(cloud || {})).forEach(function(k){ keys[k] = 1; });
+    Object.keys(keys).forEach(function(k){
+      if (k === '_meta') return;
+      var l = local ? local[k] : undefined, c = cloud ? cloud[k] : undefined, b = base ? base[k] : undefined;
+      if (NS_MERGE_ARRAY_KEYS.indexOf(k) >= 0 && (Array.isArray(l) || Array.isArray(c))) out[k] = nsMergeArrays(l || [], c || [], b || []);
+      else if (c !== undefined) out[k] = c; /* settings/plans/terms: cloud (admin) copy wins */
+      else out[k] = l;
+    });
+    out._meta = { version: '4.0', exportedAt: new Date().toISOString(), recordCount: (out.entries || []).length };
+    return out;
+  }
+  function nsApplyDataLocal(data){
+    nsCloudPersistPending = true; /* mark the following persist as cloud-applied: no echo push */
+    var applied = false;
+    try {
+      if (typeof LedgerFeatures !== 'undefined' && LedgerFeatures.cloud && typeof LedgerFeatures.cloud.applyCloudData === 'function')
+        applied = LedgerFeatures.cloud.applyCloudData(data);
+    } catch(e) {}
+    if (applied) {
+      try { if (typeof persistAll === 'function') persistAll(); } catch(e) {}
+      nsRefreshAfterPull();
+    }
+    return applied;
+  }
+  /* Merge a fetched cloud record into this device (used by every pull). */
+  async function nsMergeApply(rec){
+    try {
+      if (!rec || typeof rec !== 'object') return false;
+      var local = (typeof getCloudDataPayload === 'function') ? getCloudDataPayload() : null;
+      var merged = local ? nsMerge3(local, rec, nsBase) : rec;
+      if (local && nsFingerprint(merged) !== nsFingerprint(local)) {
+        if (!nsApplyDataLocal(merged)) return false;
+      }
+      /* Base must be the last CLOUD state, not the merged local state:
+         records kept only locally are "new here" for the next merge and
+         must not look like "deleted by the cloud". */
+      nsBaseSave(rec);
+      nsNoteSynced();
+      return true;
+    } catch(e) { return false; }
+  }
+  async function nsFetchCloudRecord(){
     var p = cloudCfg.provider || 'jsonbin';
-    if (nsAdminOn() && p === 'supabase') return; /* built-in 30s realtime covers admin+Supabase */
-    nsSyncBusy = true;
     try {
       if (p === 'github') {
-        var ghGot = await nsGhGetRecord();
-        if (ghGot && ghGot.record) {
-          var ghMeta = ghGot.record._meta || {};
-          var ghTs = Date.parse(ghMeta.exportedAt || ghMeta.pushedAt || '');
-          if (!ghTs || isNaN(ghTs) || ghTs > (cloudCfg.lastSyncTs || 0)) {
-            nsSuppressUntil = Date.now() + 10000;
-            if (nsAdminOn()) { try { await syncPullFromCloud(true); } catch(e) {} }
-            else await nsDirectPull(ghGot.record);
-          }
+        var g = await nsGhGetRecord();
+        if (!g || !g.record) return null;
+        var gm = g.record._meta || {};
+        return { record: g.record, sha: g.sha || '', ts: Date.parse(gm.exportedAt || gm.pushedAt || '') || 0 };
+      }
+      if (p === 'server') {
+        var sc = nsServerCfg();
+        var sr = await fetch(sc.url + '/api/data/' + encodeURIComponent(sc.key), { headers: { 'X-Access-Key': sc.token } });
+        if (!sr.ok) return null;
+        var sj = await sr.json();
+        if (!sj || !sj.record) return null;
+        return { record: sj.record, ts: sj.updatedAt || 0 };
+      }
+      if (p === 'supabase') {
+        var rf = (typeof LedgerFeatures !== 'undefined' && LedgerFeatures.cloud) ? LedgerFeatures.cloud.supabaseFetchRow : null;
+        if (typeof rf !== 'function') return null;
+        var row = await rf();
+        if (!row || !row.data) return null;
+        return { record: row.data, ts: row.updated_at ? (Date.parse(row.updated_at) || 0) : 0 };
+      }
+      var jr = await fetch('https://api.jsonbin.io/v3/b/' + cloudCfg.binId + '/latest', { headers: { 'X-Master-Key': cloudCfg.apiKey } });
+      if (!jr.ok) return null;
+      var jj = await jr.json();
+      var rec = jj && jj.record;
+      if (!rec) return null;
+      var jm = rec._meta || {};
+      return { record: rec, ts: Date.parse(jm.exportedAt || jm.pushedAt || '') || 0 };
+    } catch(e) { return null; }
+  }
+  async function nsPutCloudRecord(record, sha){
+    var p = cloudCfg.provider || 'jsonbin';
+    record._meta = record._meta || {};
+    record._meta.pushedAt = new Date().toISOString();
+    record._meta.exportedAt = record._meta.pushedAt;
+    if (p === 'github') {
+      var c = nsGhCfg();
+      var encoded = nsB64Encode(JSON.stringify(record));
+      var curSha = sha || '', attempt = 0;
+      while (attempt < 2) {
+        attempt++;
+        var body = { message: 'Smart Ledger sync ' + new Date().toISOString(), content: encoded, branch: c.branch };
+        if (curSha) body.sha = curSha;
+        var r = await fetch(nsGhUrl(c), { method: 'PUT', headers: nsGhHeaders(c), body: JSON.stringify(body) });
+        if (r.ok) return true;
+        if ((r.status === 409 || r.status === 422) && attempt < 2) {
+          var ag = await nsGhGetRecord();
+          curSha = ag ? (ag.sha || '') : '';
+          continue;
         }
-      } else if (p === 'server') {
-        var scfg = nsServerCfg();
-        var sresp = await fetch(scfg.url + '/api/data/' + encodeURIComponent(scfg.key), { headers: { 'X-Access-Key': scfg.token } });
-        if (sresp.ok) {
-          var sj = await sresp.json();
-          if (sj && sj.record && (sj.updatedAt || 0) > (cloudCfg.lastSyncTs || 0)) {
-            nsSuppressUntil = Date.now() + 10000;
-            if (nsAdminOn()) { try { await syncPullFromCloud(true); } catch(e) {} }
-            else await nsDirectPull(sj.record);
-          }
-        }
-      } else if (p === 'supabase') {
-        var rowFn = (typeof LedgerFeatures !== 'undefined' && LedgerFeatures.cloud) ? LedgerFeatures.cloud.supabaseFetchRow : null;
-        if (typeof rowFn !== 'function') { nsSyncBusy = false; return; }
-        var row = await rowFn();
-        if (row && row.data) {
-          var srts = row.updated_at ? Date.parse(row.updated_at) : NaN;
-          if (!srts || isNaN(srts) || srts > (cloudCfg.lastSyncTs || 0)) {
-            if (nsAdminOn()) { try { await syncPullFromCloud(true); } catch(e) {} }
-            else await nsDirectPull(row.data);
-          }
-        }
-      } else {
-        var resp = await fetch('https://api.jsonbin.io/v3/b/' + cloudCfg.binId + '/latest', { headers: { 'X-Master-Key': cloudCfg.apiKey } });
-        if (resp.ok) {
-          var result = await resp.json();
-          var rec = result && result.record;
-          var rts = rec && rec._meta ? Date.parse(rec._meta.exportedAt || rec._meta.pushedAt || '') : NaN;
-          if (rts && !isNaN(rts) && rts > (cloudCfg.lastSyncTs || 0)) {
-            nsSuppressUntil = Date.now() + 10000;
-            if (nsAdminOn()) { try { await syncPullFromCloud(true); } catch(e) {} }
-            else await nsDirectPull(rec);
-          }
-        }
+        throw new Error('GitHub HTTP ' + r.status);
+      }
+      throw new Error('GitHub push failed');
+    }
+    if (p === 'server') {
+      var scfg = nsServerCfg();
+      var sresp = await fetch(scfg.url + '/api/data/' + encodeURIComponent(scfg.key), { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Access-Key': scfg.token }, body: JSON.stringify({ record: record }) });
+      if (!sresp.ok) throw new Error('Server HTTP ' + sresp.status);
+      return true;
+    }
+    if (p === 'supabase') {
+      if (typeof supabaseUpsert !== 'function') throw new Error('Supabase unavailable');
+      await supabaseUpsert(record);
+      return true;
+    }
+    var jresp = await fetch('https://api.jsonbin.io/v3/b/' + cloudCfg.binId, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': cloudCfg.apiKey }, body: JSON.stringify(record) });
+    if (!jresp.ok) throw new Error('JSONBin HTTP ' + jresp.status);
+    return true;
+  }
+  /* Merge-push: fetch fresh cloud data, merge with local changes, apply
+     the merged result here, then upload it. Used by every role. */
+  async function nsFullPush(){
+    if (nsSyncBusy || !nsSessionOn() || !nsCloudEnabled()) return false;
+    nsSyncBusy = true;
+    var ok = false;
+    try {
+      var got = await nsFetchCloudRecord();
+      var local = getCloudDataPayload();
+      var merged = nsMerge3(local, got ? got.record : null, nsBase);
+      if (nsFingerprint(merged) !== nsFingerprint(local)) nsApplyDataLocal(merged);
+      await nsPutCloudRecord(merged, got ? got.sha : '');
+      nsBaseSave(merged);
+      nsNoteSynced();
+      try { nsSetPill('synced'); } catch(e) {}
+      ok = true;
+    } catch(e) {
+      try { nsSetPill('error'); } catch(e2) {}
+    }
+    nsSyncBusy = false;
+    return ok;
+  }
+  /* Merge-pull: fetch cloud data and merge it in (never a blind replace,
+     so unsynced local work survives); local extras are pushed up next. */
+  async function nsFullPull(force){
+    if (nsSyncBusy || !nsCloudEnabled()) return false;
+    nsSyncBusy = true;
+    var ok = false;
+    try {
+      var got = await nsFetchCloudRecord();
+      if (got && got.record) {
+        ok = await nsMergeApply(got.record);
+        try {
+          var local2 = getCloudDataPayload();
+          if (nsFingerprint(local2) !== nsFingerprint(got.record)) setTimeout(nsSchedulePush, 1200);
+        } catch(e) {}
       }
     } catch(e) {}
     nsSyncBusy = false;
+    return ok;
+  }
+  /* Party joins through a link and logs in → Auto Sync turns itself on. */
+  function nsEnableAutoSyncOnLogin(){
+    try {
+      if (!nsCloudConfigured()) return;
+      if (typeof cloudCfg === 'undefined' || !cloudCfg || cloudCfg.autoSync) return;
+      cloudCfg.autoSync = true;
+      if (typeof saveCloudConfig === 'function') saveCloudConfig(cloudCfg);
+      try { if (typeof updateCloudUI === 'function') updateCloudUI(); } catch(e) {}
+      try { showToast('☁️ Auto Sync ચાલુ થયું'); } catch(e) {}
+    } catch(e) {}
+  }
+
+  async function nsAutoPullCheck(){
+    if (document.hidden || nsSyncBusy || nsSyncTimer) return;
+    if (Date.now() - nsLastChangeTs < 6000) return;
+    if (!nsCloudEnabled()) return;
+    var p = cloudCfg.provider || 'jsonbin';
+    if (nsAdminOn() && p === 'supabase') return; /* built-in 30s realtime covers admin+Supabase */
+    if (nsSessionOn()) { await nsFullPull(false); return; }
+    await nsLoginCloudPull(); /* login screen: accounts arrive before first login */
   }
   setInterval(nsAutoPullCheck, 20000);
   setTimeout(nsAutoPullCheck, 5000);
   /* Refresh right after a login appears (Cashbook feel). */
   var nsWasSession = false;
   setInterval(function(){
-    var on = false;
-    try { on = (typeof currentSession !== 'undefined' && !!currentSession); } catch(e) {}
-    if (on && !nsWasSession) setTimeout(nsAutoPullCheck, 1500);
+    var on = nsSessionOn();
+    if (on) nsEnableAutoSyncOnLogin(); /* joined via link → Auto Sync switches itself on (idempotent) */
+    if (on && !nsWasSession) {
+      setTimeout(nsAutoPullCheck, 1500);
+      setTimeout(nsSchedulePush, 6000); /* send anything this device already holds */
+    }
     nsWasSession = on;
   }, 4000);
   /* Cashbook-style liveness: the moment the app comes back to the screen
@@ -19295,13 +19505,13 @@ scheduleLoanBalanceRefresh();
       var LFcSrv = LedgerFeatures.cloud;
       if (typeof LFcSrv.syncPushToCloud === 'function' && !LFcSrv.syncPushToCloud.__nsWrapped) {
         var nsOrigPush = LFcSrv.syncPushToCloud;
-        var nsWrappedPush = async function(){ if (nsGhMode()) return nsGhPush(); if (nsServerMode()) return nsSrvPush(); return nsOrigPush.apply(this, arguments); };
+        var nsWrappedPush = async function(){ var r = nsGhMode() ? await nsGhPush() : (nsServerMode() ? await nsSrvPush() : await nsOrigPush.apply(this, arguments)); try { nsBaseSave(getCloudDataPayload()); } catch(e) {} return r; };
         nsWrappedPush.__nsWrapped = true;
         LFcSrv.syncPushToCloud = nsWrappedPush;
       }
       if (typeof LFcSrv.syncPullFromCloud === 'function' && !LFcSrv.syncPullFromCloud.__nsWrapped) {
         var nsOrigPull = LFcSrv.syncPullFromCloud;
-        var nsWrappedPull = async function(silent){ if (nsGhMode()) return nsGhPull(silent); if (nsServerMode()) return nsSrvPull(silent); return nsOrigPull.apply(this, arguments); };
+        var nsWrappedPull = async function(silent){ var r = nsGhMode() ? await nsGhPull(silent) : (nsServerMode() ? await nsSrvPull(silent) : await nsOrigPull.apply(this, arguments)); try { nsBaseSave(getCloudDataPayload()); } catch(e) {} return r; };
         nsWrappedPull.__nsWrapped = true;
         LFcSrv.syncPullFromCloud = nsWrappedPull;
       }
@@ -19787,7 +19997,7 @@ scheduleLoanBalanceRefresh();
       }
       var icons = { 'કુલ સભ્ય ફી': 'fa-ticket-alt', 'વિતરણનો હિસાબ': 'fa-gift', 'લોનનો હિસાબ': 'fa-landmark' };
       var subs = { 'કુલ સભ્ય ફી': 'મારી સભ્ય ફીની નોંધો', 'વિતરણનો હિસાબ': 'વિતરણની વિગત', 'લોનનો હિસાબ': 'મારી લોન અને હપ્તા' };
-      var html = '<div class="ns-party-tasks-head"><i class="fas fa-th-large"></i>મારા કાર્યો</div><div class="ns-party-tasks-grid">';
+      var html = '<div class="ns-party-tasks-head"><i class="fas fa-th-large"></i>મારા કાર્યો<button type="button" class="ns-tasks-print" data-ns-print="1"><i class="fas fa-print"></i> Print</button></div><div class="ns-party-tasks-grid">';
       html += nsTaskTile('entries', 'fa-list-ul', 'મારો હિસાબ', 'બધી એન્ટ્રી અને વિગત');
       items.forEach(function(it){
         html += nsTaskTile('module', icons[it.label] || 'fa-layer-group', it.label, subs[it.label] || 'વિભાગનો હિસાબ', it.id);
@@ -19810,11 +20020,202 @@ scheduleLoanBalanceRefresh();
           } catch(e) {}
         });
       });
+      var nsPb = panel.querySelector('[data-ns-print]');
+      if (nsPb) nsPb.addEventListener('click', function(){ nsPrintView('viewPartyDashboard', 'મારો હિસાબ'); });
       nsTasksBadgeSync(panel);
     } catch(e) {}
   }
 
+  /* ---------- Print system: every print option works everywhere ----------
+     The app's form/report/statement prints open a popup window and call
+     print there; on phones/PWA the popup is blocked, so the preview came
+     up blank. Here those functions run with a captured popup: the exact
+     HTML they generate is rendered into #nsPrintArea and printed from
+     this page instead. In-page prints (entries report) and the browser's
+     own Print on any page use the same area, so nothing is ever clipped
+     by the app layout. */
+  function nsPrintAreaEl(){
+    var a = document.getElementById('nsPrintArea');
+    if (!a) { a = document.createElement('div'); a.id = 'nsPrintArea'; document.body.appendChild(a); }
+    return a;
+  }
+  function nsOrgTitle(){ try { if (typeof logoSettings !== 'undefined' && logoSettings && logoSettings.title) return logoSettings.title; } catch(e) {} return 'ANSAR YUVA MANDAL, Modasa'; }
+  function nsPrintFill(title, bodyHtml, cssText, withHeader){
+    var a = nsPrintAreaEl();
+    var html = '';
+    if (cssText) html += '<style>' + nsScopeCss(cssText) + '</style>';
+    html += '<div class="ns-print-doc">';
+    if (withHeader) html += '<div class="ns-print-head"><h1>' + nsEsc(nsOrgTitle()) + '</h1><div class="ns-print-sub">' + nsEsc(title || '') + '<br>' + new Date().toLocaleString('en-IN') + '</div></div>';
+    html += bodyHtml;
+    html += '<div class="ns-print-foot">Smart Ledger • ' + new Date().toLocaleString('en-IN') + '</div></div>';
+    a.innerHTML = html;
+  }
+  function nsDoPrint(title, bodyHtml, cssText, withHeader){
+    nsPrintFill(title, bodyHtml, cssText, withHeader);
+    setTimeout(function(){ try { window.print(); } catch(e) {} }, 80);
+  }
+  function nsScopeCss(css){
+    css = String(css || '').replace(/\/\*[\s\S]*?\*\//g, '');
+    var out = '', i = 0, n = css.length;
+    while (i < n) {
+      var brace = css.indexOf('{', i);
+      if (brace === -1) { out += css.slice(i); break; }
+      var sel = css.slice(i, brace).trim();
+      var depth = 1, j = brace + 1;
+      while (j < n && depth > 0) { if (css[j] === '{') depth++; else if (css[j] === '}') depth--; j++; }
+      var block = css.slice(brace + 1, j - 1);
+      if (sel.indexOf('@media') === 0) out += sel + '{' + nsScopeCss(block) + '}';
+      else if (sel.indexOf('@') === 0) out += sel + '{' + block + '}';
+      else if (sel) {
+        var parts = sel.split(',').map(function(s){
+          s = s.trim();
+          if (!s) return s;
+          if (s === '*') return '#nsPrintArea .ns-print-doc *';
+          if (s === 'body' || s === 'html') return '#nsPrintArea .ns-print-doc';
+          if (s.indexOf('body') === 0) return '#nsPrintArea .ns-print-doc' + s.slice(4);
+          if (s.indexOf('#nsPrintArea') === 0) return s;
+          return '#nsPrintArea ' + s;
+        });
+        out += parts.join(',') + '{' + block + '}';
+      }
+      i = j;
+    }
+    return out;
+  }
+  function nsCapturePopup(fn){
+    var captured = '', used = false;
+    var fake = {
+      document: {
+        write: function(s){ used = true; captured += String(s == null ? '' : s); },
+        writeln: function(s){ used = true; captured += String(s == null ? '' : s); },
+        close: function(){}
+      },
+      focus: function(){}, print: function(){}, close: function(){}, closed: false
+    };
+    var orig = window.open;
+    window.open = function(){ return fake; };
+    try { fn(); } catch(e) {}
+    window.open = orig;
+    return used ? captured : null;
+  }
+  function nsPrintCaptured(html){
+    try {
+      var doc = new DOMParser().parseFromString(html, 'text/html');
+      var css = '';
+      doc.querySelectorAll('style').forEach(function(s){ css += s.textContent + '\n'; });
+      doc.querySelectorAll('script,style').forEach(function(nd){ nd.remove(); });
+      var bodyHtml = doc.body ? doc.body.innerHTML : '';
+      if (!bodyHtml || !bodyHtml.trim()) return false;
+      nsDoPrint(doc.title || '', bodyHtml, css, false);
+      return true;
+    } catch(e) { return false; }
+  }
+  function nsWrapPopupPrint(name){
+    var orig = window[name];
+    if (typeof orig !== 'function' || orig.__nsPrintWrapped) return;
+    var wrapped = function(){
+      var args = arguments, self = this;
+      var html = nsCapturePopup(function(){ orig.apply(self, args); });
+      if (html && nsPrintCaptured(html)) return;
+      if (html) { try { return orig.apply(self, args); } catch(e) {} }
+      /* popup never opened (e.g. a warning toast) — the original already handled it */
+    };
+    wrapped.__nsPrintWrapped = true;
+    window[name] = wrapped;
+  }
+  function nsSyncFormValues(srcRoot, cloneRoot){
+    var s = srcRoot.querySelectorAll('input,select,textarea'), d = cloneRoot.querySelectorAll('input,select,textarea');
+    for (var i = 0; i < s.length && i < d.length; i++) {
+      var se = s[i], de = d[i], tag = se.tagName;
+      try {
+        if (tag === 'TEXTAREA') de.textContent = se.value;
+        else if (tag === 'SELECT') {
+          for (var j = 0; j < de.options.length; j++) {
+            if (de.options[j].value === se.value) de.options[j].setAttribute('selected', 'selected');
+            else de.options[j].removeAttribute('selected');
+          }
+        } else if (se.type === 'checkbox' || se.type === 'radio') {
+          if (se.checked) de.setAttribute('checked', 'checked'); else de.removeAttribute('checked');
+        } else de.setAttribute('value', se.value);
+      } catch(e) {}
+    }
+  }
+  function nsCloneForPrint(el){
+    var clone = el.cloneNode(true);
+    try { nsSyncFormValues(el, clone); } catch(e) {}
+    clone.querySelectorAll('.no-print,button,.btn,.header-actions-right,.date-filter-row,.filter-chips,.account-tabs,.btn-toggle-details,.fab').forEach(function(nd){ try { nd.remove(); } catch(e) {} });
+    clone.querySelectorAll('[id]').forEach(function(nd){ nd.removeAttribute('id'); });
+    clone.removeAttribute('id');
+    clone.className = '';
+    clone.setAttribute('style', 'display:block!important;position:static!important;opacity:1!important;transform:none!important;animation:none!important;max-height:none!important;overflow:visible!important');
+    return clone.outerHTML;
+  }
+  function nsPrintView(elId, title){
+    var el = document.getElementById(elId);
+    if (!el) return;
+    nsDoPrint(title || '', nsCloneForPrint(el), '', true);
+  }
+  function nsVisibleView(){
+    var v = document.querySelector('.view-section.active');
+    if (v) return v;
+    var found = null;
+    document.querySelectorAll('.view-section').forEach(function(x){ if (!found && x.offsetParent !== null) found = x; });
+    return found;
+  }
+  function nsPrintCurrentView(){
+    var v = nsVisibleView();
+    if (v) nsDoPrint('', nsCloneForPrint(v), '', true);
+  }
+  function nsPrintInit(){
+    nsPrintAreaEl();
+    ['printGeneratedReport', 'printModuleDetail', 'openPartyStatement', 'printLoanForm', 'printGuarantorChangeForm'].forEach(nsWrapPopupPrint);
+    if (typeof window.printReport === 'function' && !window.printReport.__nsPrintWrapped) {
+      var wpr = function(){ nsPrintView('reportSection', 'એન્ટ્રી રિપોર્ટ'); };
+      wpr.__nsPrintWrapped = true;
+      window.printReport = wpr;
+    }
+    window.addEventListener('beforeprint', function(){
+      var a = document.getElementById('nsPrintArea');
+      if (a && !a.innerHTML.trim()) {
+        var v = document.querySelector('.view-section.active');
+        if (v) nsPrintFill('', nsCloneForPrint(v), '', true);
+      }
+    });
+    window.addEventListener('afterprint', function(){
+      var a = document.getElementById('nsPrintArea');
+      if (a) a.innerHTML = '';
+    });
+    /* Print buttons on pages that had none (browser print also works via beforeprint) */
+    try {
+      var modActions = document.querySelector('#viewCustomModule .header-actions-right');
+      if (modActions && !modActions.querySelector('.ns-print-btn')) {
+        var mb = document.createElement('button');
+        mb.type = 'button';
+        mb.className = 'btn btn-outline btn-sm no-print ns-print-btn';
+        mb.innerHTML = '<i class="fas fa-print"></i> Print';
+        mb.addEventListener('click', function(){
+          var t = document.getElementById('customModuleTitle');
+          nsPrintView('viewCustomModule', t ? t.textContent : 'Module');
+        });
+        modActions.appendChild(mb);
+      }
+      var home = document.getElementById('viewHome'), dash = document.getElementById('dashboardContainer');
+      if (home && dash && !home.querySelector('.ns-print-btn')) {
+        var row = document.createElement('div');
+        row.style.cssText = 'text-align:right;margin:0 0 10px';
+        var hb = document.createElement('button');
+        hb.type = 'button';
+        hb.className = 'btn btn-outline btn-sm no-print ns-print-btn';
+        hb.innerHTML = '<i class="fas fa-print"></i> Print';
+        hb.addEventListener('click', function(){ nsPrintView('viewHome', 'મુખ્ય પાનું'); });
+        row.appendChild(hb);
+        home.insertBefore(row, dash);
+      }
+    } catch(e) {}
+  }
+
   nsSheetInit();
+  nsPrintInit();
   nsDockSync();
   setInterval(nsDockSync, 2000);
 
