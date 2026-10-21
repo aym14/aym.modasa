@@ -7875,8 +7875,11 @@ body.ns2026 #wsDock button{position:relative}
 #nsPrintOverlay .ns-print-sheet{flex:1;overflow-y:auto;background:#fff;max-width:860px;width:100%;margin:0 auto;padding:18px 16px calc(28px + env(safe-area-inset-bottom));box-shadow:0 0 40px rgba(6,35,31,.3)}
 #nsPrintOverlay table{width:100%!important;min-width:0!important;border-collapse:collapse;font-size:.8rem}
 #nsPrintOverlay th,#nsPrintOverlay td{border:1px solid #D8DED2;padding:5px 6px;text-align:left;vertical-align:top;word-break:break-word}
-#nsPrintOverlay thead th{background:#17352F;color:#fff}
-#nsPrintOverlay tfoot th,#nsPrintOverlay tfoot td{background:#EFF4EC;font-weight:800}
+#nsPrintOverlay thead th{background:#EDEDED;color:#000}
+#nsPrintOverlay tfoot th,#nsPrintOverlay tfoot td{background:#F4F4F4;font-weight:800}
+/* The preview shows the document exactly as it will print: black letters */
+#nsPrintOverlay .ns-print-sheet-body div.ns-print-doc, #nsPrintOverlay .ns-print-sheet-body div.ns-print-doc.ns-print-doc *{color:#000!important;background-color:transparent!important}
+#nsPrintOverlay .ns-print-sheet-body div.ns-print-doc.ns-print-doc th{background-color:#EDEDED!important}
 @media (max-width:1023.98px){
   body.ns2026 .ns-fee-panel{background:#fff!important}
   body.ns2026 .card{background:#fff!important}
@@ -7907,8 +7910,29 @@ body.ns2026 #wsDock button{position:relative}
   #nsPrintArea .no-print,#nsPrintArea button,#nsPrintArea .btn,#nsPrintArea .header-actions-right{display:none!important}
   #nsPrintArea .card{box-shadow:none!important;border:none!important;padding:0!important;margin:0!important;background:#fff!important}
   #nsPrintArea .table-wrapper{overflow:visible!important;max-height:none!important}
+  /* Print in pure black: every letter prints black on white (saves ink,
+     readable on every printer); only table headers keep a light grey. */
+  #nsPrintArea div.ns-print-doc, #nsPrintArea div.ns-print-doc.ns-print-doc *{color:#000!important;background-color:transparent!important}
+  #nsPrintArea div.ns-print-doc.ns-print-doc th{background-color:#EDEDED!important;color:#000!important}
+  #nsPrintArea .ns-print-head{border-bottom-color:#000!important}
+  #nsPrintArea .ns-print-head h1,#nsPrintArea .ns-print-head .ns-print-sub,#nsPrintArea .ns-print-foot{color:#000!important}
 }
 .ns-party-tasks-head .ns-tasks-print{margin-left:auto;border:1px solid #CFE0D8;background:#fff;color:#0E7569;border-radius:10px;padding:6px 12px;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
+/* ---------- Mobile home: app-style menu grid ----------
+   On phones the admin home page gets a big icon-tile menu (like a phone
+   app's home screen). Every tile opens its function as its own
+   full-screen page (topnav is mobile-hidden; party/viewer already have
+   the same idea via the tasks panel). Desktop layout is unchanged. */
+#nsHomeGrid{display:none}
+@media (max-width:1023.98px){
+  #nsHomeGrid{display:block}
+  .ns-home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .ns-home-grid .ns-task-tile{align-items:center;text-align:center;min-height:98px;padding:14px 8px;gap:7px}
+  .ns-home-grid .ns-task-tile b{font-size:.82rem}
+  .ns-home-grid .ns-task-tile small{font-size:.64rem}
+  .ns-home-grid .ns-task-ico{width:44px;height:44px;border-radius:14px;font-size:1.1rem}
+}
+@media (max-width:360px){ .ns-home-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
 @media print{ .ns-topnav{display:none!important} }
 </style>
 
@@ -19966,6 +19990,7 @@ scheduleLoanBalanceRefresh();
       document.body.classList.toggle('ns-viewer', role === 'viewer');
       document.body.classList.toggle('ns-admin', role === 'admin');
       nsPartyTasksSync(role);
+      nsHomeGridSync(role);
       var dock = document.getElementById('wsDock');
       if (!dock) return;
       var show = (role === 'party' || role === 'viewer');
@@ -20088,6 +20113,62 @@ scheduleLoanBalanceRefresh();
       });
       var nsPb = panel.querySelector('[data-ns-print]');
       if (nsPb) nsPb.addEventListener('click', function(){ nsPrintView('viewPartyDashboard', 'મારો હિસાબ'); });
+      nsTasksBadgeSync(panel);
+    } catch(e) {}
+  }
+
+  /* ---------- Mobile home menu grid (admin) ----------
+     App-style home screen: big icon tiles for every main function.
+     Tiles route through sidebarAction like everything else, so each
+     opens as its own full-screen page on mobile (see nsPageSync). */
+  var nsHomeGridSig = '';
+  function nsHomeGridSync(role){
+    try {
+      var view = document.getElementById('viewHome');
+      if (!view) return;
+      var panel = document.getElementById('nsHomeGrid');
+      if (role !== 'admin') { if (panel) panel.remove(); nsHomeGridSig = ''; return; }
+      var items = nsPartyModuleItems();
+      var ub = document.getElementById('sidebarUnreadBadge');
+      var sig = 'admin|' + items.map(function(i){ return i.id + ':' + i.label; }).join('|') + '|u:' + (ub ? (ub.textContent || '') + ':' + ub.style.display : '');
+      if (panel && sig === nsHomeGridSig) { nsTasksBadgeSync(panel); return; }
+      nsHomeGridSig = sig;
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'nsHomeGrid';
+        panel.className = 'ns-party-tasks no-print';
+        var dash = document.getElementById('dashboardContainer');
+        if (dash && dash.parentNode === view) view.insertBefore(panel, dash.nextSibling);
+        else view.insertBefore(panel, view.firstChild);
+      }
+      var icons = { 'કુલ સભ્ય ફી': 'fa-ticket-alt', 'વિતરણનો હિસાબ': 'fa-gift', 'લોનનો હિસાબ': 'fa-landmark' };
+      var html = '<div class="ns-party-tasks-head"><i class="fas fa-th-large"></i>મેનુ — બધા ફંક્શન</div><div class="ns-home-grid">';
+      html += nsTaskTile('entries', 'fa-list-ul', 'એન્ટ્રી — હિસાબ', 'બધી એન્ટ્રી જુઓ');
+      html += nsTaskTile('add', 'fa-plus-circle', 'નવી એન્ટ્રી', 'આવક / ખર્ચ નોંધો');
+      items.forEach(function(it){
+        html += nsTaskTile('module', icons[it.label] || 'fa-layer-group', it.label, 'વિભાગનો હિસાબ', it.id);
+      });
+      html += nsTaskTile('loanForm', 'fa-file-alt', 'લોન અરજી ફોર્મ', 'લોન અરજીઓ જુઓ');
+      html += nsTaskTile('guarantorChange', 'fa-user-shield', 'જામીનદાર બદલી', 'બદલીના ફોર્મ');
+      html += nsTaskTile('availableGuarantors', 'fa-users', 'ઉપલબ્ધ જામીનદાર', 'જામીનદાર યાદી');
+      html += nsTaskTile('messages', 'fa-comments', 'મેસેજ', 'પાર્ટીના મેસેજ');
+      html += nsTaskTile('reports', 'fa-chart-bar', 'રિપોર્ટ', 'રિપોર્ટ બનાવો');
+      html += nsTaskTile('backup', 'fa-cloud-upload-alt', 'બેકઅપ', 'ડેટા સેવ કરો');
+      html += nsTaskTile('profile', 'fa-user', 'મારી પ્રોફાઇલ', 'માહિતી / પાસવર્ડ');
+      html += nsTaskTile('settings', 'fa-cog', 'સેટિંગ્સ', 'બધી ગોઠવણ');
+      html += '</div>';
+      panel.innerHTML = html;
+      panel.querySelectorAll('[data-ns-task]').forEach(function(b){
+        b.addEventListener('click', function(){
+          var act = b.getAttribute('data-ns-task');
+          try {
+            if (act === 'module') sidebarAction('module:' + b.getAttribute('data-ns-task-module'));
+            else if (act === 'add') { var da = document.getElementById('wsDockAdd'); if (da) da.click(); }
+            else if (act === 'reports') { if (typeof openReportsGenerator === 'function') openReportsGenerator(); else sidebarAction('reports'); }
+            else sidebarAction(act);
+          } catch(e) {}
+        });
+      });
       nsTasksBadgeSync(panel);
     } catch(e) {}
   }
@@ -20550,5 +20631,5 @@ scheduleLoanBalanceRefresh();
 })();
 </script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4e2dfbade00cb6e',t:'MTc5MjYxMzA5Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
