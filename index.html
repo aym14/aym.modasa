@@ -7830,6 +7830,22 @@ body.ns2026 #wsDock button{position:relative}
 .ns-sheet-item i{color:#0E7569;width:20px;text-align:center}
 .ns-sheet-item:active{background:#E3F2EE}
 .ns-dock-badge{background:#B13E3E;color:#fff;border-radius:999px;padding:0 6px;font-size:.62rem;font-weight:800;margin-left:4px}
+/* ---------- Print preview overlay: the document is SEEN in-app first ----------
+   On phones window.print() alone can look like "nothing happened"
+   (blocked/silent in some browsers and webviews). So every Print now
+   first opens this full-screen white preview page with the document,
+   and the real system print runs from its own Print button. */
+#nsPrintOverlay{display:none;position:fixed;inset:0;z-index:3000;background:rgba(6,35,31,.62);flex-direction:column}
+#nsPrintOverlay .ns-print-toolbar{background:#0B2E28;color:#fff;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;box-shadow:0 6px 18px rgba(6,35,31,.35);z-index:5}
+#nsPrintOverlay .ns-print-title{font-weight:800;font-size:.92rem;margin-right:auto;display:flex;align-items:center;gap:8px}
+#nsPrintOverlay .ns-print-go{background:#0E7569;color:#fff;border:1px solid #0E7569;border-radius:999px;padding:9px 18px;font:inherit;font-weight:800;cursor:pointer;min-height:42px}
+#nsPrintOverlay .ns-print-close{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;min-height:42px}
+#nsPrintOverlay .ns-print-hint{width:100%;font-size:.72rem;color:#C7D6CF;line-height:1.5}
+#nsPrintOverlay .ns-print-sheet{flex:1;overflow-y:auto;background:#fff;max-width:860px;width:100%;margin:0 auto;padding:18px 16px calc(28px + env(safe-area-inset-bottom));box-shadow:0 0 40px rgba(6,35,31,.3)}
+@media (max-width:1023.98px){
+  body.ns2026 .ns-fee-panel{background:#fff!important}
+  body.ns2026 .card{background:#fff!important}
+}
 /* ---------- Print: one clean printable area for every page ----------
    Every print option (reports, generated report, loan/GC forms, module
    detail, party statement, and the browser print of any page) renders
@@ -20067,7 +20083,39 @@ scheduleLoanBalanceRefresh();
   }
   function nsDoPrint(title, bodyHtml, cssText, withHeader){
     nsPrintFill(title, bodyHtml, cssText, withHeader);
-    setTimeout(function(){ try { window.print(); } catch(e) {} }, 80);
+    nsShowPrintOverlay(); /* always SEE the document first, then print from its button */
+  }
+  function nsPrintOverlayEl(){
+    var ov = document.getElementById('nsPrintOverlay');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.id = 'nsPrintOverlay';
+      ov.innerHTML = '<div class="ns-print-toolbar"><span class="ns-print-title"><i class="fas fa-print"></i>પ્રિન્ટ પ્રિવ્યુ</span>' +
+        '<button type="button" class="ns-print-go"><i class="fas fa-print"></i> Print કરો</button>' +
+        '<button type="button" class="ns-print-close">✕ બંધ</button>' +
+        '<div class="ns-print-hint">ઉપરનું Print બટન દબાવો એટલે પ્રિન્ટ/PDF ખૂલશે. જો સિસ્ટમ પ્રિવ્યુ ન ખૂલે તો બ્રાઉઝરના મેનુ (⋮) માંથી Print પસંદ કરો.</div></div>' +
+        '<div class="ns-print-sheet"><div class="ns-print-sheet-body"></div></div>';
+      document.body.appendChild(ov);
+      ov.querySelector('.ns-print-go').addEventListener('click', function(){ try { window.print(); } catch(e) {} });
+      ov.querySelector('.ns-print-close').addEventListener('click', nsHidePrintOverlay);
+    }
+    return ov;
+  }
+  function nsShowPrintOverlay(){
+    var ov = nsPrintOverlayEl();
+    var body = ov.querySelector('.ns-print-sheet-body');
+    var doc = nsPrintAreaEl().querySelector('.ns-print-doc');
+    body.innerHTML = '';
+    if (doc) body.appendChild(doc.cloneNode(true));
+    ov.style.display = 'flex';
+    try { document.body.style.overflow = 'hidden'; } catch(e) {}
+    var sheet = ov.querySelector('.ns-print-sheet');
+    if (sheet) sheet.scrollTop = 0;
+  }
+  function nsHidePrintOverlay(){
+    var ov = document.getElementById('nsPrintOverlay');
+    if (ov) ov.style.display = 'none';
+    try { document.body.style.overflow = ''; } catch(e) {}
   }
   function nsScopeCss(css){
     css = String(css || '').replace(/\/\*[\s\S]*?\*\//g, '');
@@ -20085,11 +20133,11 @@ scheduleLoanBalanceRefresh();
         var parts = sel.split(',').map(function(s){
           s = s.trim();
           if (!s) return s;
-          if (s === '*') return '#nsPrintArea .ns-print-doc *';
-          if (s === 'body' || s === 'html') return '#nsPrintArea .ns-print-doc';
-          if (s.indexOf('body') === 0) return '#nsPrintArea .ns-print-doc' + s.slice(4);
+          if (s === '*') return '#nsPrintArea .ns-print-doc *,#nsPrintOverlay .ns-print-doc *';
+          if (s === 'body' || s === 'html') return '#nsPrintArea .ns-print-doc,#nsPrintOverlay .ns-print-doc';
+          if (s.indexOf('body') === 0) return '#nsPrintArea .ns-print-doc' + s.slice(4) + ',#nsPrintOverlay .ns-print-doc' + s.slice(4);
           if (s.indexOf('#nsPrintArea') === 0) return s;
-          return '#nsPrintArea ' + s;
+          return '#nsPrintArea ' + s + ',#nsPrintOverlay ' + s;
         });
         out += parts.join(',') + '{' + block + '}';
       }
@@ -20197,6 +20245,7 @@ scheduleLoanBalanceRefresh();
       }
     });
     window.addEventListener('afterprint', function(){
+      nsHidePrintOverlay();
       var a = document.getElementById('nsPrintArea');
       if (a) a.innerHTML = '';
     });
@@ -20292,6 +20341,12 @@ scheduleLoanBalanceRefresh();
     } catch(e) {}
     kick();
     window.addEventListener('popstate', function(){
+      var printOv = document.getElementById('nsPrintOverlay');
+      if (printOv && printOv.style.display !== 'none' && printOv.style.display !== '') {
+        nsHidePrintOverlay();
+        try { history.pushState({ nsNav: 'print' }, '', location.href); } catch(e) {}
+        return;
+      }
       var sheet = document.getElementById('nsModuleSheet');
       if (sheet && sheet.classList.contains('open')) {
         nsCloseModuleSheet();
