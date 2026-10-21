@@ -7760,6 +7760,43 @@ body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after {
 .ns-online-pill.busy{color:#9A6B00;border-color:#D9A62E}
 .ns-online-pill.err{color:#B3261E;border-color:#B3261E}
 @media (max-width:1023.98px){ .ns-online-pill{top:auto;bottom:88px;right:12px} }
+/* ---- Party/Viewer mobile polish ---- */
+body.ns-party #addCustomModuleRecordBtn, body.ns-viewer #addCustomModuleRecordBtn{display:none!important}
+@media (max-width:1023.98px){
+  body.ns2026 #toastContainer{bottom:118px!important}
+}
+@media (max-width:640px){
+  body.ns2026 #viewEntries table th, body.ns2026 #viewEntries table td,
+  body.ns2026 #customModuleTable th, body.ns2026 #customModuleTable td{padding:8px 7px!important;font-size:.78rem!important}
+  body.ns2026 .ns-fee-table th, body.ns2026 .ns-fee-table td{padding:8px 8px!important;font-size:.8rem!important}
+  body.ns2026 .table-wrapper{-webkit-overflow-scrolling:touch}
+  body.ns2026 #viewEntries table th:first-child, body.ns2026 #viewEntries table td:first-child,
+  body.ns2026 #customModuleTable th:first-child, body.ns2026 #customModuleTable td:first-child{position:sticky;left:0;z-index:1;background:#fff}
+  body.ns2026 #viewEntries table th:first-child, body.ns2026 #customModuleTable th:first-child{background:#17352F}
+  body.ns2026 .ns-fee-table td.amt, body.ns2026 .ns-fee-table th.amt{white-space:nowrap}
+  body.ns2026 .ns-fee-table{table-layout:fixed;min-width:0!important}
+  body.ns2026 .ns-fee-table th, body.ns2026 .ns-fee-table td{word-break:break-word}
+  body.ns2026 .ns-fee-table th:nth-child(1), body.ns2026 .ns-fee-table td:nth-child(1){width:24%}
+  body.ns2026 .ns-fee-table th:nth-child(2), body.ns2026 .ns-fee-table td:nth-child(2){width:26%}
+  body.ns2026 .ns-fee-table th:nth-child(3), body.ns2026 .ns-fee-table td:nth-child(3){width:28%}
+  body.ns2026 .ns-fee-table th:nth-child(4), body.ns2026 .ns-fee-table td:nth-child(4){width:22%}
+  body.ns2026 .ns-fee-table th, body.ns2026 .ns-fee-table td{font-size:.74rem!important;padding:7px 5px!important}
+  body.ns2026 .ns-fee-table td:nth-child(1){white-space:nowrap}
+}
+body.ns-party .ns-fee-hint, body.ns-viewer .ns-fee-hint{display:none!important}
+body.ns2026 #wsDock button{position:relative}
+.ns-dock-badge{position:absolute;top:1px;right:calc(50% - 19px);z-index:2}
+/* Modules bottom sheet (party mobile navigation) */
+.ns-sheet-backdrop{position:fixed;inset:0;background:rgba(6,35,31,.45);z-index:1600;opacity:0;pointer-events:none;transition:opacity .2s}
+.ns-sheet-backdrop.open{opacity:1;pointer-events:auto}
+.ns-sheet{position:fixed;left:0;right:0;bottom:0;z-index:1601;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -12px 40px rgba(6,35,31,.25);padding:10px 14px calc(14px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .25s cubic-bezier(.16,1,.3,1);max-height:78dvh;overflow:auto}
+.ns-sheet.open{transform:translateY(0)}
+.ns-sheet-grip{width:44px;height:5px;border-radius:99px;background:#D8DED2;margin:4px auto 10px}
+.ns-sheet-title{font-weight:800;color:#17352F;margin:2px 2px 10px;font-size:.95rem}
+.ns-sheet-item{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:12px;border:1px solid #E3E9DF;border-radius:14px;background:#F8FAF6;font:inherit;font-weight:700;color:#22332D;cursor:pointer;margin-bottom:8px;text-align:left}
+.ns-sheet-item i{color:#0E7569;width:20px;text-align:center}
+.ns-sheet-item:active{background:#E3F2EE}
+.ns-dock-badge{background:#B13E3E;color:#fff;border-radius:999px;padding:0 6px;font-size:.62rem;font-weight:800;margin-left:4px}
 @media print{ .ns-topnav{display:none!important} }
 </style>
 
@@ -18601,6 +18638,8 @@ scheduleLoanBalanceRefresh();
   var nsCurrentModuleId = null;
   function nsApplyModuleTitle(){
     try {
+      var mv = document.getElementById('viewCustomModule');
+      if (!mv || !mv.classList.contains('active')) return;
       var id = nsCurrentModuleId;
       try { if (typeof currentModuleId !== 'undefined' && currentModuleId) id = currentModuleId; } catch(e) {}
       var mod = id ? nsModuleById(id) : null;
@@ -19550,6 +19589,125 @@ scheduleLoanBalanceRefresh();
       LedgerFeatures.identity.doLogin = nsWrappedDoLogin;
     }
   } catch(e) {}
+  /* ---------- Party mobile: role-aware bottom dock + modules sheet ----------
+     On phones the top navigation is hidden and the dock only had Home /
+     Entries / Profile, so a party could not reach the modules, messages or
+     the loan form at all. For party/viewer sessions the dock gains વિભાગો
+     (a bottom sheet with the module list + loan form + reports) and મેસેજ. */
+  function nsRoleName(){
+    try { if (typeof currentSession !== 'undefined' && currentSession) return currentSession.role || ''; } catch(e) {}
+    return '';
+  }
+  function nsCloseModuleSheet(){
+    var bd = document.getElementById('nsSheetBackdrop'), sh = document.getElementById('nsModuleSheet');
+    if (bd) bd.classList.remove('open');
+    if (sh) sh.classList.remove('open');
+  }
+  function nsOpenModuleSheet(){
+    var bd = document.getElementById('nsSheetBackdrop');
+    var sh = document.getElementById('nsModuleSheet');
+    if (!bd || !sh) return;
+    var list = document.getElementById('nsSheetList');
+    var seen = {}, items = [];
+    try {
+      if (typeof customModules !== 'undefined' && Array.isArray(customModules)) {
+        customModules.forEach(function(m){
+          var lab = nsModuleLabel(m.name);
+          if (seen[lab]) return;
+          seen[lab] = 1;
+          items.push({ id: m.id, label: lab });
+        });
+      }
+    } catch(e) {}
+    items.sort(function(a, b){
+      var x = NS_MODULE_ORDER.indexOf(a.label), y = NS_MODULE_ORDER.indexOf(b.label);
+      return (x < 0 ? 9 : x) - (y < 0 ? 9 : y);
+    });
+    var html = items.map(function(it){
+      return '<button type="button" class="ns-sheet-item" data-ns-module="' + it.id + '"><i class="fas fa-layer-group"></i>' + it.label + '</button>';
+    }).join('');
+    html += '<button type="button" class="ns-sheet-item" data-ns-act="loanForm"><i class="fas fa-file-alt"></i>લોન અરજી ફોર્મ</button>';
+    html += '<button type="button" class="ns-sheet-item" data-ns-act="reports"><i class="fas fa-chart-bar"></i>રિપોર્ટ</button>';
+    list.innerHTML = html || '<div class="fc-hint">કોઈ વિભાગ ઉપલબ્ધ નથી.</div>';
+    list.querySelectorAll('[data-ns-module]').forEach(function(b){
+      b.addEventListener('click', function(){
+        nsCloseModuleSheet();
+        try { sidebarAction('module:' + b.getAttribute('data-ns-module')); } catch(e) {}
+      });
+    });
+    list.querySelectorAll('[data-ns-act]').forEach(function(b){
+      b.addEventListener('click', function(){
+        nsCloseModuleSheet();
+        try {
+          if (b.getAttribute('data-ns-act') === 'loanForm') sidebarAction('loanForm');
+          else if (typeof openReportsGenerator === 'function') openReportsGenerator();
+        } catch(e) {}
+      });
+    });
+    bd.classList.add('open');
+    sh.classList.add('open');
+  }
+  function nsSheetInit(){
+    try {
+      if (document.getElementById('nsModuleSheet')) return;
+      var bd = document.createElement('div');
+      bd.id = 'nsSheetBackdrop';
+      bd.className = 'ns-sheet-backdrop no-print';
+      bd.addEventListener('click', nsCloseModuleSheet);
+      var sh = document.createElement('div');
+      sh.id = 'nsModuleSheet';
+      sh.className = 'ns-sheet no-print';
+      sh.setAttribute('role', 'dialog');
+      sh.setAttribute('aria-label', 'હિસાબના વિભાગ');
+      sh.innerHTML = '<div class="ns-sheet-grip"></div><div class="ns-sheet-title">હિસાબના વિભાગ</div><div id="nsSheetList"></div>';
+      document.body.appendChild(bd);
+      document.body.appendChild(sh);
+    } catch(e) {}
+  }
+  function nsDockSync(){
+    try {
+      var role = nsRoleName();
+      document.body.classList.toggle('ns-party', role === 'party');
+      document.body.classList.toggle('ns-viewer', role === 'viewer');
+      document.body.classList.toggle('ns-admin', role === 'admin');
+      var dock = document.getElementById('wsDock');
+      if (!dock) return;
+      var show = (role === 'party' || role === 'viewer');
+      var mod = document.getElementById('nsDockModules');
+      var msg = document.getElementById('nsDockMessages');
+      if (show && !mod) {
+        var prof = document.getElementById('wsDockProfile');
+        mod = document.createElement('button');
+        mod.id = 'nsDockModules';
+        mod.type = 'button';
+        mod.innerHTML = '<i class="fas fa-layer-group" aria-hidden="true"></i>વિભાગો';
+        mod.addEventListener('click', nsOpenModuleSheet);
+        msg = document.createElement('button');
+        msg.id = 'nsDockMessages';
+        msg.type = 'button';
+        msg.innerHTML = '<i class="fas fa-comments" aria-hidden="true"></i>મેસેજ<span class="ns-dock-badge" id="nsDockMsgBadge" style="display:none"></span>';
+        msg.addEventListener('click', function(){ try { sidebarAction('messages'); } catch(e) {} });
+        if (prof && prof.parentNode === dock) { dock.insertBefore(mod, prof); dock.insertBefore(msg, prof); }
+        else { dock.appendChild(mod); dock.appendChild(msg); }
+      }
+      if (mod) mod.style.display = show ? '' : 'none';
+      if (msg) {
+        msg.style.display = show ? '' : 'none';
+        var badge = document.getElementById('nsDockMsgBadge');
+        var srcB = document.getElementById('sidebarUnreadBadge');
+        if (badge && srcB) {
+          var t = (srcB.textContent || '').trim();
+          var vis = srcB.style.display !== 'none' && !!t && t !== '0';
+          badge.style.display = vis ? '' : 'none';
+          if (vis) badge.textContent = t;
+        }
+      }
+    } catch(e) {}
+  }
+  nsSheetInit();
+  nsDockSync();
+  setInterval(nsDockSync, 2000);
+
   nsTryJoinFromHash();
   nsTrySyncConfigFile();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', nsServerUiInit); else nsServerUiInit();
