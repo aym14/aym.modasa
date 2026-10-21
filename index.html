@@ -18746,7 +18746,7 @@ scheduleLoanBalanceRefresh();
      the cloud ~5 seconds later, and JSONBin devices also check every minute
      for a newer cloud copy (Supabase already has the built-in 30s realtime
      pull). Stored data, keys and sync functions are untouched. */
-  var nsSyncTimer = null, nsSyncBusy = false, nsSuppressUntil = 0, nsLastChangeTs = 0;
+  var nsSyncTimer = null, nsSyncBusy = false, nsSuppressUntil = 0, nsLastChangeTs = 0, nsInCloudPersist = false, nsCloudPersistPending = false;
   function nsServerMode(){ try { return typeof cloudCfg !== 'undefined' && !!cloudCfg && (cloudCfg.provider || 'jsonbin') === 'server'; } catch(e) { return false; } }
   function nsServerReady(){ try { return nsServerMode() && !!String(cloudCfg.serverUrl || '').trim(); } catch(e) { return false; } }
   function nsServerCfg(){
@@ -18816,7 +18816,6 @@ scheduleLoanBalanceRefresh();
     } catch(e) { return false; }
   }
   function nsSchedulePush(){
-    if (Date.now() < nsSuppressUntil) return;
     if (!nsCloudReady()) return;
     if (nsSyncTimer) clearTimeout(nsSyncTimer);
     nsSyncTimer = setTimeout(function(){
@@ -18831,6 +18830,11 @@ scheduleLoanBalanceRefresh();
   }
   if (typeof LedgerEvents !== 'undefined' && LedgerEvents && typeof LedgerEvents.on === 'function') {
     LedgerEvents.on('data:changed', function(){
+      /* Fires for local edits AND for data applied from the cloud. Cloud
+         applies mark the persist that follows them (nsInCloudPersist), so
+         a pull never counts as a local change and never echoes back —
+         while a real edit made right after a pull still pushes. */
+      if (nsInCloudPersist) return;
       nsLastChangeTs = Date.now();
       nsSchedulePush();
     });
@@ -18843,6 +18847,7 @@ scheduleLoanBalanceRefresh();
       var nsOrigApply = LedgerFeatures.cloud.applyCloudData;
       var nsWrappedApply = function(data){
         nsSuppressUntil = Date.now() + 10000;
+        nsCloudPersistPending = true;
         var nsApplyResult = nsOrigApply.apply(this, arguments);
         /* Cashbook-style accounts: the built-in cloud payload has no users or
            messages, so restore them here when a newer payload carries them —
@@ -18855,6 +18860,23 @@ scheduleLoanBalanceRefresh();
       };
       nsWrappedApply.__nsWrapped = true;
       LedgerFeatures.cloud.applyCloudData = nsWrappedApply;
+    }
+  } catch(e) {}
+  /* Mark the persistAll that belongs to a cloud apply, so data:changed can
+     tell "data arrived from the cloud" apart from a real local edit — even
+     when the edit happens a second after a pull. */
+  try {
+    if (typeof window.persistAll === 'function' && !window.persistAll.__nsWrapped) {
+      var nsOrigPersist = window.persistAll;
+      var nsWrappedPersist = function(){
+        var prevInCloud = nsInCloudPersist;
+        nsInCloudPersist = nsCloudPersistPending;
+        nsCloudPersistPending = false;
+        try { return nsOrigPersist.apply(this, arguments); }
+        finally { nsInCloudPersist = prevInCloud; }
+      };
+      nsWrappedPersist.__nsWrapped = true;
+      window.persistAll = nsWrappedPersist;
     }
   } catch(e) {}
   /* JSONBin has no realtime channel, so poll for newer cloud data. A pull is
@@ -18977,8 +18999,8 @@ scheduleLoanBalanceRefresh();
     } catch(e) {}
     nsSyncBusy = false;
   }
-  setInterval(nsAutoPullCheck, 60000);
-  setTimeout(nsAutoPullCheck, 9000);
+  setInterval(nsAutoPullCheck, 20000);
+  setTimeout(nsAutoPullCheck, 5000);
   /* Refresh right after a login appears (Cashbook feel). */
   var nsWasSession = false;
   setInterval(function(){
@@ -18987,6 +19009,12 @@ scheduleLoanBalanceRefresh();
     if (on && !nsWasSession) setTimeout(nsAutoPullCheck, 1500);
     nsWasSession = on;
   }, 4000);
+  /* Cashbook-style liveness: the moment the app comes back to the screen
+     (or the internet returns), check for new data at once; entries made
+     offline are pushed as soon as the device is back online. */
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) setTimeout(nsAutoPullCheck, 800); });
+  window.addEventListener('focus', function(){ setTimeout(nsAutoPullCheck, 800); });
+  window.addEventListener('online', function(){ setTimeout(nsAutoPullCheck, 800); setTimeout(nsSchedulePush, 1500); });
 
   /* ---------- Live Online status pill ---------- */
   var nsPillState = 'idle';
