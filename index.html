@@ -7812,13 +7812,44 @@ body.ns2026 #wsDock button{position:relative}
 @media (max-width:1023.98px){
   body.ns2026{--ns-bg:#FFFFFF}
 }
-@media (max-width:768px){
+@media (max-width:1023.98px){
   body.ns2026 .modal-overlay,body.ns2026 .entry-modal-overlay{padding:0!important;align-items:stretch!important}
   body.ns2026 .modal-overlay .modal,body.ns2026 .entry-modal-overlay .entry-modal{width:100%!important;max-width:100%!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;border:none!important;box-shadow:none!important}
   body.ns2026 .modal-overlay .modal{padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
   body.ns2026 .modal-overlay .modal>h3{position:sticky;top:-16px;background:#fff;z-index:6;margin:-16px -16px 12px;padding:16px 16px 8px}
   body.ns2026 .entry-modal-overlay .entry-modal .entry-modal-header{border-radius:0!important}
 }
+/* ---------- Mobile: every function opens as its own full-screen page ----------
+   On phones (and small tablets) any non-root view becomes a separate
+   full-screen page of its own: white, edge-to-edge, with a sticky page
+   header (Back button + page title) and the bottom dock hidden. Root
+   pages (home / party dashboard) keep the dock as before. Combined with
+   the full-page modals above, every function a user opens on mobile is
+   a full-screen page. Desktop is unchanged. */
+.ns-pagebar{display:none}
+@media (max-width:1023.98px){
+  body.ns2026.ns-mpage #wsDock{display:none!important}
+  body.ns2026.ns-mpage .ns-online-pill{bottom:16px!important}
+  body.ns2026.ns-mpage .view-section.active{min-height:100dvh}
+  body.ns2026 .view-section.active .ns-pagebar{
+    display:none;
+  }
+  body.ns2026.ns-mpage .view-section.active .ns-pagebar{
+    display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:60;
+    background:#fff;border:1px solid #E3E9DF;border-radius:14px;
+    margin:0 0 12px;padding:9px 10px;box-shadow:0 6px 18px rgba(11,46,40,.07);
+  }
+  .ns-pagebar-back{
+    display:inline-flex;align-items:center;gap:7px;flex:none;
+    background:#0E7569;color:#fff;border:1px solid #0E7569;border-radius:999px;
+    padding:9px 15px;font:inherit;font-size:.85rem;font-weight:800;cursor:pointer;min-height:42px;
+  }
+  .ns-pagebar-back:active{transform:scale(.97)}
+  .ns-pagebar-title{font-weight:800;color:#17352F;font-size:1rem;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  body.ns2026.ns-mpage .view-section.active{animation:nsPageIn .22s ease-out}
+}
+@keyframes nsPageIn{from{opacity:.35;transform:translateX(18px)}to{opacity:1;transform:none}}
+@media print{ .ns-pagebar{display:none!important} #nsPrintArea tfoot{display:table-footer-group} }
 /* Modules bottom sheet (party mobile navigation) */
 .ns-sheet-backdrop{position:fixed;inset:0;background:rgba(6,35,31,.45);z-index:1600;opacity:0;pointer-events:none;transition:opacity .2s}
 .ns-sheet-backdrop.open{opacity:1;pointer-events:auto}
@@ -7842,6 +7873,10 @@ body.ns2026 #wsDock button{position:relative}
 #nsPrintOverlay .ns-print-close{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;min-height:42px}
 #nsPrintOverlay .ns-print-hint{width:100%;font-size:.72rem;color:#C7D6CF;line-height:1.5}
 #nsPrintOverlay .ns-print-sheet{flex:1;overflow-y:auto;background:#fff;max-width:860px;width:100%;margin:0 auto;padding:18px 16px calc(28px + env(safe-area-inset-bottom));box-shadow:0 0 40px rgba(6,35,31,.3)}
+#nsPrintOverlay table{width:100%!important;min-width:0!important;border-collapse:collapse;font-size:.8rem}
+#nsPrintOverlay th,#nsPrintOverlay td{border:1px solid #D8DED2;padding:5px 6px;text-align:left;vertical-align:top;word-break:break-word}
+#nsPrintOverlay thead th{background:#17352F;color:#fff}
+#nsPrintOverlay tfoot th,#nsPrintOverlay tfoot td{background:#EFF4EC;font-weight:800}
 @media (max-width:1023.98px){
   body.ns2026 .ns-fee-panel{background:#fff!important}
   body.ns2026 .card{background:#fff!important}
@@ -20229,11 +20264,83 @@ scheduleLoanBalanceRefresh();
     var v = nsVisibleView();
     if (v) nsDoPrint('', nsCloneForPrint(v), '', true);
   }
+  /* Entries print: build the FULL entry list (every filtered entry as a
+     table row), not just the on-screen category/group summary. The app
+     table only renders summary rows and loads entry details lazily when
+     a row is tapped, so cloning it printed totals without any entries.
+     This uses the app's own getFiltered() so the printed list always
+     matches the filters on screen. */
+  function nsFmtAmt(n){
+    try { if (typeof fmtAmt === 'function') return fmtAmt(n); } catch(e) {}
+    var v = Number(n) || 0;
+    return v.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function nsEntriesPrintBody(){
+    if (typeof getFiltered !== 'function') return null;
+    var list = getFiltered() || [];
+    try { if (typeof updatePrintHeader === 'function') updatePrintHeader(); } catch(e) {}
+    var partyOf = function(e){
+      try { var p = (typeof getParty === 'function') ? getParty(e.partyId) : null; if (p && p.name) return p.name; } catch(err) {}
+      return e.partyName || '';
+    };
+    var catOf = function(e){
+      try { var c = (typeof getCat === 'function') ? getCat(e.categoryId) : null; if (c && c.name) return c.name; } catch(err) {}
+      return e.category || '';
+    };
+    var dateOf = function(d){
+      try { if (typeof fmtDate === 'function') return fmtDate(d); } catch(err) {}
+      return d || '';
+    };
+    var rows = '', totI = 0, totE = 0, cats = {}, catOrder = [];
+    list.forEach(function(e){
+      var amt = parseFloat(e.amount) || 0;
+      var inc = (e.type === 'income') ? amt : 0;
+      var exp = (e.type === 'income') ? 0 : amt;
+      totI += inc; totE += exp;
+      var cn = catOf(e);
+      if (!cats[cn]) { cats[cn] = { inc: 0, exp: 0 }; catOrder.push(cn); }
+      cats[cn].inc += inc; cats[cn].exp += exp;
+      rows += '<tr><td>' + nsEsc(dateOf(e.date)) + '</td><td>' + nsEsc(partyOf(e)) + '</td><td>' + nsEsc(cn) + '</td><td>' + nsEsc(e.description || e.remarks || '') + '</td><td>' + nsEsc(e.voucherNo || '') + '</td><td>' + nsEsc(e.paymentMode || '') + '</td><td style="text-align:right">' + (inc ? '₹' + nsFmtAmt(inc) : '—') + '</td><td style="text-align:right">' + (exp ? '₹' + nsFmtAmt(exp) : '—') + '</td></tr>';
+    });
+    if (!list.length) rows = '<tr><td colspan="8" style="text-align:center">કોઈ એન્ટ્રી નથી</td></tr>';
+    var infoLines = '';
+    try {
+      var ph = document.getElementById('printHeader');
+      if (ph) {
+        var pn = ph.querySelector('.party-name'), dr = ph.querySelector('.date-range');
+        if (pn && pn.textContent.trim()) infoLines += '<div>' + nsEsc(pn.textContent.trim()) + '</div>';
+        if (dr && dr.textContent.trim()) infoLines += '<div>' + nsEsc(dr.textContent.trim()) + '</div>';
+      }
+      var fi = document.getElementById('partyFilterInfo');
+      if (fi && fi.textContent.trim()) infoLines += '<div>' + nsEsc(fi.textContent.trim()) + '</div>';
+    } catch(err) {}
+    var html = '';
+    if (infoLines) html += '<div style="margin:0 0 10px;font-size:9.5pt;color:#333;line-height:1.6">' + infoLines + '</div>';
+    html += '<table><thead><tr><th>તારીખ</th><th>પાર્ટી</th><th>કેટેગરી</th><th>વિગત</th><th>વાઉચર</th><th>ચુકવણી</th><th style="text-align:right">આવક</th><th style="text-align:right">ખર્ચ</th></tr></thead><tbody>' + rows + '</tbody>' +
+      '<tfoot><tr><th colspan="6" style="text-align:right">કુલ</th><th style="text-align:right">₹' + nsFmtAmt(totI) + '</th><th style="text-align:right">₹' + nsFmtAmt(totE) + '</th></tr>' +
+      '<tr><th colspan="6" style="text-align:right">ચોખ્ખું (આવક − ખર્ચ)</th><th colspan="2" style="text-align:right">₹' + nsFmtAmt(totI - totE) + '</th></tr></tfoot></table>';
+    html += '<p style="margin:10px 0 4px;font-size:9pt;color:#444">કુલ એન્ટ્રીઓ: <b>' + list.length + '</b></p>';
+    if (catOrder.length) {
+      var crows = '';
+      catOrder.sort().forEach(function(cn){
+        var c = cats[cn];
+        crows += '<tr><td>' + nsEsc(cn) + '</td><td style="text-align:right">₹' + nsFmtAmt(c.inc) + '</td><td style="text-align:right">₹' + nsFmtAmt(c.exp) + '</td><td style="text-align:right">₹' + nsFmtAmt(c.inc - c.exp) + '</td></tr>';
+      });
+      html += '<h3 style="margin:14px 0 6px;font-size:11pt;color:#0B2E29">કેટેગરી મુજબ સારાંશ</h3><table><thead><tr><th>કેટેગરી</th><th style="text-align:right">આવક</th><th style="text-align:right">ખર્ચ</th><th style="text-align:right">ચોખ્ખું</th></tr></thead><tbody>' + crows + '</tbody></table>';
+    }
+    return html;
+  }
+  function nsPrintEntries(){
+    var bodyHtml = null;
+    try { bodyHtml = nsEntriesPrintBody(); } catch(e) {}
+    if (bodyHtml) nsDoPrint('એન્ટ્રી રિપોર્ટ — બધી એન્ટ્રીઓ', bodyHtml, '', true);
+    else nsPrintView('reportSection', 'એન્ટ્રી રિપોર્ટ');
+  }
   function nsPrintInit(){
     nsPrintAreaEl();
     ['printGeneratedReport', 'printModuleDetail', 'openPartyStatement', 'printLoanForm', 'printGuarantorChangeForm'].forEach(nsWrapPopupPrint);
     if (typeof window.printReport === 'function' && !window.printReport.__nsPrintWrapped) {
-      var wpr = function(){ nsPrintView('reportSection', 'એન્ટ્રી રિપોર્ટ'); };
+      var wpr = function(){ nsPrintEntries(); };
       wpr.__nsPrintWrapped = true;
       window.printReport = wpr;
     }
@@ -20241,6 +20348,11 @@ scheduleLoanBalanceRefresh();
       var a = document.getElementById('nsPrintArea');
       if (a && !a.innerHTML.trim()) {
         var v = nsVisibleView();
+        if (v && v.id === 'viewEntries') {
+          var eb = null;
+          try { eb = nsEntriesPrintBody(); } catch(e) {}
+          if (eb) { nsPrintFill('એન્ટ્રી રિપોર્ટ — બધી એન્ટ્રીઓ', eb, '', true); return; }
+        }
         if (v) nsPrintFill('', nsCloneForPrint(v), '', true);
       }
     });
@@ -20332,9 +20444,62 @@ scheduleLoanBalanceRefresh();
     if (btn) { btn.click(); return; }
     m.style.display = 'none';
   }
+  /* ---------- Mobile full-screen pages ----------
+     Every non-root view gets a page header (Back + title) injected as
+     its first element; while such a view is active on a phone the body
+     carries .ns-mpage, which (per the CSS) hides the bottom dock so the
+     view reads as its own separate full-screen page. The Back button
+     uses the same history stack as the phone Back button. */
+  var NS_PAGE_TITLES = {
+    viewEntries: 'એન્ટ્રી — હિસાબ',
+    viewReports: 'રિપોર્ટ',
+    viewMessages: 'મેસેજ',
+    viewLoanForm: 'લોન અરજી ફોર્મ',
+    viewGuarantorChange: 'જામીનદાર બદલી ફોર્મ',
+    viewAvailableGuarantors: 'ઉપલબ્ધ જામીનદાર',
+    viewCustomModule: 'વિભાગ'
+  };
+  var NS_ROOT_VIEWS = { viewHome: 1, viewPartyDashboard: 1 };
+  function nsPageSync(){
+    try {
+      var id = nsCurrentViewId();
+      var isPage = !!(id && !NS_ROOT_VIEWS[id]);
+      document.body.classList.toggle('ns-mpage', isPage);
+      if (isPage) {
+        var view = document.getElementById(id);
+        var titleEl = view ? view.querySelector('.ns-pagebar-title') : null;
+        if (titleEl) {
+          var t = NS_PAGE_TITLES[id] || '';
+          if (id === 'viewCustomModule') {
+            var mt = document.getElementById('customModuleTitle');
+            if (mt && mt.textContent.trim()) t = mt.textContent.trim();
+          }
+          if (t && titleEl.textContent !== t) titleEl.textContent = t;
+        }
+      }
+    } catch(e) {}
+  }
+  function nsPageBarsInit(){
+    document.querySelectorAll('.view-section').forEach(function(view){
+      if (view.querySelector('.ns-pagebar')) return;
+      var bar = document.createElement('div');
+      bar.className = 'ns-pagebar no-print';
+      bar.innerHTML = '<button type="button" class="ns-pagebar-back"><i class="fas fa-arrow-left"></i> પાછળ</button><span class="ns-pagebar-title"></span>';
+      var back = bar.querySelector('.ns-pagebar-back');
+      back.addEventListener('click', function(){
+        var modal = nsOpenModalEl();
+        if (modal) { nsCloseModalEl(modal); return; }
+        if (nsNavStack.length > 1) { try { history.back(); return; } catch(e) {} }
+        try { if (typeof sidebarAction === 'function') sidebarAction('home'); } catch(e) {}
+      });
+      view.insertBefore(bar, view.firstChild);
+    });
+  }
   function nsBackInit(){
     try { history.replaceState({ nsNav: 'root' }, '', location.href); } catch(e) {}
-    var kick = function(){ setTimeout(nsRecordNav, 80); };
+    nsPageBarsInit();
+    var kick = function(){ setTimeout(function(){ nsRecordNav(); nsPageSync(); }, 80); };
+    setInterval(nsPageSync, 1500);
     try {
       var mo = new MutationObserver(kick);
       document.querySelectorAll('.view-section').forEach(function(v){ mo.observe(v, { attributes: true, attributeFilter: ['class', 'style'] }); });
