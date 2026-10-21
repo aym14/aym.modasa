@@ -7784,6 +7784,25 @@ body.ns-party #addCustomModuleRecordBtn, body.ns-viewer #addCustomModuleRecordBt
   body.ns2026 .ns-fee-table td:nth-child(1){white-space:nowrap}
 }
 body.ns-party .ns-fee-hint, body.ns-viewer .ns-fee-hint{display:none!important}
+/* Party dashboard — all party tasks in one place */
+#viewPartyDashboard>.ns-party-tasks{grid-column:1/-1}
+#viewPartyDashboard>.party-recent-card{grid-area:auto!important;grid-column:1/-1!important}
+.ns-party-tasks{background:#fff;border:1px solid #E3E9DF;border-radius:18px;padding:14px;margin:0 0 14px;box-shadow:0 10px 26px rgba(11,46,40,.06)}
+.ns-party-tasks-head{display:flex;align-items:center;gap:8px;font-weight:800;color:#17352F;font-size:.95rem;margin-bottom:12px}
+.ns-party-tasks-head i{color:#0E7569}
+.ns-party-tasks-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ns-task-tile{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:88px;padding:12px;border:1px solid #E3E9DF;border-radius:16px;background:#F8FAF6;font:inherit;cursor:pointer;text-align:left;color:#22332D}
+.ns-task-tile:hover{background:#EFF6F1;border-color:#BFD8CC}
+.ns-task-tile:active{transform:scale(.98)}
+.ns-task-ico{width:38px;height:38px;border-radius:12px;background:#E3F2EE;color:#0E7569;display:flex;align-items:center;justify-content:center;font-size:1rem;position:relative;flex:none}
+.ns-task-tile b{font-size:.84rem;line-height:1.25}
+.ns-task-tile small{font-size:.66rem;color:#64746A;font-weight:600;line-height:1.3}
+.ns-task-tile .ns-dock-badge{top:-5px;right:-5px;margin:0}
+@media (max-width:640px){
+  .ns-party-tasks-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ns-task-tile{min-height:84px}
+}
+@media print{ .ns-party-tasks{display:none!important} }
 body.ns2026 #wsDock button{position:relative}
 .ns-dock-badge{position:absolute;top:1px;right:calc(50% - 19px);z-index:2}
 /* Modules bottom sheet (party mobile navigation) */
@@ -19670,6 +19689,7 @@ scheduleLoanBalanceRefresh();
       document.body.classList.toggle('ns-party', role === 'party');
       document.body.classList.toggle('ns-viewer', role === 'viewer');
       document.body.classList.toggle('ns-admin', role === 'admin');
+      nsPartyTasksSync(role);
       var dock = document.getElementById('wsDock');
       if (!dock) return;
       var show = (role === 'party' || role === 'viewer');
@@ -19704,6 +19724,96 @@ scheduleLoanBalanceRefresh();
       }
     } catch(e) {}
   }
+  /* ---------- Party dashboard: every party task in one place ----------
+     The party main page once had an options hub that was removed on
+     request; the user now wants ALL party-doable tasks back on the party
+     dashboard as one clear "મારા કાર્યો" panel (desktop + mobile). Tiles
+     follow the same canonical module labels as the menu, and everything
+     routes through the app's own sidebarAction handlers. */
+  var nsTasksSig = '';
+  function nsPartyModuleItems(){
+    var seen = {}, items = [];
+    try {
+      if (typeof customModules !== 'undefined' && Array.isArray(customModules)) {
+        customModules.forEach(function(m){
+          var lab = nsModuleLabel(m.name);
+          if (seen[lab]) return;
+          seen[lab] = 1;
+          items.push({ id: m.id, label: lab });
+        });
+      }
+    } catch(e) {}
+    items.sort(function(a, b){
+      var x = NS_MODULE_ORDER.indexOf(a.label), y = NS_MODULE_ORDER.indexOf(b.label);
+      return (x < 0 ? 9 : x) - (y < 0 ? 9 : y);
+    });
+    return items;
+  }
+  function nsTaskTile(act, icon, label, sub, modId){
+    return '<button type="button" class="ns-task-tile" data-ns-task="' + act + '"' + (modId ? ' data-ns-task-module="' + modId + '"' : '') + '>' +
+      '<span class="ns-task-ico"><i class="fas ' + icon + '"></i>' + (act === 'messages' ? '<span class="ns-dock-badge" data-ns-task-badge style="display:none"></span>' : '') + '</span>' +
+      '<b>' + label + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</button>';
+  }
+  function nsTasksBadgeSync(panel){
+    try {
+      var badge = panel ? panel.querySelector('[data-ns-task-badge]') : null;
+      var srcB = document.getElementById('sidebarUnreadBadge');
+      if (!badge || !srcB) return;
+      var t = (srcB.textContent || '').trim();
+      var vis = srcB.style.display !== 'none' && !!t && t !== '0';
+      badge.style.display = vis ? '' : 'none';
+      if (vis) badge.textContent = t;
+    } catch(e) {}
+  }
+  function nsPartyTasksSync(role){
+    try {
+      var view = document.getElementById('viewPartyDashboard');
+      if (!view) return;
+      var show = (role === 'party' || role === 'viewer');
+      var panel = document.getElementById('nsPartyTasks');
+      if (!show) { if (panel) panel.remove(); nsTasksSig = ''; return; }
+      var items = nsPartyModuleItems();
+      var ub = document.getElementById('sidebarUnreadBadge');
+      var sig = role + '|' + items.map(function(i){ return i.id + ':' + i.label; }).join('|') + '|u:' + (ub ? (ub.textContent || '') + ':' + ub.style.display : '');
+      if (panel && sig === nsTasksSig) { nsTasksBadgeSync(panel); return; }
+      nsTasksSig = sig;
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'nsPartyTasks';
+        panel.className = 'ns-party-tasks no-print';
+        var grid = view.querySelector('.party-dash-grid');
+        if (grid && grid.parentNode === view) view.insertBefore(panel, grid.nextSibling);
+        else view.insertBefore(panel, view.firstChild);
+      }
+      var icons = { 'કુલ સભ્ય ફી': 'fa-ticket-alt', 'વિતરણનો હિસાબ': 'fa-gift', 'લોનનો હિસાબ': 'fa-landmark' };
+      var subs = { 'કુલ સભ્ય ફી': 'મારી સભ્ય ફીની નોંધો', 'વિતરણનો હિસાબ': 'વિતરણની વિગત', 'લોનનો હિસાબ': 'મારી લોન અને હપ્તા' };
+      var html = '<div class="ns-party-tasks-head"><i class="fas fa-th-large"></i>મારા કાર્યો</div><div class="ns-party-tasks-grid">';
+      html += nsTaskTile('entries', 'fa-list-ul', 'મારો હિસાબ', 'બધી એન્ટ્રી અને વિગત');
+      items.forEach(function(it){
+        html += nsTaskTile('module', icons[it.label] || 'fa-layer-group', it.label, subs[it.label] || 'વિભાગનો હિસાબ', it.id);
+      });
+      html += nsTaskTile('loanForm', 'fa-file-alt', 'લોન અરજી ફોર્મ', 'નવી લોન અરજી કરો');
+      html += nsTaskTile('guarantorChange', 'fa-user-shield', 'જામીનદાર બદલી ફોર્મ', 'જામીનદાર બદલવાની અરજી');
+      html += nsTaskTile('availableGuarantors', 'fa-users', 'ઉપલબ્ધ જામીનદાર', 'જામીનદારની યાદી');
+      html += nsTaskTile('messages', 'fa-comments', 'મેસેજ', 'Admin સાથે વાત');
+      html += nsTaskTile('reports', 'fa-chart-bar', 'રિપોર્ટ', 'મારો રિપોર્ટ બનાવો');
+      html += nsTaskTile('profile', 'fa-user', 'મારી પ્રોફાઇલ', 'માહિતી અને પાસવર્ડ');
+      html += '</div>';
+      panel.innerHTML = html;
+      panel.querySelectorAll('[data-ns-task]').forEach(function(b){
+        b.addEventListener('click', function(){
+          var act = b.getAttribute('data-ns-task');
+          try {
+            if (act === 'module') sidebarAction('module:' + b.getAttribute('data-ns-task-module'));
+            else if (act === 'reports') { if (typeof openReportsGenerator === 'function') openReportsGenerator(); }
+            else sidebarAction(act);
+          } catch(e) {}
+        });
+      });
+      nsTasksBadgeSync(panel);
+    } catch(e) {}
+  }
+
   nsSheetInit();
   nsDockSync();
   setInterval(nsDockSync, 2000);
