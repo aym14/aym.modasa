@@ -7805,6 +7805,20 @@ body.ns-party .ns-fee-hint, body.ns-viewer .ns-fee-hint{display:none!important}
 @media print{ .ns-party-tasks{display:none!important} }
 body.ns2026 #wsDock button{position:relative}
 .ns-dock-badge{position:absolute;top:1px;right:calc(50% - 19px);z-index:2}
+/* ---------- Mobile: white background + full-page modals ----------
+   Phones get a plain white app background, and every modal/form opens
+   as a true full page (edge to edge, full height) instead of a small
+   floating box. Desktop is unchanged. */
+@media (max-width:1023.98px){
+  body.ns2026{--ns-bg:#FFFFFF}
+}
+@media (max-width:768px){
+  body.ns2026 .modal-overlay,body.ns2026 .entry-modal-overlay{padding:0!important;align-items:stretch!important}
+  body.ns2026 .modal-overlay .modal,body.ns2026 .entry-modal-overlay .entry-modal{width:100%!important;max-width:100%!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;border:none!important;box-shadow:none!important}
+  body.ns2026 .modal-overlay .modal{padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+  body.ns2026 .modal-overlay .modal>h3{position:sticky;top:-16px;background:#fff;z-index:6;margin:-16px -16px 12px;padding:16px 16px 8px}
+  body.ns2026 .entry-modal-overlay .entry-modal .entry-modal-header{border-radius:0!important}
+}
 /* Modules bottom sheet (party mobile navigation) */
 .ns-sheet-backdrop{position:fixed;inset:0;background:rgba(6,35,31,.45);z-index:1600;opacity:0;pointer-events:none;transition:opacity .2s}
 .ns-sheet-backdrop.open{opacity:1;pointer-events:auto}
@@ -19299,6 +19313,7 @@ scheduleLoanBalanceRefresh();
   var nsWasSession = false;
   setInterval(function(){
     var on = nsSessionOn();
+    if (!on) { try { nsNavStack.length = 0; } catch(e) {} }
     if (on) nsEnableAutoSyncOnLogin(); /* joined via link → Auto Sync switches itself on (idempotent) */
     if (on && !nsWasSession) {
       setTimeout(nsAutoPullCheck, 1500);
@@ -20177,7 +20192,7 @@ scheduleLoanBalanceRefresh();
     window.addEventListener('beforeprint', function(){
       var a = document.getElementById('nsPrintArea');
       if (a && !a.innerHTML.trim()) {
-        var v = document.querySelector('.view-section.active');
+        var v = nsVisibleView();
         if (v) nsPrintFill('', nsCloneForPrint(v), '', true);
       }
     });
@@ -20214,8 +20229,96 @@ scheduleLoanBalanceRefresh();
     } catch(e) {}
   }
 
+  /* ---------- Phone/browser Back button ----------
+     Every view change is recorded (MutationObserver on the views) and
+     mirrored into history, so pressing Back closes an open modal or
+     sheet first, then walks back through the views, and only leaves
+     the app at the root. Works for Android's back gesture/button and
+     desktop browser Back alike; degrades silently where history
+     pushState is unavailable (e.g. file://). */
+  var nsNavStack = [], nsNavBusy = false, nsLastModuleId = '';
+  function nsCurrentViewId(){
+    var v = document.querySelector('.view-section.active');
+    if (v) return v.id;
+    var f = null;
+    document.querySelectorAll('.view-section').forEach(function(x){ if (!f && x.offsetParent !== null) f = x; });
+    return f ? f.id : '';
+  }
+  function nsRecordNav(){
+    if (nsNavBusy) return;
+    var id = nsCurrentViewId();
+    if (!id) return;
+    if (id === 'viewCustomModule') { try { if (typeof currentModuleId !== 'undefined' && currentModuleId) nsLastModuleId = currentModuleId; } catch(e) {} }
+    if (nsNavStack[nsNavStack.length - 1] !== id) {
+      nsNavStack.push(id);
+      if (nsNavStack.length > 40) nsNavStack.shift();
+      try { history.pushState({ nsNav: id }, '', location.href); } catch(e) {}
+    }
+  }
+  var NS_VIEW_NAMES = { viewHome: 'home', viewPartyDashboard: 'home', viewEntries: 'entries', viewReports: 'reports', viewMessages: 'messages', viewLoanForm: 'loanForm', viewGuarantorChange: 'guarantorChange', viewAvailableGuarantors: 'availableGuarantors' };
+  function nsGoToView(id){
+    try {
+      if (id === 'viewCustomModule') {
+        if (nsLastModuleId && typeof switchView === 'function') { switchView('module:' + nsLastModuleId); return; }
+        if (typeof sidebarAction === 'function') { sidebarAction('home'); return; }
+      }
+      var name = NS_VIEW_NAMES[id];
+      if (name && typeof switchView === 'function') switchView(name);
+    } catch(e) {}
+  }
+  function nsOpenModalEl(){
+    var found = null;
+    document.querySelectorAll('.modal-overlay,.entry-modal-overlay').forEach(function(m){
+      if (found) return;
+      if (m.style.display === 'flex' || getComputedStyle(m).display === 'flex') found = m;
+    });
+    return found;
+  }
+  function nsCloseModalEl(m){
+    var btn = m.querySelector('.modal-close,.em-close');
+    if (!btn) {
+      var btns = m.querySelectorAll('button');
+      for (var i = 0; i < btns.length; i++) { if (/[×✕]/.test(btns[i].textContent || '')) { btn = btns[i]; break; } }
+    }
+    if (btn) { btn.click(); return; }
+    m.style.display = 'none';
+  }
+  function nsBackInit(){
+    try { history.replaceState({ nsNav: 'root' }, '', location.href); } catch(e) {}
+    var kick = function(){ setTimeout(nsRecordNav, 80); };
+    try {
+      var mo = new MutationObserver(kick);
+      document.querySelectorAll('.view-section').forEach(function(v){ mo.observe(v, { attributes: true, attributeFilter: ['class', 'style'] }); });
+    } catch(e) {}
+    kick();
+    window.addEventListener('popstate', function(){
+      var sheet = document.getElementById('nsModuleSheet');
+      if (sheet && sheet.classList.contains('open')) {
+        nsCloseModuleSheet();
+        try { history.pushState({ nsNav: 'sheet' }, '', location.href); } catch(e) {}
+        return;
+      }
+      var modal = nsOpenModalEl();
+      if (modal) {
+        nsCloseModalEl(modal);
+        try { history.pushState({ nsNav: 'modal' }, '', location.href); } catch(e) {}
+        return;
+      }
+      nsNavStack.pop();
+      var prev = nsNavStack[nsNavStack.length - 1];
+      if (prev) {
+        nsNavBusy = true;
+        nsGoToView(prev);
+        setTimeout(function(){ nsNavBusy = false; }, 400);
+        try { history.pushState({ nsNav: prev }, '', location.href); } catch(e) {}
+      }
+      /* at the root: do nothing — the next Back leaves the app normally */
+    });
+  }
+
   nsSheetInit();
   nsPrintInit();
+  nsBackInit();
   nsDockSync();
   setInterval(nsDockSync, 2000);
 
