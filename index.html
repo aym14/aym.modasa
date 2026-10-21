@@ -18758,6 +18758,51 @@ scheduleLoanBalanceRefresh();
     } catch(e) {}
     return c;
   }
+  function nsGhMode(){ try { return typeof cloudCfg !== 'undefined' && !!cloudCfg && (cloudCfg.provider || 'jsonbin') === 'github'; } catch(e) { return false; } }
+  function nsGhReady(){
+    try {
+      if (!nsGhMode()) return false;
+      var c = nsGhCfg();
+      return !!(c.token && c.owner && c.repo);
+    } catch(e) { return false; }
+  }
+  function nsGhCfg(){
+    var c = { token: '', owner: '', repo: '', branch: 'main', path: 'ledger-data.json' };
+    try {
+      c.token = String((cloudCfg && cloudCfg.ghToken) || '').trim();
+      c.owner = String((cloudCfg && cloudCfg.ghOwner) || '').trim();
+      c.repo = String((cloudCfg && cloudCfg.ghRepo) || '').trim();
+      c.branch = String((cloudCfg && cloudCfg.ghBranch) || 'main').trim() || 'main';
+      c.path = String((cloudCfg && cloudCfg.ghPath) || 'ledger-data.json').trim().replace(/^\/+/, '') || 'ledger-data.json';
+    } catch(e) {}
+    return c;
+  }
+  function nsGhUrl(c){
+    return 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/contents/' + c.path.split('/').map(encodeURIComponent).join('/');
+  }
+  function nsGhHeaders(c){
+    return { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + c.token, 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json' };
+  }
+  function nsB64Encode(str){
+    var bytes = new TextEncoder().encode(str), bin = '', chunk = 0x8000, i;
+    for (i = 0; i < bytes.length; i += chunk) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    return btoa(bin);
+  }
+  function nsB64Decode(b64){
+    var bin = atob(String(b64 || '').replace(/\s/g, '')), bytes = new Uint8Array(bin.length), i;
+    for (i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+  async function nsGhGetRecord(){
+    var c = nsGhCfg();
+    var r = await fetch(nsGhUrl(c) + '?ref=' + encodeURIComponent(c.branch) + '&t=' + Date.now(), { headers: nsGhHeaders(c), cache: 'no-store' });
+    if (r.status === 404) return null;
+    if (!r.ok) throw new Error('GitHub HTTP ' + r.status);
+    var j = await r.json();
+    if (!j || !j.content) return null;
+    var rec = JSON.parse(nsB64Decode(j.content));
+    return { record: rec, sha: j.sha || '' };
+  }
   function nsCloudReady(){
     try {
       if (typeof cloudCfg === 'undefined' || !cloudCfg) return false;
@@ -18766,6 +18811,7 @@ scheduleLoanBalanceRefresh();
       var p = cloudCfg.provider || 'jsonbin';
       if (p === 'supabase') return !!(cloudCfg.supabaseUrl && cloudCfg.supabaseAnonKey);
       if (p === 'server') return nsServerReady();
+      if (p === 'github') return nsGhReady();
       return !!(cloudCfg.apiKey && cloudCfg.binId);
     } catch(e) { return false; }
   }
@@ -18821,6 +18867,7 @@ scheduleLoanBalanceRefresh();
       var p = cloudCfg.provider || 'jsonbin';
       if (p === 'supabase') return !!(cloudCfg.supabaseUrl && cloudCfg.supabaseAnonKey);
       if (p === 'server') return nsServerReady();
+      if (p === 'github') return nsGhReady();
       return !!(cloudCfg.apiKey && cloudCfg.binId);
     } catch(e) { return false; }
   }
@@ -18881,7 +18928,18 @@ scheduleLoanBalanceRefresh();
     if (nsAdminOn() && p === 'supabase') return; /* built-in 30s realtime covers admin+Supabase */
     nsSyncBusy = true;
     try {
-      if (p === 'server') {
+      if (p === 'github') {
+        var ghGot = await nsGhGetRecord();
+        if (ghGot && ghGot.record) {
+          var ghMeta = ghGot.record._meta || {};
+          var ghTs = Date.parse(ghMeta.exportedAt || ghMeta.pushedAt || '');
+          if (!ghTs || isNaN(ghTs) || ghTs > (cloudCfg.lastSyncTs || 0)) {
+            nsSuppressUntil = Date.now() + 10000;
+            if (nsAdminOn()) { try { await syncPullFromCloud(true); } catch(e) {} }
+            else await nsDirectPull(ghGot.record);
+          }
+        }
+      } else if (p === 'server') {
         var scfg = nsServerCfg();
         var sresp = await fetch(scfg.url + '/api/data/' + encodeURIComponent(scfg.key), { headers: { 'X-Access-Key': scfg.token } });
         if (sresp.ok) {
@@ -18940,7 +18998,7 @@ scheduleLoanBalanceRefresh();
     try {
       if (typeof cloudCfg !== 'undefined' && cloudCfg)
         var pv = cloudCfg.provider || 'jsonbin';
-        conf = pv === 'supabase' ? !!(cloudCfg.supabaseUrl && cloudCfg.supabaseAnonKey) : (pv === 'server' ? nsServerReady() : !!(cloudCfg.apiKey && cloudCfg.binId));
+        conf = pv === 'supabase' ? !!(cloudCfg.supabaseUrl && cloudCfg.supabaseAnonKey) : pv === 'server' ? nsServerReady() : pv === 'github' ? nsGhReady() : !!(cloudCfg.apiKey && cloudCfg.binId);
     } catch(e) {}
     var txt = '☁️ Cloud OFF', cls = 'off';
     if (state === 'syncing') { txt = '🔄 Sync થાય છે…'; cls = 'busy'; }
@@ -19032,18 +19090,103 @@ scheduleLoanBalanceRefresh();
     nsRefreshAfterPull();
     if (!silent) { try { showToast('☁️ Pulled (Server)'); } catch(e) {} }
   }
+  /* ---------- GitHub provider (data saved in a private GitHub repo) ---------- */
+  async function nsGhPush(){
+    if (!nsAdminOn()) { try { showToast('🔒'); } catch(e) {} return; }
+    if (!nsGhReady()) { try { showToast('⚠️ GitHub Token/Owner/Repo નાખો'); } catch(e) {} return; }
+    try { setSyncStatus('syncing', 'Pushing…'); } catch(e) {}
+    try {
+      var c = nsGhCfg();
+      var payload = getCloudDataPayload();
+      var encoded = nsB64Encode(JSON.stringify(payload));
+      var sha = '';
+      try { var cur = await nsGhGetRecord(); if (cur) sha = cur.sha || ''; } catch(e) {}
+      var attempt = 0, doneOk = false, lastErr = null;
+      while (attempt < 2 && !doneOk) {
+        attempt++;
+        var body = { message: 'Smart Ledger sync ' + new Date().toISOString(), content: encoded, branch: c.branch };
+        if (sha) body.sha = sha;
+        var r = await fetch(nsGhUrl(c), { method: 'PUT', headers: nsGhHeaders(c), body: JSON.stringify(body) });
+        if (r.ok) { doneOk = true; break; }
+        var txt = await r.text().catch(function(){ return ''; });
+        lastErr = new Error(r.status === 401 ? 'GitHub Token ખોટો છે (401)' : r.status === 404 ? 'GitHub Repo મળ્યો નહીં (404) — Repo બનાવો' : 'GitHub HTTP ' + r.status);
+        if ((r.status === 409 || r.status === 422) && attempt < 2) {
+          try { var again = await nsGhGetRecord(); sha = again ? (again.sha || '') : ''; } catch(e) {}
+          continue;
+        }
+        throw lastErr;
+      }
+      if (!doneOk) throw lastErr || new Error('GitHub push failed');
+      nsNoteSynced();
+      try { if (typeof appendSyncLog === 'function') appendSyncLog('Push → GitHub OK', 'ok'); } catch(e) {}
+      try { setSyncStatus('synced', 'Synced'); } catch(e) {}
+      try { showToast('☁️ Pushed (GitHub)'); } catch(e) {}
+      try { if (typeof refreshEntryViews === 'function') refreshEntryViews(); } catch(e) {}
+    } catch(err) {
+      try { setSyncStatus('error', 'Failed'); } catch(e2) {}
+      try { showToast('❌ ' + err.message); } catch(e2) {}
+      throw err;
+    }
+  }
+  async function nsGhPull(silent){
+    if (!nsAdminOn()) { if (!silent) { try { showToast('🔒'); } catch(e) {} } return; }
+    if (!nsGhReady()) { if (!silent) { try { showToast('⚠️ GitHub Token/Owner/Repo નાખો'); } catch(e) {} } return; }
+    if (!silent) { try { setSyncStatus('syncing', 'Pulling…'); } catch(e) {} }
+    var got = await nsGhGetRecord();
+    if (!got || !got.record) {
+      if (!silent) { try { showToast('⚠️ GitHub પર ડેટા નથી — પહેલા Push કરો'); } catch(e) {} }
+      try { setSyncStatus('idle', 'Ready'); } catch(e) {}
+      return;
+    }
+    var ok = false;
+    try { ok = LedgerFeatures.cloud.applyCloudData(got.record); } catch(e) {}
+    if (!ok) throw new Error('Invalid GitHub data');
+    try { persistAll(); } catch(e) {}
+    nsNoteSynced();
+    try { setSyncStatus('synced', 'Synced'); } catch(e) {}
+    nsRefreshAfterPull();
+    if (!silent) { try { showToast('☁️ Pulled (GitHub)'); } catch(e) {} }
+  }
+  async function nsGhCreateRepo(){
+    try {
+      var c = nsGhCfg();
+      if (!c.token) { showToast('⚠️ પહેલા GitHub Token નાખો'); return; }
+      if (!c.repo) { showToast('⚠️ Repo નામ નાખો (દા.ત. ansar-ledger-data)'); return; }
+      setSyncStatus('syncing', 'Repo…');
+      var r = await fetch('https://api.github.com/user/repos', {
+        method: 'POST', headers: nsGhHeaders(c),
+        body: JSON.stringify({ name: c.repo, description: 'Smart Ledger data — PRIVATE', 'private': true, auto_init: true })
+      });
+      if (r.status === 201) {
+        var jr = await r.json().catch(function(){ return {}; });
+        if (jr && jr.owner && jr.owner.login && !c.owner) {
+          cloudCfg.ghOwner = jr.owner.login;
+          if (typeof saveCloudConfig === 'function') saveCloudConfig(cloudCfg);
+          nsFillGhFields();
+        }
+        showToast('✅ Data Repo બની ગયો (Private)');
+      } else if (r.status === 422) {
+        showToast('ℹ️ આ નામનો Repo પહેલેથી છે — ચાલશે');
+      } else if (r.status === 401) {
+        showToast('❌ Token ખોટો/અધિકાર નથી (401)');
+      } else {
+        showToast('❌ Repo ન બન્યો: HTTP ' + r.status);
+      }
+      setSyncStatus('idle', 'Ready');
+    } catch(e) { try { showToast('❌ ' + e.message); } catch(e2) {} }
+  }
   try {
     if (typeof LedgerFeatures !== 'undefined' && LedgerFeatures.cloud) {
       var LFcSrv = LedgerFeatures.cloud;
       if (typeof LFcSrv.syncPushToCloud === 'function' && !LFcSrv.syncPushToCloud.__nsWrapped) {
         var nsOrigPush = LFcSrv.syncPushToCloud;
-        var nsWrappedPush = async function(){ if (nsServerMode()) return nsSrvPush(); return nsOrigPush.apply(this, arguments); };
+        var nsWrappedPush = async function(){ if (nsGhMode()) return nsGhPush(); if (nsServerMode()) return nsSrvPush(); return nsOrigPush.apply(this, arguments); };
         nsWrappedPush.__nsWrapped = true;
         LFcSrv.syncPushToCloud = nsWrappedPush;
       }
       if (typeof LFcSrv.syncPullFromCloud === 'function' && !LFcSrv.syncPullFromCloud.__nsWrapped) {
         var nsOrigPull = LFcSrv.syncPullFromCloud;
-        var nsWrappedPull = async function(silent){ if (nsServerMode()) return nsSrvPull(silent); return nsOrigPull.apply(this, arguments); };
+        var nsWrappedPull = async function(silent){ if (nsGhMode()) return nsGhPull(silent); if (nsServerMode()) return nsSrvPull(silent); return nsOrigPull.apply(this, arguments); };
         nsWrappedPull.__nsWrapped = true;
         LFcSrv.syncPullFromCloud = nsWrappedPull;
       }
@@ -19067,6 +19210,7 @@ scheduleLoanBalanceRefresh();
       if (on) {
         var jb = document.getElementById('jsonbinConfigBlock'); if (jb) jb.style.display = 'none';
         var sb = document.getElementById('supabaseConfigBlock'); if (sb) sb.style.display = 'none';
+        var gb = document.getElementById('githubConfigBlock'); if (gb) gb.style.display = 'none';
         var lbl = document.getElementById('cloudProviderLabel'); if (lbl) lbl.textContent = 'My Server';
         nsFillServerFields();
       }
@@ -19102,18 +19246,80 @@ scheduleLoanBalanceRefresh();
       nsServerUiShow();
     } catch(e) {}
   }
+  /* GitHub tab + fields inside Settings > Cloud. */
+  function nsFillGhFields(){
+    try {
+      if (typeof cloudCfg === 'undefined' || !cloudCfg) return;
+      var t = document.getElementById('ghToken'), o = document.getElementById('ghOwner'), r = document.getElementById('ghRepo'), b = document.getElementById('ghBranch'), p = document.getElementById('ghPath');
+      if (t) t.value = cloudCfg.ghToken || '';
+      if (o) o.value = cloudCfg.ghOwner || '';
+      if (r) r.value = cloudCfg.ghRepo || '';
+      if (b) b.value = cloudCfg.ghBranch || 'main';
+      if (p) p.value = cloudCfg.ghPath || 'ledger-data.json';
+    } catch(e) {}
+  }
+  function nsGhUiShow(){
+    try {
+      var blk = document.getElementById('githubConfigBlock');
+      var on = nsGhMode();
+      if (blk) blk.style.display = on ? '' : 'none';
+      if (on) {
+        var jb = document.getElementById('jsonbinConfigBlock'); if (jb) jb.style.display = 'none';
+        var sb = document.getElementById('supabaseConfigBlock'); if (sb) sb.style.display = 'none';
+        var sv = document.getElementById('serverConfigBlock'); if (sv) sv.style.display = 'none';
+        var lbl = document.getElementById('cloudProviderLabel'); if (lbl) lbl.textContent = 'GitHub';
+        nsFillGhFields();
+      }
+    } catch(e) {}
+  }
+  function nsGhUiInit(){
+    try {
+      var jb = document.getElementById('jsonbinConfigBlock');
+      if (!jb) return;
+      if (!document.getElementById('githubConfigBlock')) {
+        var tabs = document.querySelectorAll('.cloud-provider-tab');
+        if (tabs && tabs.length) {
+          var tab = document.createElement('button');
+          tab.type = 'button';
+          tab.className = 'cloud-provider-tab';
+          tab.setAttribute('data-provider', 'github');
+          tab.textContent = '🐙 GitHub';
+          tab.addEventListener('click', function(){ try { selectCloudProvider('github'); } catch(e) {} });
+          tabs[tabs.length - 1].parentNode.appendChild(tab);
+        }
+        var blk = document.createElement('div');
+        blk.id = 'githubConfigBlock';
+        blk.style.display = 'none';
+        blk.innerHTML =
+          '<div class="form-group"><label>GitHub Token (Personal Access Token)</label><input type="password" id="ghToken" placeholder="github_pat_... / ghp_..." autocomplete="off"></div>' +
+          '<div class="form-group"><label>Owner (GitHub username)</label><input type="text" id="ghOwner" placeholder="તમારું GitHub username"></div>' +
+          '<div class="form-group"><label>Data Repo (Private)</label><input type="text" id="ghRepo" placeholder="ansar-ledger-data"></div>' +
+          '<div class="form-group"><label>Branch</label><input type="text" id="ghBranch" placeholder="main"></div>' +
+          '<div class="form-group"><label>Data File</label><input type="text" id="ghPath" placeholder="ledger-data.json"></div>' +
+          '<button type="button" class="btn btn-sm" id="ghCreateRepoBtn">🆕 Data Repo બનાવો (Private)</button>' +
+          '<div class="fc-hint">ખાસ: ડેટા માટે અલગ <b>Private</b> Repo વાપરો — વેબસાઇટ વાળો Public Repo નહીં! Token ફક્ત આ જ Repo પૂરતો (Contents: Read and write) બનાવો, ગુપ્ત રાખો.</div>';
+        var svBlk = document.getElementById('serverConfigBlock');
+        var sbBlk = document.getElementById('supabaseConfigBlock');
+        var anchor = svBlk || sbBlk || jb;
+        anchor.parentNode.insertBefore(blk, anchor.nextSibling);
+        var cb = document.getElementById('ghCreateRepoBtn');
+        if (cb) cb.addEventListener('click', function(){ nsGhCreateRepo(); });
+      }
+      nsGhUiShow();
+    } catch(e) {}
+  }
   try {
     if (typeof LedgerFeatures !== 'undefined' && LedgerFeatures.cloud) {
       var LFcUi = LedgerFeatures.cloud;
       if (typeof LFcUi.selectCloudProvider === 'function' && !LFcUi.selectCloudProvider.__nsWrapped) {
         var nsOrigProv = LFcUi.selectCloudProvider;
-        var nsWrappedProv = function(){ var r = nsOrigProv.apply(this, arguments); nsServerUiShow(); return r; };
+        var nsWrappedProv = function(){ var r = nsOrigProv.apply(this, arguments); nsServerUiShow(); nsGhUiShow(); return r; };
         nsWrappedProv.__nsWrapped = true;
         LFcUi.selectCloudProvider = nsWrappedProv;
       }
       if (typeof LFcUi.updateCloudUI === 'function' && !LFcUi.updateCloudUI.__nsWrapped) {
         var nsOrigUi = LFcUi.updateCloudUI;
-        var nsWrappedUi = function(){ var r = nsOrigUi.apply(this, arguments); nsServerUiShow(); return r; };
+        var nsWrappedUi = function(){ var r = nsOrigUi.apply(this, arguments); nsServerUiShow(); nsGhUiShow(); return r; };
         nsWrappedUi.__nsWrapped = true;
         LFcUi.updateCloudUI = nsWrappedUi;
       }
@@ -19127,6 +19333,12 @@ scheduleLoanBalanceRefresh();
               if (u) cloudCfg.serverUrl = (u.value || '').trim().replace(/\/+$/, '');
               if (k) cloudCfg.serverSyncKey = (k.value || '').trim() || 'default';
               if (tk) cloudCfg.serverToken = (tk.value || '').trim();
+              var gt = document.getElementById('ghToken'), go = document.getElementById('ghOwner'), gr = document.getElementById('ghRepo'), gbr = document.getElementById('ghBranch'), gp = document.getElementById('ghPath');
+              if (gt) cloudCfg.ghToken = (gt.value || '').trim();
+              if (go) cloudCfg.ghOwner = (go.value || '').trim();
+              if (gr) cloudCfg.ghRepo = (gr.value || '').trim();
+              if (gbr) cloudCfg.ghBranch = (gbr.value || '').trim() || 'main';
+              if (gp) cloudCfg.ghPath = (gp.value || '').trim() || 'ledger-data.json';
               if (typeof saveCloudConfig === 'function') saveCloudConfig(cloudCfg);
               nsSetPill('idle');
             }
@@ -19138,7 +19350,129 @@ scheduleLoanBalanceRefresh();
       }
     }
   } catch(e) {}
+  /* ---------- Open-with-data anywhere: Join Link + sync-config.json ----------
+     A new phone/computer normally opens the app empty until an admin types
+     the cloud keys. Two provisioning paths fix that without touching the
+     app core:
+       1) Join Link:  <site-url>#join=<base64 cloud config> — opening it on
+          any device adopts the config (stored only in that browser) and
+          pulls the data immediately, before login.
+       2) sync-config.json placed next to index.html — adopted at boot when
+          this device has no complete cloud config yet (enabled must be
+          true). A disabled sample ships with the package. */
+  function nsConfigComplete(cfg){
+    try {
+      if (!cfg) return false;
+      var p = cfg.provider || 'jsonbin';
+      if (p === 'supabase') return !!(cfg.supabaseUrl && cfg.supabaseAnonKey);
+      if (p === 'server') return !!String(cfg.serverUrl || '').trim();
+      if (p === 'github') return !!(cfg.ghToken && cfg.ghOwner && cfg.ghRepo);
+      return !!(cfg.apiKey && cfg.binId);
+    } catch(e) { return false; }
+  }
+  function nsAdoptCloudCfg(incoming, force){
+    try {
+      if (!incoming || typeof incoming !== 'object') return false;
+      if (typeof cloudCfg === 'undefined' || !cloudCfg) return false;
+      if (!force && nsConfigComplete(cloudCfg)) return false;
+      var keys = ['provider','apiKey','binId','supabaseUrl','supabaseAnonKey','supabaseTable','supabaseSyncKey','serverUrl','serverSyncKey','serverToken','ghToken','ghOwner','ghRepo','ghBranch','ghPath'];
+      var next = {}, i, k;
+      for (i = 0; i < keys.length; i++) { k = keys[i]; next[k] = cloudCfg[k]; }
+      for (i = 0; i < keys.length; i++) { k = keys[i]; if (incoming[k] !== undefined && incoming[k] !== null && String(incoming[k]).trim() !== '') next[k] = incoming[k]; }
+      if (!nsConfigComplete(next)) return false;
+      for (i = 0; i < keys.length; i++) { k = keys[i]; cloudCfg[k] = next[k]; }
+      cloudCfg.autoSync = true;
+      cloudCfg.lastSyncTs = 0;
+      if (typeof saveCloudConfig === 'function') saveCloudConfig(cloudCfg);
+      nsSetPill('idle');
+      setTimeout(nsAutoPullCheck, 1200);
+      try { showToast('🌐 Cloud જોડાયું — ડેટા આવે છે…'); } catch(e) {}
+      return true;
+    } catch(e) { return false; }
+  }
+  function nsMakeJoinLink(){
+    try {
+      var c = { v: 1, provider: (typeof cloudCfg !== 'undefined' && cloudCfg && cloudCfg.provider) || 'jsonbin' };
+      var keys = ['apiKey','binId','supabaseUrl','supabaseAnonKey','supabaseTable','supabaseSyncKey','serverUrl','serverSyncKey','serverToken','ghToken','ghOwner','ghRepo','ghBranch','ghPath'];
+      keys.forEach(function(k){ if (typeof cloudCfg !== 'undefined' && cloudCfg && cloudCfg[k]) c[k] = cloudCfg[k]; });
+      var b64 = nsB64Encode(JSON.stringify(c)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      return location.href.split('#')[0] + '#join=' + b64;
+    } catch(e) { return ''; }
+  }
+  window.nsMakeJoinLink = nsMakeJoinLink;
+  function nsTryJoinFromHash(){
+    try {
+      var m = /#join=([A-Za-z0-9\-_]+)/.exec(location.hash || '');
+      if (!m) return;
+      var b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      var cfg = JSON.parse(nsB64Decode(b64));
+      try { history.replaceState(null, '', location.href.split('#')[0]); } catch(e) {}
+      nsAdoptCloudCfg(cfg, true);
+    } catch(e) {}
+  }
+  function nsTrySyncConfigFile(){
+    try {
+      fetch('./sync-config.json', { cache: 'no-store' })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){
+          if (!j || j.enabled === false) return;
+          nsAdoptCloudCfg(j, j.force === true);
+        })
+        .catch(function(){});
+    } catch(e) {}
+  }
+  function nsJoinUiInit(){
+    try {
+      var jb = document.getElementById('jsonbinConfigBlock');
+      if (!jb || document.getElementById('nsJoinPanel')) return;
+      var host = document.getElementById('githubConfigBlock') || document.getElementById('serverConfigBlock') || jb;
+      var panel = document.createElement('div');
+      panel.id = 'nsJoinPanel';
+      panel.innerHTML =
+        '<div style="margin-top:14px;border-top:1px dashed #cbd5d1;padding-top:12px">' +
+        '<div style="font-weight:800;margin-bottom:8px">📲 બીજા ફોન/કોમ્પ્યુટરને ડેટા સાથે જોડો</div>' +
+        '<button type="button" class="btn btn-sm" id="nsJoinLinkBtn">🔗 Join Link બનાવો</button> ' +
+        '<button type="button" class="btn btn-sm" id="nsJoinFileBtn">⬇️ sync-config.json</button>' +
+        '<textarea id="nsJoinLinkText" readonly rows="3" style="width:100%;margin-top:8px;display:none"></textarea>' +
+        '<div class="fc-hint">Join Link ફક્ત કમિટી/સભ્યોને જ WhatsApp પર મોકલો — લિંક ખોલતાં જ તે ડિવાઇસ પર ડેટા સાથે એપ ખૂલશે. લિંકમાં ગુપ્ત Key છે, જાહેર જગ્યાએ ન મૂકો!</div></div>';
+      host.parentNode.insertBefore(panel, host.nextSibling);
+      var lb = document.getElementById('nsJoinLinkBtn');
+      if (lb) lb.addEventListener('click', function(){
+        try {
+          if (!nsConfigComplete(cloudCfg)) { showToast('⚠️ પહેલા Cloud સેટ કરી Save કરો'); return; }
+          var link = nsMakeJoinLink();
+          var ta = document.getElementById('nsJoinLinkText');
+          if (ta) { ta.style.display = ''; ta.value = link; ta.focus(); ta.select(); }
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).catch(function(){});
+          showToast('🔗 Join Link તૈયાર — કૉપી કરી મોકલો');
+        } catch(e) {}
+      });
+      var fb = document.getElementById('nsJoinFileBtn');
+      if (fb) fb.addEventListener('click', function(){
+        try {
+          if (!nsConfigComplete(cloudCfg)) { showToast('⚠️ પહેલા Cloud સેટ કરી Save કરો'); return; }
+          var c = { enabled: true, provider: cloudCfg.provider || 'jsonbin', autoSync: true };
+          var keys = ['apiKey','binId','supabaseUrl','supabaseAnonKey','supabaseTable','supabaseSyncKey','serverUrl','serverSyncKey','serverToken','ghToken','ghOwner','ghRepo','ghBranch','ghPath'];
+          keys.forEach(function(k){ if (cloudCfg[k]) c[k] = cloudCfg[k]; });
+          var blob = new Blob([JSON.stringify(c, null, 2)], { type: 'application/json' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'sync-config.json';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function(){ try { URL.revokeObjectURL(a.href); } catch(e) {} }, 4000);
+          showToast('⬇️ sync-config.json ડાઉનલોડ થયું');
+        } catch(e) {}
+      });
+    } catch(e) {}
+  }
+  nsTryJoinFromHash();
+  nsTrySyncConfigFile();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', nsServerUiInit); else nsServerUiInit();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', nsGhUiInit); else nsGhUiInit();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', nsJoinUiInit); else nsJoinUiInit();
 })();
 </script>
 
