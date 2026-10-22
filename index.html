@@ -18670,6 +18670,23 @@ scheduleLoanBalanceRefresh();
 /* V3 top navigation — dropdowns only. Ledger handlers unchanged. */
 (function(){
   'use strict';
+  /* Unicode-safe btoa: the app stores passwords/security answers with
+     btoa(), which throws on any non-Latin1 text — so a Gujarati password
+     or security answer broke signup, login, forgot-password and profile
+     password changes completely. Wrap btoa so such text is UTF-8 encoded
+     first; output for plain ASCII is byte-identical to the native one,
+     so every existing stored password keeps working. */
+  try {
+    var _nsNativeBtoa = window.btoa.bind(window);
+    window.btoa = function (s) {
+      s = String(s == null ? '' : s);
+      try { return _nsNativeBtoa(s); } catch (e) {
+        var bytes = new TextEncoder().encode(s), bin = '', i;
+        for (i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+        return _nsNativeBtoa(bin);
+      }
+    };
+  } catch (e) {}
   document.body.classList.add('ns2026');
   document.body.classList.remove('sidebar-open','sidebar-collapsed');
   var drops = Array.prototype.slice.call(document.querySelectorAll('[data-drop]'));
@@ -20395,6 +20412,11 @@ scheduleLoanBalanceRefresh();
       var fi = document.getElementById('partyFilterInfo');
       if (fi && fi.textContent.trim()) infoLines += '<div>' + nsEsc(fi.textContent.trim()) + '</div>';
     } catch(err) {}
+    try {
+      if (typeof activeFilters !== 'undefined' && activeFilters && activeFilters.accountType && activeFilters.accountType !== 'all') {
+        infoLines += '<div>ખાતું: ' + (activeFilters.accountType === 'cash' ? 'Cash (રોકડ)' : 'Bank (બેંક)') + '</div>';
+      }
+    } catch(err) {}
     var html = '';
     if (infoLines) html += '<div style="margin:0 0 10px;font-size:9.5pt;color:#333;line-height:1.6">' + infoLines + '</div>';
     html += '<table><thead><tr><th>તારીખ</th><th>પાર્ટી</th><th>કેટેગરી</th><th>વિગત</th><th>વાઉચર</th><th>ચુકવણી</th><th style="text-align:right">આવક</th><th style="text-align:right">ખર્ચ</th></tr></thead><tbody>' + rows + '</tbody>' +
@@ -20631,5 +20653,5 @@ scheduleLoanBalanceRefresh();
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4e2dfbade00cb6e',t:'MTc5MjYxMzA5Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
