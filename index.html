@@ -7870,6 +7870,7 @@ body.ns2026 #wsDock button{position:relative}
 #nsPrintOverlay .ns-print-toolbar{background:#0B2E28;color:#fff;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;box-shadow:0 6px 18px rgba(6,35,31,.35);z-index:5}
 #nsPrintOverlay .ns-print-title{font-weight:800;font-size:.92rem;margin-right:auto;display:flex;align-items:center;gap:8px}
 #nsPrintOverlay .ns-print-go{background:#0E7569;color:#fff;border:1px solid #0E7569;border-radius:999px;padding:9px 18px;font:inherit;font-weight:800;cursor:pointer;min-height:42px}
+#nsPrintOverlay .ns-print-save{background:#fff;color:#0B2E28;border:1px solid #C7D6CF;border-radius:999px;padding:9px 14px;font:inherit;font-weight:800;cursor:pointer;min-height:42px}
 #nsPrintOverlay .ns-print-close{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;min-height:42px}
 #nsPrintOverlay .ns-print-hint{width:100%;font-size:.72rem;color:#C7D6CF;line-height:1.5}
 #nsPrintOverlay .ns-print-sheet{flex:1;overflow-y:auto;background:#fff;max-width:860px;width:100%;margin:0 auto;padding:18px 16px calc(28px + env(safe-area-inset-bottom));box-shadow:0 0 40px rgba(6,35,31,.3)}
@@ -20227,11 +20228,19 @@ scheduleLoanBalanceRefresh();
       ov.id = 'nsPrintOverlay';
       ov.innerHTML = '<div class="ns-print-toolbar"><span class="ns-print-title"><i class="fas fa-print"></i>પ્રિન્ટ પ્રિવ્યુ</span>' +
         '<button type="button" class="ns-print-go"><i class="fas fa-print"></i> Print કરો</button>' +
+        '<button type="button" class="ns-print-save"><i class="fas fa-download"></i> ફાઇલ સેવ</button>' +
         '<button type="button" class="ns-print-close">✕ બંધ</button>' +
-        '<div class="ns-print-hint">ઉપરનું Print બટન દબાવો એટલે પ્રિન્ટ/PDF ખૂલશે. જો સિસ્ટમ પ્રિવ્યુ ન ખૂલે તો બ્રાઉઝરના મેનુ (⋮) માંથી Print પસંદ કરો.</div></div>' +
+        '<div class="ns-print-hint">Print કરો દબાવો. જો ફોન/પ્રિવ્યૂમાં સિસ્ટમ Print ન ખૂલે, તો “ફાઇલ સેવ” કરીને HTML ફાઇલ Chromeમાં ખોલો અને ⋮ → Print / Save as PDF પસંદ કરો.</div></div>' +
         '<div class="ns-print-sheet"><div class="ns-print-sheet-body"></div></div>';
       document.body.appendChild(ov);
-      ov.querySelector('.ns-print-go').addEventListener('click', function(){ try { window.print(); } catch(e) {} });
+      ov.querySelector('.ns-print-go').addEventListener('click', function(){
+        try { if (typeof window.focus === 'function') window.focus(); } catch(e) {}
+        try { window.print(); } catch(e) {
+          var hint = ov.querySelector('.ns-print-hint');
+          if (hint) hint.textContent = 'આ પ્રિવ્યૂમાં સિસ્ટમ પ્રિન્ટ ઉપલબ્ધ નથી. “ફાઇલ સેવ” દબાવીને ફાઇલ Chromeમાં ખોલો અને ⋮ → Print / Save as PDF પસંદ કરો.';
+        }
+      });
+      ov.querySelector('.ns-print-save').addEventListener('click', nsDownloadPrintFile);
       ov.querySelector('.ns-print-close').addEventListener('click', nsHidePrintOverlay);
     }
     return ov;
@@ -20250,7 +20259,41 @@ scheduleLoanBalanceRefresh();
   function nsHidePrintOverlay(){
     var ov = document.getElementById('nsPrintOverlay');
     if (ov) ov.style.display = 'none';
+    var a = document.getElementById('nsPrintArea');
+    if (a) a.innerHTML = '';
     try { document.body.style.overflow = ''; } catch(e) {}
+  }
+  /* A real browser/webview normally opens the system print dialog from
+     window.print(). Some embedded previews silently block that API. Give
+     the user a standalone, self-contained HTML print file as a reliable
+     fallback; it can be opened in Chrome and printed/saved as PDF there. */
+  function nsDownloadPrintFile(){
+    var area = nsPrintAreaEl();
+    if (!area.querySelector('.ns-print-doc')) {
+      var noDoc = document.querySelector('#nsPrintOverlay .ns-print-hint');
+      if (noDoc) noDoc.textContent = 'પ્રિન્ટ દસ્તાવેજ મળ્યો નથી. પહેલાં Print Preview ફરી ખોલો.';
+      return;
+    }
+    try {
+      var styles = '';
+      document.querySelectorAll('head style').forEach(function(st){ styles += st.textContent + '\n'; });
+      var css = 'body{margin:0;background:#F2F5F3;color:#000;font:14px Arial,sans-serif} .ns-print-filebar{position:sticky;top:0;z-index:9999;background:#0B2E28;color:#fff;padding:12px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap} .ns-print-filebar button{border:0;border-radius:999px;background:#0E7569;color:#fff;padding:10px 18px;font:700 14px Arial,sans-serif;cursor:pointer} #nsPrintArea{display:block!important;position:static!important;width:auto!important;height:auto!important;max-width:900px;margin:18px auto!important;padding:18px!important;overflow:visible!important;background:#fff!important;color:#000!important;box-shadow:0 4px 24px #0002} @media print{@page{size:A4;margin:11mm}.ns-print-filebar{display:none!important}body{margin:0!important;background:#fff!important}#nsPrintArea{max-width:none!important;margin:0!important;padding:0!important;box-shadow:none!important}#nsPrintArea div.ns-print-doc,#nsPrintArea div.ns-print-doc.ns-print-doc *{color:#000!important;background-color:transparent!important}#nsPrintArea div.ns-print-doc.ns-print-doc th{background:#EDEDED!important;color:#000!important}}';
+      var html = '<!doctype html><html lang="gu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Smart Ledger Print</title><style>' + styles + '\n' + css + '</style></head><body><div class="ns-print-filebar"><span>Smart Ledger — પ્રિન્ટ દસ્તાવેજ</span><button type="button" onclick="window.print()">Print / Save as PDF</button><span>જો વિન્ડો ન ખૂલે: Chrome ⋮ → Print</span></div><div id="nsPrintArea">' + area.innerHTML + '</div></body></html>';
+      var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = 'Smart-Ledger-Print-' + new Date().toISOString().slice(0, 10) + '.html';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(function(){ try { URL.revokeObjectURL(url); link.remove(); } catch(e) {} }, 60000);
+      var hint = document.querySelector('#nsPrintOverlay .ns-print-hint');
+      if (hint) hint.textContent = 'પ્રિન્ટ ફાઇલ સેવ થઈ રહી છે. તેને Chromeમાં ખોલી ⋮ → Print / Save as PDF પસંદ કરો.';
+    } catch(e) {
+      var errHint = document.querySelector('#nsPrintOverlay .ns-print-hint');
+      if (errHint) errHint.textContent = 'ફાઇલ સેવ ન થઈ. આ એપને સામાન્ય Chrome ટૅબમાં ખોલીને ફરી પ્રયાસ કરો.';
+    }
   }
   function nsScopeCss(css){
     css = String(css || '').replace(/\/\*[\s\S]*?\*\//g, '');
@@ -20462,7 +20505,16 @@ scheduleLoanBalanceRefresh();
       }
     });
     window.addEventListener('afterprint', function(){
-      nsHidePrintOverlay();
+      /* A number of mobile webviews/embedded previews emit afterprint even
+         when they never show a system dialog. Do NOT close and erase an
+         explicit print preview in that case: the user must still be able
+         to see/save the document or retry from the browser menu. */
+      var ov = document.getElementById('nsPrintOverlay');
+      if (ov && ov.style.display !== 'none' && ov.style.display !== '') {
+        var hint = ov.querySelector('.ns-print-hint');
+        if (hint) hint.textContent = 'પ્રિવ્યુ ખુલ્લું રાખ્યું છે. જો સિસ્ટમ પ્રિન્ટ ન દેખાયું હોય તો “ફાઇલ સેવ” દબાવો અથવા બ્રાઉઝર ⋮ → Print / Save as PDF પસંદ કરો.';
+        return;
+      }
       var a = document.getElementById('nsPrintArea');
       if (a) a.innerHTML = '';
     });
@@ -20655,5 +20707,5 @@ scheduleLoanBalanceRefresh();
 })();
 </script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4e7a7b48fec6005',t:'MTc5MjY2MzIyNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
