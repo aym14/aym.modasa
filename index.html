@@ -20105,8 +20105,9 @@ scheduleLoanBalanceRefresh();
       }
       var icons = { 'કુલ સભ્ય ફી': 'fa-ticket-alt', 'વિતરણનો હિસાબ': 'fa-gift', 'લોનનો હિસાબ': 'fa-landmark' };
       var subs = { 'કુલ સભ્ય ફી': 'મારી સભ્ય ફીની નોંધો', 'વિતરણનો હિસાબ': 'વિતરણની વિગત', 'લોનનો હિસાબ': 'મારી લોન અને હપ્તા' };
-      var html = '<div class="ns-party-tasks-head"><i class="fas fa-th-large"></i>મારા કાર્યો<button type="button" class="ns-tasks-print" data-ns-print="1"><i class="fas fa-print"></i> Print</button></div><div class="ns-party-tasks-grid">';
+      var html = '<div class="ns-party-tasks-head"><i class="fas fa-th-large"></i>મારા કાર્યો<button type="button" class="ns-tasks-print" data-ns-print="1"><i class="fas fa-print"></i> સારાંશ પ્રિન્ટ</button></div><div class="ns-party-tasks-grid">';
       html += nsTaskTile('entries', 'fa-list-ul', 'મારો હિસાબ', 'બધી એન્ટ્રી અને વિગત');
+      html += nsTaskTile('partyPrint', 'fa-print', 'હિસાબની પ્રિન્ટ', 'ફિલ્ટર કરેલી પોતાની એન્ટ્રી / PDF');
       items.forEach(function(it){
         html += nsTaskTile('module', icons[it.label] || 'fa-layer-group', it.label, subs[it.label] || 'વિભાગનો હિસાબ', it.id);
       });
@@ -20124,6 +20125,7 @@ scheduleLoanBalanceRefresh();
           try {
             if (act === 'module') sidebarAction('module:' + b.getAttribute('data-ns-task-module'));
             else if (act === 'reports') { if (typeof openReportsGenerator === 'function') openReportsGenerator(); }
+            else if (act === 'partyPrint') nsPrintEntries();
             else sidebarAction(act);
           } catch(e) {}
         });
