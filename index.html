@@ -20422,28 +20422,76 @@ scheduleLoanBalanceRefresh();
     if (typeof getFiltered !== 'function') return null;
     var list = getFiltered() || [];
     try { if (typeof updatePrintHeader === 'function') updatePrintHeader(); } catch(e) {}
-    var partyOf = function(e){
-      try { var p = (typeof getParty === 'function') ? getParty(e.partyId) : null; if (p && p.name) return p.name; } catch(err) {}
-      return e.partyName || '';
+    /* Older restored/synced ledgers may use alternate field names or
+       nest entry fields under data/entry/transaction. Read canonical and
+       legacy shapes, and normalize string-vs-number IDs for lookups. */
+    var nsPrintSources = function(e){
+      var out = [], seen = [];
+      var add = function(v){
+        if (typeof v === 'string') { var t = v.trim(); if (t.charAt(0) === '{' || t.charAt(0) === '[') { try { v = JSON.parse(t); } catch(err) {} } }
+        if (Array.isArray(v)) { v.slice(0, 5).forEach(add); return; }
+        if (!v || typeof v !== 'object' || seen.indexOf(v) >= 0) return;
+        seen.push(v); out.push(v);
+      };
+      add(e);
+      ['data','entry','transaction','record','payload','fields','values','items','rows','lines','details'].forEach(function(k){ try { add(e && e[k]); } catch(err) {} });
+      return out;
     };
-    var catOf = function(e){
-      try { var c = (typeof getCat === 'function') ? getCat(e.categoryId) : null; if (c && c.name) return c.name; } catch(err) {}
-      return e.category || '';
+    var nsPrintValue = function(e, keys, src){
+      src = src || nsPrintSources(e);
+      for (var j = 0; j < keys.length; j++) for (var i = 0; i < src.length; i++) {
+        try { var v = src[i][keys[j]]; if (v !== undefined && v !== null && v !== '') return v; } catch(err) {}
+      }
+      return '';
     };
-    var dateOf = function(d){
-      try { if (typeof fmtDate === 'function') return fmtDate(d); } catch(err) {}
-      return d || '';
+    var nsPrintText = function(v){
+      if (v && typeof v === 'object') v = v.name || v.label || v.title || v.text || v.value || v.id || '';
+      return v === undefined || v === null ? '' : String(v).trim();
+    };
+    var partyOf = function(e, src){
+      var pid = nsPrintValue(e, ['partyId','party_id','partyID','memberId','member_id','pid'], src);
+      if (pid && typeof pid === 'object') pid = pid.id || pid.value || '';
+      try { var p = (pid && typeof getParty === 'function') ? getParty(pid) : null; if (p && p.name) return p.name; } catch(err) {}
+      try { if (pid && typeof parties !== 'undefined' && Array.isArray(parties)) { var p2 = parties.find(function(x){ return String(x.id) === String(pid); }); if (p2 && p2.name) return p2.name; } } catch(err) {}
+      return nsPrintText(nsPrintValue(e, ['partyName','party_name','memberName','member_name','party','member','partyInfo','memberInfo'], src)) || '—';
+    };
+    var catOf = function(e, src){
+      var cid = nsPrintValue(e, ['categoryId','category_id','categoryID','catId','cat_id'], src);
+      if (cid && typeof cid === 'object') cid = cid.id || cid.value || '';
+      try { var c = (cid && typeof getCat === 'function') ? getCat(cid) : null; if (c && c.name) return c.name; } catch(err) {}
+      try { if (cid && typeof categories !== 'undefined' && Array.isArray(categories)) { var c2 = categories.find(function(x){ return String(x.id) === String(cid); }); if (c2 && c2.name) return c2.name; } } catch(err) {}
+      return nsPrintText(nsPrintValue(e, ['category','categoryName','category_name','catName','cat_name','cat'], src)) || '—';
+    };
+    var dateOf = function(e, src){
+      var d = nsPrintValue(e, ['date','entryDate','entry_date','transactionDate','transaction_date','transDate','createdAt','created_at','timestamp'], src);
+      if (d && typeof d === 'object') d = d.date || d.value || (d.seconds ? new Date(Number(d.seconds) * 1000) : '');
+      try { if (d instanceof Date && !isNaN(d.getTime())) d = d.toISOString().slice(0, 10); } catch(err) {}
+      if (typeof d === 'number' && d > 0) { try { var dt = new Date(d < 100000000000 ? d * 1000 : d); if (!isNaN(dt.getTime())) d = dt.toISOString().slice(0, 10); } catch(err) {} }
+      if (!d) return '—';
+      var raw = String(d).trim();
+      var dmy = raw.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
+      if (dmy) return ('0' + dmy[1]).slice(-2) + '/' + ('0' + dmy[2]).slice(-2) + '/' + dmy[3];
+      try { if (typeof fmtDate === 'function') { var f = fmtDate(d); if (f && !/(invalid|nan|undefined|null)/i.test(String(f))) return f; } } catch(err) {}
+      var iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (iso) return iso[3] + '/' + iso[2] + '/' + iso[1];
+      return raw || '—';
     };
     var rows = '', totI = 0, totE = 0, cats = {}, catOrder = [];
     list.forEach(function(e){
-      var amt = parseFloat(e.amount) || 0;
-      var inc = (e.type === 'income') ? amt : 0;
-      var exp = (e.type === 'income') ? 0 : amt;
+      var src = nsPrintSources(e);
+      var amt = parseFloat(nsPrintValue(e, ['amount','amt','value','totalAmount'], src)) || 0;
+      var typ = nsPrintText(nsPrintValue(e, ['type','entryType','entry_type','transactionType','transaction_type','direction','flow'], src)).toLowerCase();
+      var inc = /^(income|inc|credit|cr|receipt)$/.test(typ) || typ.indexOf('આવક') >= 0 ? amt : 0;
+      var exp = inc ? 0 : amt;
       totI += inc; totE += exp;
-      var cn = catOf(e);
+      var cn = catOf(e, src);
       if (!cats[cn]) { cats[cn] = { inc: 0, exp: 0 }; catOrder.push(cn); }
       cats[cn].inc += inc; cats[cn].exp += exp;
-      rows += '<tr><td>' + nsEsc(dateOf(e.date)) + '</td><td>' + nsEsc(partyOf(e)) + '</td><td>' + nsEsc(cn) + '</td><td>' + nsEsc(e.description || e.remarks || '') + '</td><td>' + nsEsc(e.voucherNo || '') + '</td><td>' + nsEsc(e.paymentMode || '') + '</td><td style="text-align:right">' + (inc ? '₹' + nsFmtAmt(inc) : '—') + '</td><td style="text-align:right">' + (exp ? '₹' + nsFmtAmt(exp) : '—') + '</td></tr>';
+      var desc = nsPrintText(nsPrintValue(e, ['description','remarks','remark','narration','note','notes','particulars','memo','purpose','comment','details'], src)) || '—';
+      var voucher = nsPrintText(nsPrintValue(e, ['voucherNo','voucher_no','voucherNumber','voucher','docNo','documentNo','referenceNo','refNo'], src)) || '—';
+      var mode = nsPrintText(nsPrintValue(e, ['paymentMode','payment_mode','paymentMethod','mode','paidBy','method'], src));
+      if (!mode) { var acc = nsPrintText(nsPrintValue(e, ['accountType','account_type','account','accType'], src)); mode = acc ? acc.charAt(0).toUpperCase() + acc.slice(1) : '—'; }
+      rows += '<tr><td>' + nsEsc(dateOf(e, src)) + '</td><td>' + nsEsc(partyOf(e, src)) + '</td><td>' + nsEsc(cn) + '</td><td>' + nsEsc(desc) + '</td><td>' + nsEsc(voucher) + '</td><td>' + nsEsc(mode) + '</td><td style="text-align:right">' + (inc ? '₹' + nsFmtAmt(inc) : '—') + '</td><td style="text-align:right">' + (exp ? '₹' + nsFmtAmt(exp) : '—') + '</td></tr>';
     });
     if (!list.length) rows = '<tr><td colspan="8" style="text-align:center">કોઈ એન્ટ્રી નથી</td></tr>';
     var infoLines = '';
@@ -20707,5 +20755,5 @@ scheduleLoanBalanceRefresh();
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4e7a7b48fec6005',t:'MTc5MjY2MzIyNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
