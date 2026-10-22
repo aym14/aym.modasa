@@ -9290,7 +9290,6 @@ LedgerFeatures.cloud.clearCloudSettings = function () {
   cloudCfg.lastSync = null;
   cloudCfg.lastSyncTs = 0;
   saveCloudConfig(cloudCfg);
-  try { localStorage.removeItem('fm_live_link_v1'); } catch (e) {}
   updateCloudUI();
   setSyncStatus('idle', 'Offline');
   appendSyncLog('Config cleared', 'info');
@@ -19244,12 +19243,7 @@ scheduleLoanBalanceRefresh();
           pulls the data immediately, before login.
        2) sync-config.json placed next to index.html — adopted at boot when
           this device has no complete cloud config yet (enabled must be
-          true). A disabled sample ships with the package.
-     A "Fixed Auto-Update Link" is a join link carrying a live marker (z:1).
-     Opening it once stores fm_live_link_v1 on that device, which re-asserts
-     Auto Sync on every launch so the ledger keeps updating itself even if
-     the toggle was switched off meanwhile. */
-  var LIVE_LINK_KEY = 'fm_live_link_v1';
+          true). A disabled sample ships with the package. */
   function nsConfigComplete(cfg){
     try {
       if (!cfg) return false;
@@ -19280,41 +19274,16 @@ scheduleLoanBalanceRefresh();
       return true;
     } catch(e) { return false; }
   }
-  /* Compact Join Link (v2): short keys + 1-letter provider code.
-     Legacy v1 links (full key names + "provider") still decode via the fallback below. */
-  var NS_PCODE = { jsonbin: 'j', supabase: 's', server: 'r', github: 'g' };
-  var NS_JOIN_FULL = ['apiKey','binId','supabaseUrl','supabaseAnonKey','supabaseTable','supabaseSyncKey','serverUrl','serverSyncKey','serverToken','ghToken','ghOwner','ghRepo','ghBranch','ghPath'];
-  var NS_JOIN_SHORT = ['a','b','su','sa','st','sk','ru','rk','rt','gt','go','gr','gb','gp'];
-  // Built-in defaults already present on every fresh device, so carrying them only bloats the link
-  var NS_JOIN_DEFAULTS = { supabaseTable: 'ledger_data', supabaseSyncKey: 'default' };
-  function nsMakeJoinLink(live){
+  function nsMakeJoinLink(){
     try {
-      var provider = (typeof cloudCfg !== 'undefined' && cloudCfg && cloudCfg.provider) || 'jsonbin';
-      var c = {};
-      // jsonbin is the decoder default, so its 1-letter code is omitted to keep the link shortest
-      if (provider !== 'jsonbin') c.p = NS_PCODE[provider] || 'j';
-      for (var i = 0; i < NS_JOIN_FULL.length; i++) {
-        var k = NS_JOIN_FULL[i], val = typeof cloudCfg !== 'undefined' && cloudCfg ? cloudCfg[k] : '';
-        if (val && !(NS_JOIN_DEFAULTS[k] && NS_JOIN_DEFAULTS[k] === val)) c[NS_JOIN_SHORT[i]] = val;
-      }
-      if (live) c.z = 1; /* fixed auto-update marker */
+      var c = { v: 1, provider: (typeof cloudCfg !== 'undefined' && cloudCfg && cloudCfg.provider) || 'jsonbin' };
+      var keys = ['apiKey','binId','supabaseUrl','supabaseAnonKey','supabaseTable','supabaseSyncKey','serverUrl','serverSyncKey','serverToken','ghToken','ghOwner','ghRepo','ghBranch','ghPath'];
+      keys.forEach(function(k){ if (typeof cloudCfg !== 'undefined' && cloudCfg && cloudCfg[k]) c[k] = cloudCfg[k]; });
       var b64 = nsB64Encode(JSON.stringify(c)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
       return location.href.split('#')[0] + '#join=' + b64;
     } catch(e) { return ''; }
   }
   window.nsMakeJoinLink = nsMakeJoinLink;
-  /* Re-assert Auto Sync on every launch on devices provisioned through a
-     Fixed Auto-Update Link, so the ledger keeps updating without manual steps. */
-  function nsEnsureLiveLinkSync(){
-    try {
-      if (localStorage.getItem(LIVE_LINK_KEY) !== '1') return;
-      if (typeof cloudCfg === 'undefined' || !cloudCfg || !nsCloudConfigured()) return;
-      if (!cloudCfg.autoSync) {
-        cloudCfg.autoSync = true;
-        if (typeof saveCloudConfig === 'function') saveCloudConfig(cloudCfg);
-      }
-    } catch(e) {}
-  }
   function nsTryJoinFromHash(){
     try {
       var m = /#join=([A-Za-z0-9\-_]+)/.exec(location.hash || '');
@@ -19322,22 +19291,8 @@ scheduleLoanBalanceRefresh();
       var b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
       while (b64.length % 4) b64 += '=';
       var cfg = JSON.parse(nsB64Decode(b64));
-      var liveOn = !!(cfg && (cfg.z === 1 || cfg.live === 1)); /* fixed auto-update link */
-      if (cfg) { delete cfg.z; delete cfg.live; }
-      /* Expand compact v2 payload (short keys, no "provider") back to the full schema.
-         Legacy v1 links carry "provider" and pass through unchanged. */
-      if (cfg && !cfg.provider) {
-        var NS_PNAME = { j: 'jsonbin', s: 'supabase', r: 'server', g: 'github' };
-        var full = { provider: NS_PNAME[cfg.p] || 'jsonbin' };
-        for (var i = 0; i < NS_JOIN_SHORT.length; i++) {
-          var ck = NS_JOIN_SHORT[i];
-          if (cfg[ck] !== undefined && cfg[ck] !== null && String(cfg[ck]).trim() !== '') full[NS_JOIN_FULL[i]] = cfg[ck];
-        }
-        cfg = full;
-      }
       try { history.replaceState(null, '', location.href.split('#')[0]); } catch(e) {}
-      var adopted = nsAdoptCloudCfg(cfg, true);
-      if (liveOn && adopted) { try { localStorage.setItem(LIVE_LINK_KEY, '1'); } catch(e) {} }
+      nsAdoptCloudCfg(cfg, true);
     } catch(e) {}
   }
   function nsTrySyncConfigFile(){
@@ -19363,18 +19318,10 @@ scheduleLoanBalanceRefresh();
         '<div style="margin-top:14px;border-top:1px dashed #cbd5d1;padding-top:12px">' +
         '<div style="font-weight:800;margin-bottom:8px">📲 બીજા ફોન/કોમ્પ્યુટરને ડેટા સાથે જોડો</div>' +
         '<button type="button" class="btn btn-sm" id="nsJoinLinkBtn">🔗 Join Link બનાવો</button> ' +
-        '<button type="button" class="btn btn-sm btn-primary" id="nsJoinLiveBtn" style="font-weight:800">⚡ ફિક્સ લિંક (ઓટો-અપડેટ)</button> ' +
         '<button type="button" class="btn btn-sm" id="nsJoinFileBtn">⬇️ sync-config.json</button>' +
-        '<div id="nsLiveStatus" style="display:none;margin-top:8px;font-size:.7rem;font-weight:700;color:var(--income)"></div>' +
-        '<textarea id="nsJoinLinkText" readonly rows="2" style="width:100%;margin-top:8px;display:none"></textarea>' +
-        '<div class="fc-hint">Join Link ફક્ત કમિટી/સભ્યોને જ WhatsApp પર મોકલો — લિંક ખોલતાં જ તે ડિવાઇસ પર ડેટા સાથે એપ ખૂલશે. લિંકમાં ગુપ્ત Key છે, જાહેર જગ્યાએ ન મૂકો!</div>' +
-        '<div class="fc-hint" style="margin-top:6px">⚡ <b>ફિક્સ લિંક</b> એક જ વાર ખોલાવો — પછી તે ડિવાઇસ પર હિસાબ <b>કાયમ ઓટો-અપડેટ</b> થતો રહેશે (દર ૨૦ સેકન્ડે તાજો ડેટા, ઇન્ટરનેટ આવતાં જ ઓફલાઇન એન્ટ્રી પણ આપમેળે જમા થશે).</div></div>';
+        '<textarea id="nsJoinLinkText" readonly rows="3" style="width:100%;margin-top:8px;display:none"></textarea>' +
+        '<div class="fc-hint">Join Link ફક્ત કમિટી/સભ્યોને જ WhatsApp પર મોકલો — લિંક ખોલતાં જ તે ડિવાઇસ પર ડેટા સાથે એપ ખૂલશે. લિંકમાં ગુપ્ત Key છે, જાહેર જગ્યાએ ન મૂકો!</div></div>';
       host.parentNode.insertBefore(panel, host.nextSibling);
-      var liveStatusEl = document.getElementById('nsLiveStatus');
-      if (liveStatusEl && localStorage.getItem(LIVE_LINK_KEY) === '1') {
-        liveStatusEl.style.display = '';
-        liveStatusEl.textContent = '✅ આ ડિવાઇસ પર ફિક્સ લિંક સક્રિય છે — ઓટો-અપડેટ કાયમ ચાલુ';
-      }
       var lb = document.getElementById('nsJoinLinkBtn');
       if (lb) lb.addEventListener('click', function(){
         try {
@@ -19384,17 +19331,6 @@ scheduleLoanBalanceRefresh();
           if (ta) { ta.style.display = ''; ta.value = link; ta.focus(); ta.select(); }
           if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).catch(function(){});
           showToast('🔗 Join Link તૈયાર — કૉપી કરી મોકલો');
-        } catch(e) {}
-      });
-      var lv = document.getElementById('nsJoinLiveBtn');
-      if (lv) lv.addEventListener('click', function(){
-        try {
-          if (!nsConfigComplete(cloudCfg)) { showToast('⚠️ પહેલા Cloud સેટ કરી Save કરો'); return; }
-          var link = nsMakeJoinLink(true);
-          var ta = document.getElementById('nsJoinLinkText');
-          if (ta) { ta.style.display = ''; ta.value = link; ta.focus(); ta.select(); }
-          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).catch(function(){});
-          showToast('⚡ ફિક્સ લિંક તૈયાર — એક વાર ખોલાવો, હંમેશા ઓટો-અપડેટ');
         } catch(e) {}
       });
       var fb = document.getElementById('nsJoinFileBtn');
@@ -19850,7 +19786,6 @@ scheduleLoanBalanceRefresh();
   nsDockSync();
   setInterval(nsDockSync, 2000);
 
-  nsEnsureLiveLinkSync();
   nsTryJoinFromHash();
   nsTrySyncConfigFile();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', nsServerUiInit); else nsServerUiInit();
@@ -20017,5 +19952,5 @@ scheduleLoanBalanceRefresh();
   };
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4ea90f4b9b53a2f',t:'MTc5MjY5Mzc1Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4ea629f69d46cd7',t:'MTc5MjY5MTg1NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
