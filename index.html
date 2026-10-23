@@ -2,7 +2,7 @@
 <html lang="gu" style="font-size: 16px;">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#173A3A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -7842,7 +7842,7 @@ body.ns2026 #wsDock button{position:relative}
 
 
 <div class="form-group"><label><i class="fas fa-mobile-alt"></i> Mobile / Username</label><input type="text" id="signupUsername" placeholder="Mobile number" class="auto-prefix-mobile"></div>
-<div class="form-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="signupPassword" placeholder="Min 4 characters"></div>
+<div class="form-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="signupPassword" placeholder="Min 8 characters"></div>
 <div class="form-group"><label><i class="fas fa-lock"></i> Confirm Password</label><input type="password" id="signupConfirmPassword" placeholder="Re-enter password"></div>
 <div class="form-group"><label><i class="fas fa-shield-alt"></i> Security Question</label><select id="signupSecurityQ"><option value="">-- Select --</option><option>What is your mother's maiden name?</option><option>What city were you born in?</option><option>What is your favorite color?</option><option>What was your first pet's name?</option></select></div>
 <div class="form-group"><label><i class="fas fa-key"></i> Security Answer</label><input type="text" id="signupSecurityA" placeholder="Your answer"></div>
@@ -10935,7 +10935,7 @@ LedgerFeatures.identity.setLoginFormMode = function (mode) {
   if (formBlock) formBlock.dataset.role = role;
   document.querySelectorAll('.login-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.loginRole === role));
   const createAdminLink = $('#loginCreateAdminLink');
-  if (createAdminLink) createAdminLink.style.display = role === 'admin' ? '' : 'none';
+  if (createAdminLink) createAdminLink.style.display = role === 'admin' && !users.some(user => user && user.role === 'admin') ? '' : 'none';
   const verifyPartyLink = $('#loginVerifyPartyLink');
   if (verifyPartyLink) verifyPartyLink.style.display = role === 'party' ? '' : 'none';
   const submitBtn = $('#loginSubmitBtn');
@@ -11209,6 +11209,10 @@ LedgerFeatures.identity.showForgotForm = function () {
   $('#forgotUsername').focus();
 };
 LedgerFeatures.identity.doSignup = function () {
+  if (users.some(user => user && user.role === 'admin')) {
+    $('#signupError').textContent = 'An admin account already exists. Sign in or use password recovery.';
+    return;
+  }
   const name = $('#signupName').value.trim(),
     fatherName = $('#signupFatherName')?.value.trim() || '',
     address = $('#signupAddress')?.value.trim() || '',
@@ -11222,8 +11226,8 @@ LedgerFeatures.identity.doSignup = function () {
     $('#signupError').textContent = 'All fields required.';
     return;
   }
-  if (pw.length < 4) {
-    $('#signupError').textContent = 'Password min 4.';
+  if (pw.length < 8) {
+    $('#signupError').textContent = 'Password must be at least 8 characters.';
     return;
   }
   if (pw !== cpw) {
@@ -17014,28 +17018,29 @@ const D = {
     voucherNo: !0,
     remarks: !0
   },
-  users: [{
-    id: 'admin-default',
-    username: 'admin',
-    password: btoa('admin123'),
-    name: 'Administrator',
-    role: 'admin',
-    partyId: null,
-    mobile: '',
-    securityQ: 'What city were you born in?',
-    securityA: btoa('modasa')
-  }]
+  users: []
 };
 // True when the app is opened directly as a local file (file://), where same-origin server APIs are unreachable.
 function isLocalFileMode() {
   try { return location.protocol === 'file:'; } catch (e) { return false; }
 }
 const load = (k, d) => {
+  const fallback = () => JSON.parse(JSON.stringify(d));
   try {
-    const r = localStorage.getItem(k);
-    return r ? JSON.parse(r) : JSON.parse(JSON.stringify(d));
+    const raw = localStorage.getItem(k);
+    if (!raw) return fallback();
+    const value = JSON.parse(raw);
+    const defaultValue = fallback();
+    if (Array.isArray(defaultValue)) return Array.isArray(value) ? value : defaultValue;
+    if (defaultValue === null) {
+      return value === null || value && typeof value === 'object' && !Array.isArray(value) ? value : defaultValue;
+    }
+    if (defaultValue && typeof defaultValue === 'object') {
+      return value && typeof value === 'object' && !Array.isArray(value) ? value : defaultValue;
+    }
+    return value;
   } catch (e) {
-    return JSON.parse(JSON.stringify(d));
+    return fallback();
   }
 };
 const save = (k, d) => {
