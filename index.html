@@ -1597,21 +1597,34 @@ table tbody tr:nth-child(even) {
   pointer-events: none;
   cursor: not-allowed
 }
-.toast {
+/* Toast stack: the fixed container owns positioning; individual toasts
+   flow inside it so simultaneous messages stack vertically instead of
+   overlapping, and never intercept touches meant for the dock/FAB. */
+#toastContainer {
   position: fixed;
-  bottom: calc(24px + var(--safe-bottom));
   right: 20px;
+  bottom: calc(24px + var(--safe-bottom));
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: min(92vw, 420px);
+  pointer-events: none;
+}
+#toastContainer .toast { pointer-events: none; }
+.toast {
+  position: static;
   background: var(--navy);
   color: #FEFEFE;
   padding: 10px 16px;
   border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: clamp(.7rem,.85vw,.8rem);
-  z-index: 1100;
   animation: toastIn .4s cubic-bezier(.16,1,.3,1) both,toastOut .4s cubic-bezier(.16,1,.3,1) 3s forwards;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--gold);
-  max-width: 90vw;
+  max-width: 100%;
   word-break: break-word;
   font-family: var(--font)
 }
@@ -4954,7 +4967,14 @@ body.sidebar-open .sidebar-backdrop {
   }
   .loan-form-sec-title {
     margin: -14px -14px 14px;
-    padding: 10px 14px
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    row-gap: 8px
+  }
+  .loan-form-sec-title .btn {
+    margin-left: auto;
+    flex: 0 1 auto;
+    min-width: 0
   }
   .lf-applicant-grid {
     grid-template-columns: 1fr!important
@@ -7349,8 +7369,11 @@ body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after {
     body.ns2026 #studioCreateEntry{min-height:40px;padding:8px 13px!important;font-size:.8rem!important}
     /* Filters & tables: readable, swipe-scroll, no page overflow */
     body.ns2026 .date-filter-row{position:static!important;display:flex;flex-wrap:wrap;align-items:center}
-    body.ns2026 .table-wrapper{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+    body.ns2026 .table-wrapper{overflow-x:auto!important;-webkit-overflow-scrolling:touch;position:relative;box-shadow:inset -16px 0 14px -14px rgba(6,35,31,.22)}
     body.ns2026 .table-wrapper table{min-width:620px}
+    /* Settings add-rows: wrap comfortably instead of cramming inputs */
+    body.ns2026 .inline-add input,body.ns2026 .inline-add select{flex:1 1 130px!important;min-width:130px!important}
+    body.ns2026 .inline-add .btn{flex:1 1 100%;min-height:40px}
     body.ns2026 .card-header{padding:14px 14px!important;flex-wrap:wrap;gap:8px}
     body.ns2026 .btn{min-height:40px}
     body.ns2026 input, body.ns2026 select, body.ns2026 textarea{font-size:16px!important;min-height:44px}
@@ -7551,13 +7574,23 @@ body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after {
 .ns-online-pill.on{border-color:#0E7569;color:#0E7569}
 .ns-online-pill.busy{color:#9A6B00;border-color:#D9A62E}
 .ns-online-pill.err{color:#B3261E;border-color:#B3261E}
-@media (max-width:1023.98px){ .ns-online-pill{top:auto;bottom:88px;right:12px} }
+@media (max-width:1023.98px){
+  /* Floating pill overlaps page content on phones — sync state instead
+     lives in the header as a compact circular dot indicator. */
+  .ns-online-pill{display:none!important}
+  body.ns2026 .header-actions .sync-status{display:inline-flex!important;width:36px;height:36px;padding:0!important;border-radius:50%!important;justify-content:center;align-items:center;gap:0!important;}
+  body.ns2026 .header-actions .sync-status .dot{width:10px;height:10px;background:#9AA5A0;}
+  body.ns2026 .header-actions .sync-status.synced .dot{background:#4CAF50;}
+  body.ns2026 .header-actions .sync-status.syncing .dot{background:var(--gold);}
+  body.ns2026 .header-actions .sync-status.error .dot{background:var(--expense);}
+}
 /* ---- Party/Viewer mobile polish ---- */
 body.ns-party #addCustomModuleRecordBtn, body.ns-viewer #addCustomModuleRecordBtn{display:none!important}
 @media (max-width:1023.98px){
-  /* Toasts are position:fixed themselves — lift them above the bottom dock
-     and center them so they never overlap the dock or the sync pill. */
-  body.ns2026 .toast{bottom:128px!important;left:12px!important;right:12px!important;max-width:none!important;margin:0 auto!important;text-align:center;}
+  /* Lift the whole toast stack above the bottom dock/FAB and span it as a
+     centered band; toasts themselves flow inside the fixed container. */
+  body.ns2026 #toastContainer{left:12px!important;right:12px!important;bottom:calc(128px + var(--safe-bottom))!important;max-width:none!important;align-items:stretch!important;}
+  body.ns2026 #toastContainer .toast{width:100%;text-align:center;}
 }
 @media (max-width:640px){
   body.ns2026 #viewEntries table th, body.ns2026 #viewEntries table td,
@@ -10989,7 +11022,7 @@ LedgerFeatures.identity.doLogin = async function () {
   if (u.role === 'admin') {
     smsServerSessionPromise = LedgerFeatures.identity.ensureServerAdminSession(u, pw).catch(() => false);
     const smsServerReady = await smsServerSessionPromise;
-    if (loadAutoSMS() && !smsServerReady) showToast('⚠️ Auto SMS server login failed');
+    if (loadAutoSMS() && !smsServerReady && !isLocalFileMode()) showToast('⚠️ Auto SMS server login failed');
   } else {
     smsServerSessionPromise = isLocalFileMode() ? Promise.resolve(false) : fetch('./api/auth/logout', { method: 'POST', credentials: 'same-origin' }).then(r => r.ok).catch(() => false);
     await smsServerSessionPromise;
@@ -14927,7 +14960,9 @@ LedgerFeatures.entries.autoSendEntrySMS = async function (partyId, rowsData, com
   const recipient = LedgerFeatures.identity.normalizeMobile(party.mobile);
   if (!recipient) return showToast('⚠️ Party mobile number is invalid');
   try {
-    if (isLocalFileMode()) throw new Error('સ્થાનિક ફાઇલ (file://) મોડમાં SMS સર્વર ઉપલબ્ધ નથી');
+    /* In file:// mode there is no SMS gateway by design — fail silently
+       instead of showing a scary error toast after every entry. */
+    if (isLocalFileMode()) return;
     if (!await smsServerSessionPromise) throw new Error('Admin server session is not connected');
     const response = await fetch('./api/sms/send', {
       method: 'POST',
@@ -19919,7 +19954,7 @@ scheduleLoanBalanceRefresh();
   }
   function nsTaskTile(act, icon, label, sub, modId){
     return '<button type="button" class="ns-task-tile" data-ns-task="' + nsEsc(act) + '"' + (modId ? ' data-ns-task-module="' + nsEsc(modId) + '"' : '') + '>' +
-      '<span class="ns-task-ico"><i class="fas' + nsEsc(icon) + '"></i>' + (act === 'messages' ? '<span class="ns-dock-badge" data-ns-task-badge style="display:none"></span>' : '') + '</span>' +
+      '<span class="ns-task-ico"><i class="fas ' + nsEsc(icon) + '"></i>' + (act === 'messages' ? '<span class="ns-dock-badge" data-ns-task-badge style="display:none"></span>' : '') + '</span>' +
       '<b>' + nsEsc(label) + '</b>' + (sub ? '<small>' + nsEsc(sub) + '</small>' : '') + '</button>';
   }
   function nsTasksBadgeSync(panel){
@@ -20355,5 +20390,5 @@ scheduleLoanBalanceRefresh();
   };
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4f24f061af25644',t:'MTc5Mjc3NDkzOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4f2b2b72813ff64',t:'MTc5Mjc3OTAyMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
