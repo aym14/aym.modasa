@@ -7208,7 +7208,7 @@ body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after {
     body.ns2026 .header.ns-topbar{margin-left:0!important}
     body.ns2026 .main-area{margin-left:0!important;width:100%!important}
     body.ns2026 .container{padding:16px 14px 8px!important}
-    body.ns2026 .header .logo .brand .title{font-size:.78rem!important}
+    body.ns2026 .header .logo .brand .title{font-size:.78rem!important;max-width:44vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     body.ns2026 .header-actions .studio-nav-link span, body.ns2026 .ws-search-label{display:none!important}
     body.ns2026 .ws-pagebar{align-items:flex-start}
     body.ns2026 .date-filter-row{top:var(--header-height)}
@@ -7333,7 +7333,7 @@ body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after {
     body.ns2026 .header.ns-topbar{padding:8px 10px!important;gap:8px!important}
     body.ns2026 .ns-toggle{width:40px;height:40px;flex-basis:40px}
     body.ns2026 .header .logo .icon{width:36px!important;height:36px!important;flex-basis:36px;border-radius:10px!important}
-    body.ns2026 .header .logo .brand .title{font-size:.72rem!important}
+    body.ns2026 .header .logo .brand .title{font-size:.72rem!important;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     body.ns2026 .header .logo .brand .sub{font-size:.5rem!important}
     body.ns2026 .header-actions .studio-nav-link{display:none!important}
     body.ns2026 .header-actions .ws-launch, body.ns2026 #headerLogoutBtn{min-height:38px;padding:7px 10px!important}
@@ -7381,7 +7381,7 @@ body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after {
     body.ns2026 .sidebar-backdrop{display:block!important}
     body.ns2026 .ws-pagebar{flex-wrap:nowrap!important}
     body.ns2026 .ws-pagebar .studio-page-actions{flex-shrink:0!important}
-    body.ns2026 .header .logo .brand .title{font-size:.68rem!important;max-width:38vw}
+    body.ns2026 .header .logo .brand .title{font-size:.68rem!important;max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   }
   @media (min-width:920px){
     body.ns2026 .login-overlay{flex-direction:row!important;align-items:center!important;justify-content:center!important;flex-wrap:wrap!important;align-content:center!important;row-gap:14px!important}
@@ -7544,8 +7544,10 @@ body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after {
   }
   @media (min-width:1600px){ .ns-nav-inner{max-width:1500px} }
 }
-/* Online sync status pill (Cashbook-style live indicator) */
-.ns-online-pill{position:fixed;right:14px;top:76px;z-index:1200;border:1.5px solid rgba(6,35,31,.16);background:#fff;color:#5B6B64;border-radius:999px;padding:8px 13px;font:800 .72rem/1 'Inter',system-ui,sans-serif;letter-spacing:.02em;box-shadow:0 8px 22px rgba(6,35,31,.18);cursor:pointer}
+/* Online sync status pill (Cashbook-style live indicator).
+   z-index stays below modal overlays (999) and bottom sheets (1600) so
+   open dialogs always cover the pill instead of the pill floating over them. */
+.ns-online-pill{position:fixed;right:14px;top:76px;z-index:900;border:1.5px solid rgba(6,35,31,.16);background:#fff;color:#5B6B64;border-radius:999px;padding:8px 13px;font:800 .72rem/1 'Inter',system-ui,sans-serif;letter-spacing:.02em;box-shadow:0 8px 22px rgba(6,35,31,.18);cursor:pointer}
 .ns-online-pill.on{border-color:#0E7569;color:#0E7569}
 .ns-online-pill.busy{color:#9A6B00;border-color:#D9A62E}
 .ns-online-pill.err{color:#B3261E;border-color:#B3261E}
@@ -7553,7 +7555,9 @@ body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after {
 /* ---- Party/Viewer mobile polish ---- */
 body.ns-party #addCustomModuleRecordBtn, body.ns-viewer #addCustomModuleRecordBtn{display:none!important}
 @media (max-width:1023.98px){
-  body.ns2026 #toastContainer{bottom:118px!important}
+  /* Toasts are position:fixed themselves — lift them above the bottom dock
+     and center them so they never overlap the dock or the sync pill. */
+  body.ns2026 .toast{bottom:128px!important;left:12px!important;right:12px!important;max-width:none!important;margin:0 auto!important;text-align:center;}
 }
 @media (max-width:640px){
   body.ns2026 #viewEntries table th, body.ns2026 #viewEntries table td,
@@ -7682,7 +7686,9 @@ body.ns2026 #wsDock button{position:relative}
   #ledgerPrintRoot ::before,#ledgerPrintRoot ::after{opacity:1!important;transform:none!important}
   #ledgerPrintRoot,#ledgerPrintRoot *,#ledgerPrintRoot ::before,#ledgerPrintRoot ::after{color:#000!important;-webkit-text-fill-color:#000!important}
   #ledgerPrintRoot.ledger-print-landscape{page:ledgerWide}
-  #ledgerPrintRoot .ledger-print-masthead{border-bottom:2px solid #173a3a!important;margin:0 0 12px!important;padding:0 0 8px!important;display:flex!important;justify-content:space-between!important;align-items:flex-end!important;gap:12px!important}
+  #ledgerPrintRoot .ledger-print-masthead{border-bottom:2px solid #173a3a!important;margin:0 0 12px!important;padding:0 0 8px!important;display:flex!important;justify-content:space-between!important;align-items:center!important;gap:12px!important}
+  #ledgerPrintRoot .ledger-print-logo{height:15mm!important;max-height:15mm!important;width:auto!important;max-width:48mm!important;object-fit:contain!important;flex:0 0 auto!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
+  #ledgerPrintRoot .ledger-print-mast-text{min-width:0!important;flex:1 1 auto!important}
   #ledgerPrintRoot .ledger-print-org{font-size:15pt!important;font-weight:700!important;color:#000!important;margin:0 0 3px!important}
   #ledgerPrintRoot .ledger-print-title{font-size:12pt!important;font-weight:700!important;color:#000!important;margin:0!important}
   #ledgerPrintRoot .ledger-print-subtitle{font-size:8.5pt!important;color:#000!important;margin-top:3px!important}
@@ -7712,6 +7718,22 @@ body.ns2026 #wsDock button{position:relative}
   #ledgerPrintRoot .view-entry-header-card{border:1px solid #bbb!important;padding:8px!important}
   #ledgerPrintRoot .view-entry-actions,#ledgerPrintRoot .desktop-hint,#ledgerPrintRoot button,#ledgerPrintRoot .btn,#ledgerPrintRoot .no-print,#ledgerPrintRoot .multi-select-dropdown{display:none!important}
   #ledgerPrintRoot img{max-width:100%!important;print-color-adjust:exact!important}
+  /* Visible print coloring: text stays black (per requirement) but semantic
+     tinted backgrounds/borders are preserved when the browser prints backgrounds. */
+  #ledgerPrintRoot,#ledgerPrintRoot *{print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
+  #ledgerPrintRoot th{background:#dfe7e2!important}
+  #ledgerPrintRoot .badge-income,#ledgerPrintRoot .ve-type-badge.inc{background:#E6F4EC!important;border:1px solid #6FA886!important;color:#000!important}
+  #ledgerPrintRoot .badge-expense,#ledgerPrintRoot .ve-type-badge.exp{background:#F8ECEC!important;border:1px solid #D08A8A!important;color:#000!important}
+  #ledgerPrintRoot .party-count-badge{background:#eef2f7!important;border:1px solid #b9c4d0!important;color:#000!important}
+  #ledgerPrintRoot .summary-placeholder{background:#FBF3DC!important;color:#000!important}
+  #ledgerPrintRoot .view-entry-header-card{background:#f4f8f5!important}
+  #ledgerPrintRoot .dash-card,#ledgerPrintRoot .card{background:#f7f9f8!important}
+  #ledgerPrintRoot .dash-card.income .dash-icon{background:#E6F4EC!important;color:#000!important;border:1px solid #6FA886!important}
+  #ledgerPrintRoot .dash-card.expense .dash-icon{background:#F8ECEC!important;color:#000!important;border:1px solid #D08A8A!important}
+  #ledgerPrintRoot .dash-card.balance{background:#17352F!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #17352F!important}
+  #ledgerPrintRoot .dash-card.balance *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+  #ledgerPrintRoot tfoot td,#ledgerPrintRoot tr.total-row td{background:#eef2ef!important;font-weight:700!important}
+  #ledgerPrintRoot .table-wrapper,#ledgerPrintRoot .report-output{background:#fff!important}
   #ledgerPrintRoot h1,#ledgerPrintRoot h2,#ledgerPrintRoot h3,#ledgerPrintRoot h4{break-after:avoid-page!important;page-break-after:avoid!important}
 }
 /* ===== QR features: join QR, member passbook card, camera scanner ===== */
@@ -7734,7 +7756,8 @@ body.ns2026 #wsDock button{position:relative}
 .qr-manual-block{margin-top:10px;border-top:1px dashed var(--gray-300);padding-top:10px;}
 .qr-manual-block select{width:100%;padding:8px;border-radius:8px;border:1px solid var(--gray-300);margin-bottom:8px;}
 .fm-member-card{border:2px solid #173a3a;border-radius:10px;padding:14px;max-width:340px;margin:0 auto;text-align:center;background:#fff;}
-.fm-member-card img{width:200px;height:200px;display:block;margin:0 auto 8px;}
+.fm-member-card img:not(.mc-logo){width:200px;height:200px;display:block;margin:0 auto 8px;}
+.fm-member-card .mc-logo{width:auto!important;height:16mm!important;display:block;margin:0 auto 6px!important;}
 .fm-member-card .mc-org{font-weight:800;font-size:13pt;color:#000;}
 .fm-member-card .mc-name{font-weight:700;font-size:12pt;margin-top:4px;color:#000;}
 .fm-member-card .mc-line{font-size:9.5pt;color:#000;margin-top:2px;}
@@ -8870,7 +8893,7 @@ Create custom modules with a <b>Given</b> category (Expense) and a <b>Recovery</
     <label class="qr-toggle-row"><input type="checkbox" id="joinQrLiveToggle" onchange="renderJoinQr()"> ⚡ ફિક્સ લિંક (ઓટો-અપડેટ)</label>
     <div class="qr-hint">બીજા ફોનના <b>કૅમેરાથી આ QR સ્કેન</b> કરો — લિંક ખૂલતાં જ તે ડિવાઇસ પર ડેટા સાથે ઍપ આપમેળે જોડાઈ જશે. કોપી-પેસ્ટની જરૂર નથી.</div>
     <div class="qr-link-text" id="joinQrLinkText"></div>
-    <div class="modal-actions" style="justify-content:center;margin-top:10px;"><button class="btn btn-primary btn-sm" onclick="closeJoinQr()"><i class="fas fa-check"></i> બંધ કરો</button></div>
+    <div class="modal-actions" style="justify-content:center;margin-top:10px;gap:8px;flex-wrap:wrap;"><button class="btn btn-primary btn-sm" onclick="shareJoinQr()"><i class="fas fa-share-alt"></i> QR શેર કરો</button><button class="btn btn-sm" style="color:var(--navy);border-color:var(--gray-300);" onclick="closeJoinQr()"><i class="fas fa-times"></i> બંધ કરો</button></div>
   </div>
 </div>
 
@@ -14619,8 +14642,9 @@ LedgerFeatures.qr = {
       <div class="qr-passbook-table-wrap">
         <table><thead><tr><th>તારીખ</th><th>કેટેગરી</th><th>પ્રકાર</th><th style="text-align:right;">રકમ</th><th>મોડ</th></tr></thead><tbody>${tableRows}</tbody></table>
       </div>
-      <div class="modal-actions" style="justify-content:center;margin-top:12px;">
+      <div class="modal-actions" style="justify-content:center;margin-top:12px;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-primary btn-sm" onclick="printMemberCard('${esc(p.id)}')" ${qrUrl ? '' : 'disabled'}><i class="fas fa-print"></i> QR કાર્ડ પ્રિન્ટ</button>
+        <button class="btn btn-sm" style="background:#25D366;color:#fff;border-color:#25D366;" onclick="shareMemberQr('${esc(p.id)}')" ${qrUrl ? '' : 'disabled'}><i class="fab fa-whatsapp"></i> QR શેર</button>
         <button class="btn btn-sm" style="color:var(--navy);border-color:var(--gray-300);" onclick="closeMemberPassbook()"><i class="fas fa-times"></i> બંધ કરો</button>
       </div>`;
     document.getElementById('memberPassbookModal').style.display = 'flex';
@@ -14632,12 +14656,14 @@ LedgerFeatures.qr = {
     const qrUrl = this.makeQrDataUrl(this.partyQrText(id), 8);
     if (!qrUrl) { showToast('⚠️ QR લાઇબ્રેરી ઉપલબ્ધ નથી'); return; }
     const brand = (document.getElementById('logoTitle')?.textContent || 'Smart Ledger').trim();
+    const hasLogo = typeof isSafeLogoData === 'function' && isSafeLogoData(logoSettings.image);
     const root = document.createElement('section');
     root.className = 'ledger-print-page';
     root.id = 'ledgerPrintRoot';
     root.innerHTML =
-      `<header class="ledger-print-masthead"><div><div class="ledger-print-org">${esc(brand)}</div><h1 class="ledger-print-title">સભ્ય QR કાર્ડ</h1></div><div class="ledger-print-stamp">તારીખ: ${esc(new Date().toLocaleDateString())}</div></header>
+      `<header class="ledger-print-masthead">${hasLogo ? `<img class="ledger-print-logo" src="${esc(logoSettings.image)}" alt="Logo">` : ''}<div class="ledger-print-mast-text"><div class="ledger-print-org">${esc(brand)}</div><h1 class="ledger-print-title">સભ્ય QR કાર્ડ</h1></div><div class="ledger-print-stamp">તારીખ: ${esc(new Date().toLocaleDateString())}</div></header>
        <main class="ledger-print-content"><div class="fm-member-card">
+         ${hasLogo ? `<img class="mc-logo" src="${esc(logoSettings.image)}" alt="Logo" style="height:16mm;width:auto;object-fit:contain;margin-bottom:4px;">` : ''}
          <img src="${qrUrl}" alt="QR">
          <div class="mc-org">${esc(brand)}</div>
          <div class="mc-name">${esc(p.name)}</div>
@@ -14649,7 +14675,8 @@ LedgerFeatures.qr = {
     document.documentElement.classList.add('ledger-printing');
     const after = () => { window.removeEventListener('afterprint', after); root.remove(); document.body.classList.remove('ledger-print-mode'); document.documentElement.classList.remove('ledger-printing'); };
     window.addEventListener('afterprint', after);
-    try { window.print(); setTimeout(after, 120000); } catch (err) { after(); showToast('⚠️ પ્રિન્ટ શરૂ થઈ શકી નથી'); }
+    const settle = () => { try { window.print(); setTimeout(after, 120000); } catch (err) { after(); showToast('⚠️ પ્રિન્ટ શરૂ થઈ શકી નથી'); } };
+    Promise.all(Array.from(root.querySelectorAll('img')).map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = res; img.onerror = res; }))).then(settle);
   },
   /* ---- Camera scanner ---- */
   handleQrText(text, mode) {
@@ -14726,8 +14753,44 @@ LedgerFeatures.qr = {
   manualPick() {
     const id = document.getElementById('qrManualSelect')?.value;
     if (id) this.handleQrText(this.partyQrText(id), this._scanMode);
+  },
+  /* Share the rendered QR as an image file (WhatsApp etc.).
+     Falls back to a download when the Web Share API is unavailable. */
+  async shareQrDataUrl(dataUrl, filename, shareText) {
+    if (!dataUrl) { showToast('⚠️ QR ઉપલબ્ધ નથી'); return; }
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], filename, { type: blob.type || 'image/gif' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'QR Code', text: shareText || '' });
+        showToast('✅ QR શેર થયું');
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+    }
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast('💾 QR ઇમેજ સેવ થઈ — હવે WhatsApp પર મોકલો');
+  },
+  shareJoinQr() {
+    const url = document.getElementById('joinQrImage')?.src;
+    const link = document.getElementById('joinQrLinkText')?.textContent || '';
+    return this.shareQrDataUrl(url, 'join-qr.gif', 'ડેટા સાથે જોડાવા માટે આ QR સ્કેન કરો: ' + link);
+  },
+  shareMemberQr(id) {
+    const p = parties.find(x => x.id === id);
+    if (!p) return showToast('⚠️ સભ્ય મળ્યો નથી');
+    const url = this.makeQrDataUrl(this.partyQrText(id), 10);
+    return this.shareQrDataUrl(url, 'member-' + p.name.replace(/[^\w઀-૿]+/g, '_') + '.gif', p.name + ' — સભ્ય QR કાર્ડ');
   }
 };
+window.shareJoinQr = () => LedgerFeatures.qr.shareJoinQr();
+window.shareMemberQr = id => LedgerFeatures.qr.shareMemberQr(id);
 window.openJoinQr = () => LedgerFeatures.qr.openJoinQr();
 window.closeJoinQr = () => LedgerFeatures.qr.closeJoinQr();
 window.renderJoinQr = () => LedgerFeatures.qr.renderJoinQr();
@@ -19661,42 +19724,10 @@ scheduleLoanBalanceRefresh();
       panel.innerHTML =
         '<div style="margin-top:14px;border-top:1px dashed #cbd5d1;padding-top:12px">' +
         '<div style="font-weight:800;margin-bottom:8px">📲 બીજા ફોન/કોમ્પ્યુટરને ડેટા સાથે જોડો</div>' +
-        '<button type="button" class="btn btn-sm" id="nsJoinLinkBtn">🔗 Join Link બનાવો</button> ' +
-        '<button type="button" class="btn btn-sm btn-primary" id="nsJoinLiveBtn" style="font-weight:800">⚡ ફિક્સ લિંક (ઓટો-અપડેટ)</button> ' +
-        '<button type="button" class="btn btn-sm" id="nsJoinQrBtn"><i class="fas fa-qrcode"></i> Join QR</button> ' +
+        '<button type="button" class="btn btn-sm btn-primary" id="nsJoinQrBtn"><i class="fas fa-qrcode"></i> Join QR બનાવો</button> ' +
         '<button type="button" class="btn btn-sm" id="nsJoinFileBtn">⬇️ sync-config.json</button>' +
-        '<div id="nsLiveStatus" style="display:none;margin-top:8px;font-size:.7rem;font-weight:700;color:var(--income)"></div>' +
-        '<textarea id="nsJoinLinkText" readonly rows="2" style="width:100%;margin-top:8px;display:none"></textarea>' +
-        '<div class="fc-hint">Join Link ફક્ત કમિટી/સભ્યોને જ WhatsApp પર મોકલો — લિંક ખોલતાં જ તે ડિવાઇસ પર ડેટા સાથે એપ ખૂલશે. લિંકમાં ગુપ્ત Key છે, જાહેર જગ્યાએ ન મૂકો!</div>' +
-        '<div class="fc-hint" style="margin-top:6px">⚡ <b>ફિક્સ લિંક</b> એક જ વાર ખોલાવો — પછી તે ડિવાઇસ પર હિસાબ <b>કાયમ ઓટો-અપડેટ</b> થતો રહેશે (દર ૨૦ સેકન્ડે તાજો ડેટા, ઇન્ટરનેટ આવતાં જ ઓફલાઇન એન્ટ્રી પણ આપમેળે જમા થશે).</div></div>';
+        '<div class="fc-hint" style="margin-top:8px">બીજા ફોનના કૅમેરાથી <b>Join QR સ્કેન</b> કરો — લિંક ખૂલતાં જ તે ડિવાઇસ આપમેળે ડેટા સાથે જોડાઈ જશે (QR મોડલમાં ⚡ ફિક્સ-લિંક ટૉગલ પણ છે). QR/ફાઇલમાં ગુપ્ત Key હોય છે — ફક્ત કમિટી/સભ્યોને જ મોકલો, જાહેર જગ્યાએ ન મૂકો!</div></div>';
       host.parentNode.insertBefore(panel, host.nextSibling);
-      var liveStatusEl = document.getElementById('nsLiveStatus');
-      if (liveStatusEl && localStorage.getItem(LIVE_LINK_KEY) === '1') {
-        liveStatusEl.style.display = '';
-        liveStatusEl.textContent = '✅ આ ડિવાઇસ પર ફિક્સ લિંક સક્રિય છે — ઓટો-અપડેટ કાયમ ચાલુ';
-      }
-      var lb = document.getElementById('nsJoinLinkBtn');
-      if (lb) lb.addEventListener('click', function(){
-        try {
-          if (!nsConfigComplete(cloudCfg)) { showToast('⚠️ પહેલા Cloud સેટ કરી Save કરો'); return; }
-          var link = nsMakeJoinLink();
-          var ta = document.getElementById('nsJoinLinkText');
-          if (ta) { ta.style.display = ''; ta.value = link; ta.focus(); ta.select(); }
-          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).catch(function(){});
-          showToast('🔗 Join Link તૈયાર — કૉપી કરી મોકલો');
-        } catch(e) {}
-      });
-      var lv = document.getElementById('nsJoinLiveBtn');
-      if (lv) lv.addEventListener('click', function(){
-        try {
-          if (!nsConfigComplete(cloudCfg)) { showToast('⚠️ પહેલા Cloud સેટ કરી Save કરો'); return; }
-          var link = nsMakeJoinLink(true);
-          var ta = document.getElementById('nsJoinLinkText');
-          if (ta) { ta.style.display = ''; ta.value = link; ta.focus(); ta.select(); }
-          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).catch(function(){});
-          showToast('⚡ ફિક્સ લિંક તૈયાર — એક વાર ખોલાવો, હંમેશા ઓટો-અપડેટ');
-        } catch(e) {}
-      });
       var qb = document.getElementById('nsJoinQrBtn');
       if (qb) qb.addEventListener('click', function(){ try { window.openJoinQr(); } catch(e) {} });
       var fb = document.getElementById('nsJoinFileBtn');
@@ -20302,7 +20333,12 @@ scheduleLoanBalanceRefresh();
     var root=makeElement('section','ledger-print-page');root.id='ledgerPrintRoot';
     var brand=(document.getElementById('logoTitle') && textOf(document.getElementById('logoTitle'))) || 'ANSAR YUVA MANDAL, Modasa';
     if(!config.officialForm){
-      var mast=makeElement('header','ledger-print-masthead');var left=makeElement('div','');
+      var mast=makeElement('header','ledger-print-masthead');var left=makeElement('div','ledger-print-mast-text');
+      if (typeof isSafeLogoData === 'function' && isSafeLogoData(logoSettings.image)) {
+        var logoImg=document.createElement('img');
+        logoImg.src=logoSettings.image;logoImg.alt='Logo';logoImg.className='ledger-print-logo';
+        mast.appendChild(logoImg);
+      }
       left.appendChild(makeElement('div','ledger-print-org',brand));left.appendChild(makeElement('h1','ledger-print-title',config.title));
       if(config.subtitle)left.appendChild(makeElement('div','ledger-print-subtitle',config.subtitle));
       mast.appendChild(left);mast.appendChild(makeElement('div','ledger-print-stamp','પ્રિન્ટ તારીખ: '+new Date().toLocaleString()));root.appendChild(mast);
@@ -20319,5 +20355,5 @@ scheduleLoanBalanceRefresh();
   };
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4eaedd46b430fce',t:'MTc5MjY5NzU1Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4f24f061af25644',t:'MTc5Mjc3NDkzOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
