@@ -1,14 +1,21 @@
 {
   "name": "ansar-smart-ledger-server",
   "version": "1.0.0",
-  "description": "Smart Ledger backend server for ANSAR YUVA MANDAL — serves the app + private cloud data API. No dependencies.",
+  "description": "Smart Ledger backend server for ANSAR YUVA MANDAL with a single-file Gujarati PWA frontend.",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "lint": "eslint eslint.config.cjs server.js scripts test && npm run lint:inline",
+    "lint:inline": "node scripts/check-inline-scripts.cjs",
+    "test": "node --test",
+    "check": "npm run lint && npm test"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18.18"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^9.39.5"
+  }
 }
