@@ -7714,6 +7714,30 @@ body.ns2026 #wsDock button{position:relative}
   #ledgerPrintRoot img{max-width:100%!important;print-color-adjust:exact!important}
   #ledgerPrintRoot h1,#ledgerPrintRoot h2,#ledgerPrintRoot h3,#ledgerPrintRoot h4{break-after:avoid-page!important;page-break-after:avoid!important}
 }
+/* ===== QR features: join QR, member passbook card, camera scanner ===== */
+.qr-modal-box{max-width:420px!important;text-align:center;}
+.qr-modal-box img.qr-image{width:min(72vw,260px);height:min(72vw,260px);background:#fff;padding:10px;border:1px solid var(--gray-200);border-radius:12px;margin:6px auto;display:block;}
+.qr-modal-box .qr-hint{font-size:.72rem;color:var(--gray-600);margin-top:8px;line-height:1.5;}
+.qr-modal-box .qr-link-text{width:100%;font-size:.62rem;word-break:break-all;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:6px;margin-top:8px;color:var(--gray-600);}
+.qr-toggle-row{display:flex;align-items:center;justify-content:center;gap:8px;font-size:.78rem;font-weight:700;margin:8px 0 2px;flex-wrap:wrap;}
+.qr-passbook-head{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;text-align:left;}
+.qr-passbook-head .qr-mini{width:120px;height:120px;padding:6px;background:#fff;border:1px solid var(--gray-200);border-radius:10px;}
+.qr-passbook-meta{font-size:.8rem;line-height:1.7;color:var(--gray-700);}
+.qr-passbook-table-wrap{max-height:42vh;overflow:auto;margin-top:10px;border:1px solid var(--gray-200);border-radius:10px;}
+.qr-passbook-table-wrap table{width:100%;border-collapse:collapse;font-size:.72rem;}
+.qr-passbook-table-wrap th{position:sticky;top:0;background:var(--navy);color:#fff;padding:6px 8px;text-align:left;z-index:1;}
+.qr-passbook-table-wrap td{padding:5px 8px;border-bottom:1px solid var(--gray-100);}
+.qr-passbook-totals{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px;font-size:.78rem;font-weight:700;}
+.qr-passbook-totals span{padding:5px 12px;border-radius:999px;background:var(--gray-50);border:1px solid var(--gray-200);}
+#qrScannerVideo{width:100%;max-width:360px;border-radius:12px;background:#0b1a2e;aspect-ratio:1;object-fit:cover;margin:8px auto;display:block;}
+.qr-scan-status{font-size:.78rem;font-weight:700;color:var(--navy);margin:6px 0;}
+.qr-manual-block{margin-top:10px;border-top:1px dashed var(--gray-300);padding-top:10px;}
+.qr-manual-block select{width:100%;padding:8px;border-radius:8px;border:1px solid var(--gray-300);margin-bottom:8px;}
+.fm-member-card{border:2px solid #173a3a;border-radius:10px;padding:14px;max-width:340px;margin:0 auto;text-align:center;background:#fff;}
+.fm-member-card img{width:200px;height:200px;display:block;margin:0 auto 8px;}
+.fm-member-card .mc-org{font-weight:800;font-size:13pt;color:#000;}
+.fm-member-card .mc-name{font-weight:700;font-size:12pt;margin-top:4px;color:#000;}
+.fm-member-card .mc-line{font-size:9.5pt;color:#000;margin-top:2px;}
 </style>
 </head>
 <body class="ns2026">
@@ -7923,7 +7947,7 @@ body.ns2026 #wsDock button{position:relative}
 
 <div class="date-filter-row">
 <span class="filter-section-label"><i class="fas fa-calendar-alt"></i> Date:</span>
-<select id="datePresetSelect" class="date-preset-select" onchange="onPresetSelectChange()"><option value="all">All Dates</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="last7">Last 7 Days</option><option value="last30">Last 30 Days</option><option value="thisWeek">This Week</option><option value="thisMonth">This Month</option><option value="thisQuarter">This Quarter</option><option value="thisYear">This Year</option><option value="lastMonth">Last Month</option><option value="lastQuarter">Last Quarter</option><option value="lastYear">Last Year</option><option value="custom">Custom</option></select>
+<select id="datePresetSelect" class="date-preset-select" onchange="onPresetSelectChange()"><option value="all">All Dates</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="last7">Last 7 Days</option><option value="last30">Last 30 Days</option><option value="thisWeek">This Week</option><option value="thisMonth">This Month</option><option value="thisQuarter">This Quarter</option><option value="thisYear">This Year</option><option value="lastMonth">Last Month</option><option value="lastQuarter">Last Quarter</option><option value="lastYear">Last Year</option><option value="thisFinancialYear">This Financial Year</option><option value="lastFinancialYear">Last Financial Year</option><option value="custom">Custom</option></select>
 <div id="customDateInputs" class="date-range-inputs" style="display:none;"><input type="date" id="startDate" onchange="onCustomDateChange()"><span>to</span><input type="date" id="endDate" onchange="onCustomDateChange()"><button class="btn-select-all-dates" onclick="selectAllDates()"><i class="fas fa-calendar-check"></i> All</button><button class="btn-clear-date" onclick="clearDateFilter()"><i class="fas fa-times"></i></button></div>
 <span class="filter-section-label"><i class="fas fa-tags"></i> Cat:</span>
 <div class="multi-select" id="categoryMultiSelect">
@@ -7962,6 +7986,8 @@ body.ns2026 #wsDock button{position:relative}
 <option value="lastMonth">Last Month</option>
 <option value="lastQuarter">Last Quarter</option>
 <option value="lastYear">Last Year</option>
+<option value="thisFinancialYear">This Financial Year</option>
+<option value="lastFinancialYear">Last Financial Year</option>
 <option value="custom">Custom</option>
 </select>
 <div id="reportCustomDateInputs" class="ns-tool-dates" style="display:none;">
@@ -8451,7 +8477,7 @@ body.ns2026 #wsDock button{position:relative}
   <div class="form-group"><label><i class="fas fa-calendar-alt"></i> Date</label><input type="date" id="entryDate" required></div>
   <div class="form-group"><label><i class="fas fa-file-alt"></i> Doc. Number</label><input type="text" id="entryVoucherNo" placeholder="Bill / Receipt / Voucher No."></div>
 </div>
-<div class="form-group"><label><i class="fas fa-user"></i> Party</label><div class="input-with-btn" style="display:flex;gap:4px;align-items:center;"><input type="text" id="entryPartyInput" list="partyList" placeholder="-- Select or type party --" autocomplete="off" required style="flex:1;"><datalist id="partyList"></datalist><button type="button" class="btn btn-sm btn-primary" onclick="quickAddParty()" style="min-width:auto;padding:0 8px;font-size:.6rem;"><i class="fas fa-plus"></i></button></div></div>
+<div class="form-group"><label><i class="fas fa-user"></i> Party</label><div class="input-with-btn" style="display:flex;gap:4px;align-items:center;"><input type="text" id="entryPartyInput" list="partyList" placeholder="-- Select or type party --" autocomplete="off" required style="flex:1;"><datalist id="partyList"></datalist><button type="button" class="btn btn-sm" title="QR સ્કેન કરી સભ્ય પસંદ કરો" onclick="openQrScanner('entry')" style="min-width:auto;padding:0 8px;font-size:.6rem;color:var(--navy);border-color:var(--gray-300);"><i class="fas fa-qrcode"></i></button><button type="button" class="btn btn-sm btn-primary" onclick="quickAddParty()" style="min-width:auto;padding:0 8px;font-size:.6rem;"><i class="fas fa-plus"></i></button></div></div>
 <div class="form-group"><label><i class="fas fa-tags"></i> Category &amp; Type <span style="font-weight:400;font-size:clamp(.5rem,.7vw,.6rem);color:var(--gray-500);font-family:var(--font);">(Multiple lines = split entries)</span></label><div id="categoryAmountRows"></div>
 <div style="display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap;"><button type="button" class="btn-add-row" onclick="addCategoryAmountRow()"><i class="fas fa-plus-circle"></i> Add Line</button><button type="button" class="btn btn-sm" onclick="quickAddCategory()" style="border:1px dashed var(--gray-300);background:var(--gray-50);color:var(--navy);font-size:clamp(.5rem,.7vw,.6rem);"><i class="fas fa-tag"></i> +Cat</button><span id="categoryAmountTotal" class="category-total-badge">Total: ₹0.00</span></div></div>
 <div class="form-group" id="entryLoanPanelWrap" style="display:none;">
@@ -8836,11 +8862,48 @@ Create custom modules with a <b>Given</b> category (Expense) and a <b>Recovery</
 </div>
 </div>
 
+<div class="modal-overlay" id="joinQrModal" style="display:none;" onclick="if(event.target===this)closeJoinQr()">
+  <div class="modal qr-modal-box">
+    <button class="modal-close" onclick="closeJoinQr()"><i class="fas fa-times"></i></button>
+    <h3><i class="fas fa-qrcode"></i> Join Link QR</h3>
+    <img class="qr-image" id="joinQrImage" alt="Join QR">
+    <label class="qr-toggle-row"><input type="checkbox" id="joinQrLiveToggle" onchange="renderJoinQr()"> ⚡ ફિક્સ લિંક (ઓટો-અપડેટ)</label>
+    <div class="qr-hint">બીજા ફોનના <b>કૅમેરાથી આ QR સ્કેન</b> કરો — લિંક ખૂલતાં જ તે ડિવાઇસ પર ડેટા સાથે ઍપ આપમેળે જોડાઈ જશે. કોપી-પેસ્ટની જરૂર નથી.</div>
+    <div class="qr-link-text" id="joinQrLinkText"></div>
+    <div class="modal-actions" style="justify-content:center;margin-top:10px;"><button class="btn btn-primary btn-sm" onclick="closeJoinQr()"><i class="fas fa-check"></i> બંધ કરો</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="memberPassbookModal" style="display:none;" onclick="if(event.target===this)closeMemberPassbook()">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" onclick="closeMemberPassbook()"><i class="fas fa-times"></i></button>
+    <h3><i class="fas fa-id-card"></i> સભ્ય પાસબુક</h3>
+    <div id="memberPassbookContent"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="qrScannerModal" style="display:none;" onclick="if(event.target===this)closeQrScanner()">
+  <div class="modal qr-modal-box">
+    <button class="modal-close" onclick="closeQrScanner()"><i class="fas fa-times"></i></button>
+    <h3><i class="fas fa-camera"></i> QR સ્કેન કરો</h3>
+    <video id="qrScannerVideo" playsinline muted></video>
+    <div class="qr-scan-status" id="qrScannerStatus">કૅમેરા શરૂ થાય છે…</div>
+    <div class="qr-manual-block" id="qrManualBlock" style="display:none;">
+      <div class="qr-hint" id="qrManualHint" style="margin-bottom:6px;">કૅમેરા ઉપલબ્ધ નથી — યાદીમાંથી સભ્ય પસંદ કરો:</div>
+      <select id="qrManualSelect"></select>
+      <button class="btn btn-primary btn-sm" onclick="fmQrManualPick()"><i class="fas fa-check"></i> પસંદ કરો</button>
+    </div>
+    <div class="modal-actions" style="justify-content:center;margin-top:10px;"><button class="btn btn-ghost btn-sm" onclick="closeQrScanner()" style="color:var(--gray-600);border-color:var(--gray-300);">રદ કરો</button></div>
+  </div>
+</div>
+
 <div id="toastContainer"></div>
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 // SOURCE: src/core/registry.js
 /** Feature implementations. Compatibility adapters preserve existing HTML handlers. */
@@ -9290,6 +9353,7 @@ LedgerFeatures.cloud.clearCloudSettings = function () {
   cloudCfg.lastSync = null;
   cloudCfg.lastSyncTs = 0;
   saveCloudConfig(cloudCfg);
+  try { localStorage.removeItem('fm_live_link_v1'); } catch (e) {}
   updateCloudUI();
   setSyncStatus('idle', 'Offline');
   appendSyncLog('Config cleared', 'info');
@@ -11974,7 +12038,7 @@ LedgerFeatures.settings.switchSettingsTab = function (t) {
 };
 LedgerFeatures.settings.renderSettingsParties = function () {
   const list = $('#partySettingsList');
-  list.innerHTML = parties.length === 0 ? '<li style="color:var(--gray-500);padding:10px;">No parties yet.</li>' : parties.map(p => `<li id="party-item-${p.id}"><div class="item-info"><strong>${esc(p.name)}</strong>${p.mobile ? `<span class="mobile"><i class="fas fa-mobile-alt"></i> ${esc(p.mobile)}</span>` : '<span class="mobile" style="color:#888277;">No mobile</span>'}${p.fatherName || p.guardianName ? `<span class="mobile">Father: ${esc(p.fatherName || p.guardianName)}</span>` : ''}${p.address ? `<span class="mobile">Address: ${esc(p.address)}</span>` : ''}${p.occupation ? `<span class="mobile">Occupation: ${esc(p.occupation)}</span>` : ''}</div><div class="item-actions">${isAdmin() ? `<button class="btn btn-edit btn-xs" onclick="startEditParty('${p.id}')"><i class="fas fa-pen-to-square"></i></button><button class="btn btn-danger btn-xs" onclick="deletePartySettings('${p.id}')"><i class="fas fa-trash-alt"></i></button>` : ''}</div></li>`).join('');
+  list.innerHTML = parties.length === 0 ? '<li style="color:var(--gray-500);padding:10px;">No parties yet.</li>' : parties.map(p => `<li id="party-item-${p.id}"><div class="item-info"><strong>${esc(p.name)}</strong>${p.mobile ? `<span class="mobile"><i class="fas fa-mobile-alt"></i> ${esc(p.mobile)}</span>` : '<span class="mobile" style="color:#888277;">No mobile</span>'}${p.fatherName || p.guardianName ? `<span class="mobile">Father: ${esc(p.fatherName || p.guardianName)}</span>` : ''}${p.address ? `<span class="mobile">Address: ${esc(p.address)}</span>` : ''}${p.occupation ? `<span class="mobile">Occupation: ${esc(p.occupation)}</span>` : ''}</div><div class="item-actions">${isAdmin() ? `<button class="btn btn-xs" title="સભ્ય પાસબુક / QR કાર્ડ" style="color:var(--navy);border-color:var(--gray-300);" onclick="openMemberPassbook('${p.id}')"><i class="fas fa-qrcode"></i></button><button class="btn btn-edit btn-xs" onclick="startEditParty('${p.id}')"><i class="fas fa-pen-to-square"></i></button><button class="btn btn-danger btn-xs" onclick="deletePartySettings('${p.id}')"><i class="fas fa-trash-alt"></i></button>` : ''}</div></li>`).join('');
   setTimeout(() => updateScrollHint('partySettingsScroll', 'partyScrollHint'), 40);
 };
 LedgerFeatures.settings.startEditParty = function (id) {
@@ -12789,6 +12853,19 @@ LedgerFeatures.shell.resolvePreset = function (p) {
       {
         const y = new Date().getFullYear() - 1;
         return [dateKey(new Date(y, 0, 1)), dateKey(new Date(y, 11, 31))];
+      }
+    case 'thisFinancialYear':
+      {
+        // Indian financial year: 1 Apr – 31 Mar
+        const n = new Date();
+        const fyStartYear = n.getMonth() >= 3 ? n.getFullYear() : n.getFullYear() - 1;
+        return [dateKey(new Date(fyStartYear, 3, 1)), t];
+      }
+    case 'lastFinancialYear':
+      {
+        const n = new Date();
+        const fyStartYear = (n.getMonth() >= 3 ? n.getFullYear() : n.getFullYear() - 1) - 1;
+        return [dateKey(new Date(fyStartYear, 3, 1)), dateKey(new Date(fyStartYear + 1, 2, 31))];
       }
     default:
       return ['', ''];
@@ -14444,10 +14521,223 @@ LedgerFeatures.entries.viewEntryDetail = function (id) {
   if (!content) return;
   const detailRow = (icon, label, value, mono) => `<div class="view-entry-row"><span class="vr-label"><i class="fas ${icon}"></i>${esc(label)}</span><span class="vr-value${mono ?' mono' : ''}">${value}</span></div>`;
   const canEdit = isAdmin();
-  const html = `<div class="view-entry-header-card"><span class="ve-type-badge ${isInc ?'inc' : 'exp'}">${isInc ? '📈 Income' : '📉 Expense'}</span><div class="ve-amount ${isInc ?'inc' : 'exp'}">₹ ${fmtAmt(e.amount)}</div><div class="ve-cat">${c ? esc(c.name) : '—'}</div></div><div class="view-entry-rows">${e.linkedRecordId || e.loanFormId ? `<div style="text-align:center;margin:6px 0 10px;"><span class="badge badge-income" style="font-size:.55rem;"><i class="fas fa-layer-group"></i> ${e.loanFormId ? 'Loan Form' : 'Module'}</span></div>` : ''}${detailRow('fa-calendar-alt', 'Date', esc(fmtDate(e.date)))}${detailRow('fa-user', 'Party', esc(p ? p.name : '—'))}${p && p.mobile ? detailRow('fa-mobile-alt', 'Mobile', esc(p.mobile), true) : ''}${detailRow('fa-tag', 'Category', esc(c ? c.name : '—'))}${detailRow('fa-exchange-alt', 'Type', isInc ? 'Income' : 'Expense')}${detailRow('fa-rupee-sign', 'Amount', '₹ ' + fmtAmt(e.amount), true)}${detailRow(accIcon, 'Account', accLabel)}${detailRow('fa-credit-card', 'Payment Mode', esc(e.paymentMode || '—'))}${e.voucherNo ? detailRow('fa-file-alt', 'Doc. No.', esc(e.voucherNo), true) : ''}${e.remarks ? detailRow('fa-comment', 'Remarks', esc(e.remarks)) : ''}</div>${canEdit ? `<div class="view-entry-actions"><button class="btn btn-edit btn-sm" onclick="closeViewEntry();editEntry('${e.id}')"><i class="fas fa-pen-to-square"></i> Edit</button><button class="btn btn-danger btn-sm" onclick="closeViewEntry();deleteEntry('${e.id}')"><i class="fas fa-trash-alt"></i> Delete</button><button class="btn btn-ghost btn-sm" onclick="closeViewEntry()" style="color:var(--gray-600);border-color:var(--gray-300);"><i class="fas fa-times"></i> Close</button></div>` : `<div class="view-entry-actions"><button class="btn btn-primary btn-sm" onclick="closeViewEntry()"><i class="fas fa-check"></i> Close</button></div>`}`;
+  const html = `<div class="view-entry-header-card"><span class="ve-type-badge ${isInc ?'inc' : 'exp'}">${isInc ? '📈 Income' : '📉 Expense'}</span><div class="ve-amount ${isInc ?'inc' : 'exp'}">₹ ${fmtAmt(e.amount)}</div><div class="ve-cat">${c ? esc(c.name) : '—'}</div></div><div class="view-entry-rows">${e.linkedRecordId || e.loanFormId ? `<div style="text-align:center;margin:6px 0 10px;"><span class="badge badge-income" style="font-size:.55rem;"><i class="fas fa-layer-group"></i> ${e.loanFormId ? 'Loan Form' : 'Module'}</span></div>` : ''}${detailRow('fa-calendar-alt', 'Date', esc(fmtDate(e.date)))}${detailRow('fa-user', 'Party', esc(p ? p.name : '—'))}${p && p.mobile ? detailRow('fa-mobile-alt', 'Mobile', esc(p.mobile), true) : ''}${detailRow('fa-tag', 'Category', esc(c ? c.name : '—'))}${detailRow('fa-exchange-alt', 'Type', isInc ? 'Income' : 'Expense')}${detailRow('fa-rupee-sign', 'Amount', '₹ ' + fmtAmt(e.amount), true)}${detailRow(accIcon, 'Account', accLabel)}${detailRow('fa-credit-card', 'Payment Mode', esc(e.paymentMode || '—'))}${e.voucherNo ? detailRow('fa-file-alt', 'Doc. No.', esc(e.voucherNo), true) : ''}${e.remarks ? detailRow('fa-comment', 'Remarks', esc(e.remarks)) : ''}</div>${canEdit ? `<div class="view-entry-actions"><button class="btn btn-sm" onclick="shareEntryReceipt('${e.id}')" style="background:#25D366;color:#fff;border-color:#25D366;"><i class="fab fa-whatsapp"></i> રસીદ શેર</button><button class="btn btn-edit btn-sm" onclick="closeViewEntry();editEntry('${e.id}')"><i class="fas fa-pen-to-square"></i> Edit</button><button class="btn btn-danger btn-sm" onclick="closeViewEntry();deleteEntry('${e.id}')"><i class="fas fa-trash-alt"></i> Delete</button><button class="btn btn-ghost btn-sm" onclick="closeViewEntry()" style="color:var(--gray-600);border-color:var(--gray-300);"><i class="fas fa-times"></i> Close</button></div>` : `<div class="view-entry-actions"><button class="btn btn-sm" onclick="shareEntryReceipt('${e.id}')" style="background:#25D366;color:#fff;border-color:#25D366;"><i class="fab fa-whatsapp"></i> રસીદ શેર</button><button class="btn btn-primary btn-sm" onclick="closeViewEntry()"><i class="fas fa-check"></i> Close</button></div>`}`;
   content.innerHTML = html;
   $('#viewEntryModal').style.display = 'flex';
 };
+LedgerFeatures.entries.shareEntryReceipt = function (id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return showToast('⚠️ Entry not found');
+  const p = getParty(e.partyId),
+    c = getCat(e.categoryId);
+  const isInc = e.type === 'income';
+  const lines = [
+    logoSettings.title || 'Smart Ledger',
+    '— રસીદ —',
+    'તારીખ: ' + fmtDate(e.date),
+    'સભ્ય: ' + (p ? p.name : '—'),
+    'કેટેગરી: ' + (c ? c.name : '—'),
+    'પ્રકાર: ' + (isInc ? 'આવક (Income)' : 'જાવક (Expense)'),
+    'રકમ: ₹' + fmtAmt(e.amount),
+    'ચુકવણી: ' + (e.paymentMode || '—') + (e.accountType === 'bank' ? ' (Bank)' : ' (Cash)')
+  ];
+  if (e.voucherNo) lines.push('દસ્તાવેજ નં.: ' + e.voucherNo);
+  if (e.remarks) lines.push('નોંધ: ' + e.remarks);
+  const text = lines.join('\n');
+  const mobile = p && p.mobile ? normalizeMobile(p.mobile) : '';
+  const waNumber = mobile ? mobile.replace(/^\+91/, '91') : '';
+  const waUrl = (waNumber ? 'https://wa.me/' + waNumber + '?text=' : 'https://wa.me/?text=') + encodeURIComponent(text);
+  if (navigator.share) {
+    navigator.share({ title: 'રસીદ', text }).catch(() => { try { window.open(waUrl, '_blank'); } catch (err) {} });
+  } else {
+    try { window.open(waUrl, '_blank'); } catch (err) { showToast('⚠️ Share ઉપલબ્ધ નથી'); }
+  }
+};
+/* ===== QR features: Join Link QR, member passbook card, camera scanner ===== */
+const FM_PARTY_QR_PREFIX = 'FMP1:';
+LedgerFeatures.qr = {
+  _scanTimer: null,
+  _scanStream: null,
+  _scanMode: 'passbook',
+  makeQrDataUrl(text, cellSize) {
+    if (typeof window.qrcode !== 'function') return '';
+    try {
+      const qr = window.qrcode(0, 'M');
+      qr.addData(text);
+      qr.make();
+      return qr.createDataURL(cellSize || 6, 4);
+    } catch (err) { return ''; }
+  },
+  partyQrText(id) { return FM_PARTY_QR_PREFIX + id; },
+  /* ---- Join Link QR ---- */
+  openJoinQr() {
+    if (typeof nsConfigComplete !== 'function' || !nsConfigComplete(cloudCfg)) { showToast('⚠️ પહેલા Cloud સેટ કરી Save કરો'); return; }
+    if (typeof window.qrcode !== 'function') { showToast('⚠️ QR લાઇબ્રેરી ઉપલબ્ધ નથી (ઇન્ટરનેટ તપાસો)'); return; }
+    const t = document.getElementById('joinQrLiveToggle');
+    if (t) t.checked = false;
+    this.renderJoinQr();
+    document.getElementById('joinQrModal').style.display = 'flex';
+  },
+  renderJoinQr() {
+    const live = !!document.getElementById('joinQrLiveToggle')?.checked;
+    const link = nsMakeJoinLink(live);
+    const url = this.makeQrDataUrl(link, 5);
+    const img = document.getElementById('joinQrImage');
+    if (img) img.src = url;
+    const txt = document.getElementById('joinQrLinkText');
+    if (txt) txt.textContent = link;
+  },
+  closeJoinQr() { const m = document.getElementById('joinQrModal'); if (m) m.style.display = 'none'; },
+  /* ---- Member passbook + card ---- */
+  openMemberPassbook(id) {
+    const p = parties.find(x => x.id === id);
+    if (!p) { showToast('⚠️ સભ્ય મળ્યો નથી'); return; }
+    const qrUrl = this.makeQrDataUrl(this.partyQrText(id), 5);
+    const rows = entries.filter(e => e.partyId === id).slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+    let inc = 0, exp = 0;
+    rows.forEach(e => { if (e.type === 'income') inc += Number(e.amount) || 0; else exp += Number(e.amount) || 0; });
+    const tableRows = rows.length ? rows.map(e => {
+      const c = getCat(e.categoryId);
+      return `<tr><td>${esc(fmtDate(e.date))}</td><td>${esc(c ? c.name : '—')}</td><td>${e.type === 'income' ? '<span style="color:var(--income);font-weight:700;">INC</span>' : '<span style="color:var(--expense);font-weight:700;">EXP</span>'}</td><td style="text-align:right;font-weight:700;">₹${esc(fmtAmt(e.amount))}</td><td>${esc(e.paymentMode || '—')}</td></tr>`;
+    }).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--gray-500);padding:14px;">કોઈ એન્ટ્રી નથી</td></tr>';
+    document.getElementById('memberPassbookContent').innerHTML =
+      `<div class="qr-passbook-head">
+        ${qrUrl ? `<img class="qr-mini" src="${qrUrl}" alt="Member QR">` : ''}
+        <div class="qr-passbook-meta">
+          <div style="font-weight:800;font-size:1.05rem;color:var(--navy);">${esc(p.name)}</div>
+          <div><i class="fas fa-mobile-alt"></i> ${esc(p.mobile || 'મોબાઇલ નથી')}</div>
+          ${p.fatherName || p.guardianName ? `<div>Father: ${esc(p.fatherName || p.guardianName)}</div>` : ''}
+          ${p.address ? `<div>Address: ${esc(p.address)}</div>` : ''}
+          <div style="font-size:.66rem;color:var(--gray-500);word-break:break-all;">ID: ${esc(p.id)}</div>
+        </div>
+      </div>
+      <div class="qr-passbook-totals">
+        <span style="color:var(--income);">આવક: ₹${esc(fmtAmt(inc))}</span>
+        <span style="color:var(--expense);">જાવક: ₹${esc(fmtAmt(exp))}</span>
+        <span>ચોખ્ખું: ₹${esc(fmtAmt(inc - exp))}</span>
+      </div>
+      <div class="qr-passbook-table-wrap">
+        <table><thead><tr><th>તારીખ</th><th>કેટેગરી</th><th>પ્રકાર</th><th style="text-align:right;">રકમ</th><th>મોડ</th></tr></thead><tbody>${tableRows}</tbody></table>
+      </div>
+      <div class="modal-actions" style="justify-content:center;margin-top:12px;">
+        <button class="btn btn-primary btn-sm" onclick="printMemberCard('${esc(p.id)}')" ${qrUrl ? '' : 'disabled'}><i class="fas fa-print"></i> QR કાર્ડ પ્રિન્ટ</button>
+        <button class="btn btn-sm" style="color:var(--navy);border-color:var(--gray-300);" onclick="closeMemberPassbook()"><i class="fas fa-times"></i> બંધ કરો</button>
+      </div>`;
+    document.getElementById('memberPassbookModal').style.display = 'flex';
+  },
+  closeMemberPassbook() { const m = document.getElementById('memberPassbookModal'); if (m) m.style.display = 'none'; },
+  printMemberCard(id) {
+    const p = parties.find(x => x.id === id);
+    if (!p) return;
+    const qrUrl = this.makeQrDataUrl(this.partyQrText(id), 8);
+    if (!qrUrl) { showToast('⚠️ QR લાઇબ્રેરી ઉપલબ્ધ નથી'); return; }
+    const brand = (document.getElementById('logoTitle')?.textContent || 'Smart Ledger').trim();
+    const root = document.createElement('section');
+    root.className = 'ledger-print-page';
+    root.id = 'ledgerPrintRoot';
+    root.innerHTML =
+      `<header class="ledger-print-masthead"><div><div class="ledger-print-org">${esc(brand)}</div><h1 class="ledger-print-title">સભ્ય QR કાર્ડ</h1></div><div class="ledger-print-stamp">તારીખ: ${esc(new Date().toLocaleDateString())}</div></header>
+       <main class="ledger-print-content"><div class="fm-member-card">
+         <img src="${qrUrl}" alt="QR">
+         <div class="mc-org">${esc(brand)}</div>
+         <div class="mc-name">${esc(p.name)}</div>
+         <div class="mc-line">મોબાઇલ: ${esc(p.mobile || '—')}</div>
+         <div class="mc-line">સભ્ય ID: ${esc(p.id)}</div>
+       </div></main>`;
+    document.body.appendChild(root);
+    document.body.classList.add('ledger-print-mode');
+    document.documentElement.classList.add('ledger-printing');
+    const after = () => { window.removeEventListener('afterprint', after); root.remove(); document.body.classList.remove('ledger-print-mode'); document.documentElement.classList.remove('ledger-printing'); };
+    window.addEventListener('afterprint', after);
+    try { window.print(); setTimeout(after, 120000); } catch (err) { after(); showToast('⚠️ પ્રિન્ટ શરૂ થઈ શકી નથી'); }
+  },
+  /* ---- Camera scanner ---- */
+  handleQrText(text, mode) {
+    const t = String(text || '').trim();
+    if (t.indexOf(FM_PARTY_QR_PREFIX) !== 0) { showToast('⚠️ અમાન્ય QR — સભ્ય કાર્ડ સ્કેન કરો'); return false; }
+    const id = t.slice(FM_PARTY_QR_PREFIX.length);
+    const p = parties.find(x => x.id === id);
+    if (!p) { showToast('⚠️ આ સભ્ય આ ડિવાઇસ પર મળ્યો નથી (ડેટા સિંક તપાસો)'); return false; }
+    this.closeQrScanner();
+    if (mode === 'entry') {
+      const inp = document.getElementById('entryPartyInput');
+      if (inp) { inp.value = p.name; inp.dispatchEvent(new Event('input', { bubbles: true })); showToast('✅ સભ્ય પસંદ થયો: ' + p.name); }
+    } else {
+      this.openMemberPassbook(id);
+    }
+    return true;
+  },
+  _showManualFallback(msg) {
+    const video = document.getElementById('qrScannerVideo');
+    if (video) video.style.display = 'none';
+    const st = document.getElementById('qrScannerStatus');
+    if (st) st.textContent = msg || 'મેન્યુઅલ પસંદગી કરો';
+    const block = document.getElementById('qrManualBlock');
+    const sel = document.getElementById('qrManualSelect');
+    if (sel) sel.innerHTML = parties.map(p => `<option value="${esc(p.id)}">${esc(p.name)}${p.mobile ? ' — ' + esc(p.mobile) : ''}</option>`).join('');
+    if (block) block.style.display = '';
+  },
+  async openQrScanner(mode) {
+    this._scanMode = mode === 'entry' ? 'entry' : 'passbook';
+    if (!parties.length) { showToast('⚠️ પહેલા સભ્ય ઉમેરો'); return; }
+    document.getElementById('qrScannerModal').style.display = 'flex';
+    const block = document.getElementById('qrManualBlock');
+    if (block) block.style.display = 'none';
+    const video = document.getElementById('qrScannerVideo');
+    if (video) video.style.display = '';
+    const st = document.getElementById('qrScannerStatus');
+    if (st) st.textContent = 'કૅમેરા શરૂ થાય છે…';
+    if (!('BarcodeDetector' in window) || !navigator.mediaDevices?.getUserMedia) {
+      this._showManualFallback('⚠️ આ બ્રાઉઝરમાં QR સ્કેનર સપોર્ટ નથી — યાદીમાંથી પસંદ કરો');
+      return;
+    }
+    try {
+      let supported = ['qr_code'];
+      try { supported = (await window.BarcodeDetector.getSupportedFormats()).filter(f => f === 'qr_code'); } catch (err) {}
+      if (!supported.length) { this._showManualFallback('⚠️ QR ફોર્મેટ સપોર્ટ નથી — યાદીમાંથી પસંદ કરો'); return; }
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      this._scanStream = stream;
+      video.srcObject = stream;
+      await video.play();
+      const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+      if (st) st.textContent = '📷 હવે સભ્યનું QR કાર્ડ સ્કેન કરો…';
+      this._scanTimer = setInterval(async () => {
+        try {
+          const codes = await detector.detect(video);
+          if (codes && codes.length && codes[0].rawValue) this.handleQrText(codes[0].rawValue, this._scanMode);
+        } catch (err) {}
+      }, 450);
+    } catch (err) {
+      this._stopCamera();
+      this._showManualFallback('⚠️ કૅમેરા ખૂલી શક્યો નથી (પરમિશન તપાસો) — યાદીમાંથી પસંદ કરો');
+    }
+  },
+  _stopCamera() {
+    if (this._scanTimer) { clearInterval(this._scanTimer); this._scanTimer = null; }
+    if (this._scanStream) { this._scanStream.getTracks().forEach(t => t.stop()); this._scanStream = null; }
+    const video = document.getElementById('qrScannerVideo');
+    if (video) video.srcObject = null;
+  },
+  closeQrScanner() {
+    this._stopCamera();
+    const m = document.getElementById('qrScannerModal');
+    if (m) m.style.display = 'none';
+  },
+  manualPick() {
+    const id = document.getElementById('qrManualSelect')?.value;
+    if (id) this.handleQrText(this.partyQrText(id), this._scanMode);
+  }
+};
+window.openJoinQr = () => LedgerFeatures.qr.openJoinQr();
+window.closeJoinQr = () => LedgerFeatures.qr.closeJoinQr();
+window.renderJoinQr = () => LedgerFeatures.qr.renderJoinQr();
+window.openMemberPassbook = id => LedgerFeatures.qr.openMemberPassbook(id);
+window.closeMemberPassbook = () => LedgerFeatures.qr.closeMemberPassbook();
+window.printMemberCard = id => LedgerFeatures.qr.printMemberCard(id);
+window.openQrScanner = mode => LedgerFeatures.qr.openQrScanner(mode);
+window.closeQrScanner = () => LedgerFeatures.qr.closeQrScanner();
+window.fmQrManualPick = () => LedgerFeatures.qr.manualPick();
+
 LedgerFeatures.entries.closeViewEntry = function () {
   const m = document.getElementById('viewEntryModal');
   if (m) m.style.display = 'none';
@@ -14732,46 +15022,46 @@ LedgerFeatures.reports.renderReportInline = function (html) {
   out.innerHTML = html;
   if (actions) actions.style.display = 'flex';
 };
-LedgerFeatures.reports.downloadProtectedPDF = function () {
+LedgerFeatures.reports.downloadProtectedPDF = async function () {
   const container = $('#reportOutput');
   const table = container?.querySelector('table');
   if (!table) return showToast('⚠️ No table');
   if (!window.jspdf?.jsPDF || typeof window.jspdf.jsPDF !== 'function') return showToast('⚠️ PDF unavailable');
-  const head = Array.from(table.querySelectorAll('thead tr:last-child th')).map(cell => cell.innerText.trim());
-  const body = Array.from(table.querySelectorAll('tbody tr')).map(row => Array.from(row.querySelectorAll('td')).map(cell => cell.innerText.trim())).filter(row => row.length);
-  if (!head.length || !body.length) return showToast('⚠️ No data');
-  const doc = new window.jspdf.jsPDF({
-    orientation: head.length > 6 ? 'landscape' : 'portrait',
-    unit: 'pt',
-    format: 'a4',
-    encryption: {
-      ownerPassword: window.crypto?.randomUUID?.() || String(Date.now()) + Math.random(),
-      permissions: []
+  if (typeof window.html2canvas !== 'function') return showToast('⚠️ PDF library unavailable');
+  try {
+    showToast('📄 PDF બને છે…');
+    /* Rasterise the browser-rendered report so Gujarati text (which jsPDF's
+       built-in fonts cannot shape) is preserved exactly as seen on screen. */
+    const canvas = await window.html2canvas(container, {
+      scale: 2,
+      backgroundColor: '#ffffff',
+      useCORS: true,
+      logging: false,
+      windowWidth: document.documentElement.scrollWidth
+    });
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const orientation = canvas.width >= canvas.height ? 'landscape' : 'portrait';
+    const doc = new window.jspdf.jsPDF({ orientation, unit: 'pt', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 28;
+    const imgW = pageW - margin * 2;
+    const imgH = canvas.height * imgW / canvas.width;
+    let heightLeft = imgH;
+    let position = margin;
+    doc.addImage(imgData, 'JPEG', margin, position, imgW, imgH);
+    heightLeft -= pageH - margin * 2;
+    while (heightLeft > 0) {
+      position = margin - (imgH - heightLeft);
+      doc.addPage();
+      doc.addImage(imgData, 'JPEG', margin, position, imgW, imgH);
+      heightLeft -= pageH - margin * 2;
     }
-  });
-  if (typeof doc.autoTable !== 'function') return showToast('⚠️ PDF plugin unavailable');
-  doc.setFontSize(14);
-  doc.setTextColor(11, 26, 46);
-  doc.text(logoSettings.title || 'Smart Ledger', 40, 38);
-  doc.setFontSize(8);
-  doc.setTextColor(100, 100, 100);
-  doc.text('Generated: ' + new Date().toLocaleString(), 40, 52);
-  doc.autoTable({
-    head: [head],
-    body,
-    startY: 66,
-    theme: 'grid',
-    styles: {
-      fontSize: 7,
-      cellPadding: 4
-    },
-    headStyles: {
-      fillColor: [11, 26, 46],
-      textColor: 255
-    }
-  });
-  doc.save('protected_report_' + todayStr() + '.pdf');
-  showToast('🔒 PDF');
+    doc.save('protected_report_' + todayStr() + '.pdf');
+    showToast('🔒 PDF');
+  } catch (err) {
+    showToast('⚠️ PDF બનાવી શકાયું નથી');
+  }
 };
 LedgerFeatures.reports.downloadReportExcel = function () {
   let csv;
@@ -17016,6 +17306,7 @@ window.onCustomDateChange = LedgerFeatures.shell.onCustomDateChange;
 window.clearDateFilter = LedgerFeatures.entries.clearDateFilter;
 window.selectAllDates = LedgerFeatures.shell.selectAllDates;
 window.viewEntryDetail = LedgerFeatures.entries.viewEntryDetail;
+window.shareEntryReceipt = LedgerFeatures.entries.shareEntryReceipt;
 window.closeViewEntry = LedgerFeatures.entries.closeViewEntry;
 window.editEntry = LedgerFeatures.entries.editEntry;
 window.deleteEntry = LedgerFeatures.entries.deleteEntry;
@@ -17054,6 +17345,14 @@ $('#entryForm').addEventListener('submit', function (e) {
     remarks: $('#entryRemarks').value.trim()
   };
   if (!parseLoanDate(common.date)) return showToast('⚠️ Date');
+  if (!editId) {
+    const duplicate = rowsData.find(r => entries.some(e =>
+      e.date === common.date &&
+      e.partyId === partyId &&
+      e.categoryId === r.categoryId &&
+      loanCents(e.amount) === loanCents(r.amount)));
+    if (duplicate && !confirm('⚠️ આ જ તારીખ, સભ્ય, કેટેગરી અને રકમની એન્ટ્રી પહેલેથી છે. ફરી ઉમેરવી છે?')) return;
+  }
   const penaltyAllocations = new Map();
   const penaltyReserved = new Map();
   const penaltyOptions = entryPenaltyOptions(common.date);
@@ -19243,7 +19542,12 @@ scheduleLoanBalanceRefresh();
           pulls the data immediately, before login.
        2) sync-config.json placed next to index.html — adopted at boot when
           this device has no complete cloud config yet (enabled must be
-          true). A disabled sample ships with the package. */
+          true). A disabled sample ships with the package.
+     A "Fixed Auto-Update Link" is a join link carrying a live marker (z:1).
+     Opening it once stores fm_live_link_v1 on that device, which re-asserts
+     Auto Sync on every launch so the ledger keeps updating itself even if
+     the toggle was switched off meanwhile. */
+  var LIVE_LINK_KEY = 'fm_live_link_v1';
   function nsConfigComplete(cfg){
     try {
       if (!cfg) return false;
@@ -19274,16 +19578,42 @@ scheduleLoanBalanceRefresh();
       return true;
     } catch(e) { return false; }
   }
-  function nsMakeJoinLink(){
+  /* Compact Join Link (v2): short keys + 1-letter provider code.
+     Legacy v1 links (full key names + "provider") still decode via the fallback below. */
+  var NS_PCODE = { jsonbin: 'j', supabase: 's', server: 'r', github: 'g' };
+  var NS_JOIN_FULL = ['apiKey','binId','supabaseUrl','supabaseAnonKey','supabaseTable','supabaseSyncKey','serverUrl','serverSyncKey','serverToken','ghToken','ghOwner','ghRepo','ghBranch','ghPath'];
+  var NS_JOIN_SHORT = ['a','b','su','sa','st','sk','ru','rk','rt','gt','go','gr','gb','gp'];
+  // Built-in defaults already present on every fresh device, so carrying them only bloats the link
+  var NS_JOIN_DEFAULTS = { supabaseTable: 'ledger_data', supabaseSyncKey: 'default' };
+  function nsMakeJoinLink(live){
     try {
-      var c = { v: 1, provider: (typeof cloudCfg !== 'undefined' && cloudCfg && cloudCfg.provider) || 'jsonbin' };
-      var keys = ['apiKey','binId','supabaseUrl','supabaseAnonKey','supabaseTable','supabaseSyncKey','serverUrl','serverSyncKey','serverToken','ghToken','ghOwner','ghRepo','ghBranch','ghPath'];
-      keys.forEach(function(k){ if (typeof cloudCfg !== 'undefined' && cloudCfg && cloudCfg[k]) c[k] = cloudCfg[k]; });
+      var provider = (typeof cloudCfg !== 'undefined' && cloudCfg && cloudCfg.provider) || 'jsonbin';
+      var c = {};
+      // jsonbin is the decoder default, so its 1-letter code is omitted to keep the link shortest
+      if (provider !== 'jsonbin') c.p = NS_PCODE[provider] || 'j';
+      for (var i = 0; i < NS_JOIN_FULL.length; i++) {
+        var k = NS_JOIN_FULL[i], val = typeof cloudCfg !== 'undefined' && cloudCfg ? cloudCfg[k] : '';
+        if (val && !(NS_JOIN_DEFAULTS[k] && NS_JOIN_DEFAULTS[k] === val)) c[NS_JOIN_SHORT[i]] = val;
+      }
+      if (live) c.z = 1; /* fixed auto-update marker */
       var b64 = nsB64Encode(JSON.stringify(c)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
       return location.href.split('#')[0] + '#join=' + b64;
     } catch(e) { return ''; }
   }
   window.nsMakeJoinLink = nsMakeJoinLink;
+  window.nsConfigComplete = nsConfigComplete;
+  /* Re-assert Auto Sync on every launch on devices provisioned through a
+     Fixed Auto-Update Link, so the ledger keeps updating without manual steps. */
+  function nsEnsureLiveLinkSync(){
+    try {
+      if (localStorage.getItem(LIVE_LINK_KEY) !== '1') return;
+      if (typeof cloudCfg === 'undefined' || !cloudCfg || !nsCloudConfigured()) return;
+      if (!cloudCfg.autoSync) {
+        cloudCfg.autoSync = true;
+        if (typeof saveCloudConfig === 'function') saveCloudConfig(cloudCfg);
+      }
+    } catch(e) {}
+  }
   function nsTryJoinFromHash(){
     try {
       var m = /#join=([A-Za-z0-9\-_]+)/.exec(location.hash || '');
@@ -19291,8 +19621,22 @@ scheduleLoanBalanceRefresh();
       var b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
       while (b64.length % 4) b64 += '=';
       var cfg = JSON.parse(nsB64Decode(b64));
+      var liveOn = !!(cfg && (cfg.z === 1 || cfg.live === 1)); /* fixed auto-update link */
+      if (cfg) { delete cfg.z; delete cfg.live; }
+      /* Expand compact v2 payload (short keys, no "provider") back to the full schema.
+         Legacy v1 links carry "provider" and pass through unchanged. */
+      if (cfg && !cfg.provider) {
+        var NS_PNAME = { j: 'jsonbin', s: 'supabase', r: 'server', g: 'github' };
+        var full = { provider: NS_PNAME[cfg.p] || 'jsonbin' };
+        for (var i = 0; i < NS_JOIN_SHORT.length; i++) {
+          var ck = NS_JOIN_SHORT[i];
+          if (cfg[ck] !== undefined && cfg[ck] !== null && String(cfg[ck]).trim() !== '') full[NS_JOIN_FULL[i]] = cfg[ck];
+        }
+        cfg = full;
+      }
       try { history.replaceState(null, '', location.href.split('#')[0]); } catch(e) {}
-      nsAdoptCloudCfg(cfg, true);
+      var adopted = nsAdoptCloudCfg(cfg, true);
+      if (liveOn && adopted) { try { localStorage.setItem(LIVE_LINK_KEY, '1'); } catch(e) {} }
     } catch(e) {}
   }
   function nsTrySyncConfigFile(){
@@ -19318,10 +19662,19 @@ scheduleLoanBalanceRefresh();
         '<div style="margin-top:14px;border-top:1px dashed #cbd5d1;padding-top:12px">' +
         '<div style="font-weight:800;margin-bottom:8px">📲 બીજા ફોન/કોમ્પ્યુટરને ડેટા સાથે જોડો</div>' +
         '<button type="button" class="btn btn-sm" id="nsJoinLinkBtn">🔗 Join Link બનાવો</button> ' +
+        '<button type="button" class="btn btn-sm btn-primary" id="nsJoinLiveBtn" style="font-weight:800">⚡ ફિક્સ લિંક (ઓટો-અપડેટ)</button> ' +
+        '<button type="button" class="btn btn-sm" id="nsJoinQrBtn"><i class="fas fa-qrcode"></i> Join QR</button> ' +
         '<button type="button" class="btn btn-sm" id="nsJoinFileBtn">⬇️ sync-config.json</button>' +
-        '<textarea id="nsJoinLinkText" readonly rows="3" style="width:100%;margin-top:8px;display:none"></textarea>' +
-        '<div class="fc-hint">Join Link ફક્ત કમિટી/સભ્યોને જ WhatsApp પર મોકલો — લિંક ખોલતાં જ તે ડિવાઇસ પર ડેટા સાથે એપ ખૂલશે. લિંકમાં ગુપ્ત Key છે, જાહેર જગ્યાએ ન મૂકો!</div></div>';
+        '<div id="nsLiveStatus" style="display:none;margin-top:8px;font-size:.7rem;font-weight:700;color:var(--income)"></div>' +
+        '<textarea id="nsJoinLinkText" readonly rows="2" style="width:100%;margin-top:8px;display:none"></textarea>' +
+        '<div class="fc-hint">Join Link ફક્ત કમિટી/સભ્યોને જ WhatsApp પર મોકલો — લિંક ખોલતાં જ તે ડિવાઇસ પર ડેટા સાથે એપ ખૂલશે. લિંકમાં ગુપ્ત Key છે, જાહેર જગ્યાએ ન મૂકો!</div>' +
+        '<div class="fc-hint" style="margin-top:6px">⚡ <b>ફિક્સ લિંક</b> એક જ વાર ખોલાવો — પછી તે ડિવાઇસ પર હિસાબ <b>કાયમ ઓટો-અપડેટ</b> થતો રહેશે (દર ૨૦ સેકન્ડે તાજો ડેટા, ઇન્ટરનેટ આવતાં જ ઓફલાઇન એન્ટ્રી પણ આપમેળે જમા થશે).</div></div>';
       host.parentNode.insertBefore(panel, host.nextSibling);
+      var liveStatusEl = document.getElementById('nsLiveStatus');
+      if (liveStatusEl && localStorage.getItem(LIVE_LINK_KEY) === '1') {
+        liveStatusEl.style.display = '';
+        liveStatusEl.textContent = '✅ આ ડિવાઇસ પર ફિક્સ લિંક સક્રિય છે — ઓટો-અપડેટ કાયમ ચાલુ';
+      }
       var lb = document.getElementById('nsJoinLinkBtn');
       if (lb) lb.addEventListener('click', function(){
         try {
@@ -19333,6 +19686,19 @@ scheduleLoanBalanceRefresh();
           showToast('🔗 Join Link તૈયાર — કૉપી કરી મોકલો');
         } catch(e) {}
       });
+      var lv = document.getElementById('nsJoinLiveBtn');
+      if (lv) lv.addEventListener('click', function(){
+        try {
+          if (!nsConfigComplete(cloudCfg)) { showToast('⚠️ પહેલા Cloud સેટ કરી Save કરો'); return; }
+          var link = nsMakeJoinLink(true);
+          var ta = document.getElementById('nsJoinLinkText');
+          if (ta) { ta.style.display = ''; ta.value = link; ta.focus(); ta.select(); }
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).catch(function(){});
+          showToast('⚡ ફિક્સ લિંક તૈયાર — એક વાર ખોલાવો, હંમેશા ઓટો-અપડેટ');
+        } catch(e) {}
+      });
+      var qb = document.getElementById('nsJoinQrBtn');
+      if (qb) qb.addEventListener('click', function(){ try { window.openJoinQr(); } catch(e) {} });
       var fb = document.getElementById('nsJoinFileBtn');
       if (fb) fb.addEventListener('click', function(){
         try {
@@ -19786,6 +20152,7 @@ scheduleLoanBalanceRefresh();
   nsDockSync();
   setInterval(nsDockSync, 2000);
 
+  nsEnsureLiveLinkSync();
   nsTryJoinFromHash();
   nsTrySyncConfigFile();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', nsServerUiInit); else nsServerUiInit();
@@ -19952,5 +20319,5 @@ scheduleLoanBalanceRefresh();
   };
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4ea629f69d46cd7',t:'MTc5MjY5MTg1NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4eaedd46b430fce',t:'MTc5MjY5NzU1Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
