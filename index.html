@@ -8742,7 +8742,7 @@ Create custom modules with a <b>Given</b> category (Expense) and a <b>Recovery</
   <div id="supabaseConfigBlock" style="display:none;">
     <div class="field-row"><label>Project URL</label><input type="text" id="supabaseUrl" placeholder="https://xxxx.supabase.co"><span class="hint"><a href="https://supabase.com/" target="_blank">Create free Supabase project</a> → copy Project URL from Settings → API.</span></div>
     <div class="field-row"><label>Anon Key</label><input type="password" id="supabaseAnonKey" placeholder="eyJhbGciOi..."><span class="hint">Settings → API → Project API keys → <code>anon public</code></span></div>
-    <div class="field-row"><label>Table Name</label><input type="text" id="supabaseTable" placeholder="ledger_data" value="ledger_data"><span class="hint">SQL Editor માં run કરો:<br><code>create table ledger_data (id text primary key, data jsonb, updated_at timestamptz default now());</code><br><code>alter table ledger_data enable row level security;</code><br><code>create policy "anyone" on ledger_data for all using (true) with check (true);</code></span></div>
+    <div class="field-row"><label>Table Name</label><input type="text" id="supabaseTable" placeholder="ledger_data" value="ledger_data"><span class="hint">SQL Editor માં table બનાવો:<br><code>create table ledger_data (id text primary key, data jsonb, updated_at timestamptz default now());</code><br><code>alter table ledger_data enable row level security;</code><br><b style="color:var(--expense);">સાવચેતી:</b> Supabase anon key browserમાં જાહેર હોય છે. ખાનગી ledger માટે unrestricted <code>using (true)</code> policy ન બનાવો. આ એપમાં Supabase Auth નથી; ખાનગી sync માટે My Server + ACCESS_TOKEN વાપરો અથવા યોગ્ય Supabase Auth/RLS ગોઠવો.</span></div>
     <div class="field-row"><label>Sync Key</label><input type="text" id="supabaseSyncKey" placeholder="ansar-modasa-2025"><span class="hint">Unique ID (કોઈ પણ string) — આ key થી તમારો data row ઓળખાશે. બધા devices પર same key રાખો.</span></div>
   </div>
 
@@ -10957,14 +10957,16 @@ LedgerFeatures.identity.showPartyLoginForm = function () {
 let smsServerSessionPromise = Promise.resolve(false);
 LedgerFeatures.identity.ensureServerAdminSession = async function (user, password) {
   if (isLocalFileMode()) return false;
-  const post = async (path, payload) => {
+  const post = async (path, payload, useSetupToken = false) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const headers = { 'Content-Type': 'application/json' };
+    if (useSetupToken && cloudCfg.serverToken) headers['X-Access-Key'] = cloudCfg.serverToken;
     try {
       return await fetch(path, {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(payload),
         signal: controller.signal
       });
@@ -10988,11 +10990,12 @@ LedgerFeatures.identity.ensureServerAdminSession = async function (user, passwor
     name: user.name || user.username,
     securityQuestion: user.securityQ,
     securityAnswer
-  });
-  if (response.ok) return true;
-  if (response.status !== 409) return false;
-  response = await post('./api/auth/login', loginPayload);
-  return response.ok;
+  }, true);
+  if (response.ok || response.status === 409) {
+    response = await post('./api/auth/login', loginPayload);
+    return response.ok;
+  }
+  return false;
 };
 LedgerFeatures.identity.doLogin = async function () {
   const usernameInput = $('#loginUsername').value.trim();
@@ -19523,8 +19526,8 @@ scheduleLoanBalanceRefresh();
         blk.innerHTML =
           '<div class="form-group"><label>Server URL</label><input type="text" id="serverUrl" placeholder="https://tamaro-server.onrender.com"></div>' +
           '<div class="form-group"><label>Sync Key (ડેટાનું નામ)</label><input type="text" id="serverSyncKey" placeholder="ansar-yuva-mandal"></div>' +
-          '<div class="form-group"><label>Access Token</label><input type="text" id="serverToken" placeholder="Server પર સેટ કરેલો Token"></div>' +
-          '<div class="fc-hint">તમારો પોતાનો સર્વર: આખો હિસાબ સર્વર પર રહેશે અને બધા ફોન ત્યાંથી લાઇવ લેશે. Token ગુપ્ત રાખો.</div>';
+          '<div class="form-group"><label>Access Token</label><input type="password" id="serverToken" placeholder="Server પર સેટ કરેલો Token" autocomplete="off"></div>' +
+          '<div class="fc-hint">તમારા સર્વર પર .env માં ACCESS_TOKEN સેટ કરો. ખાનગી ડેટા માટે આ provider વાપરો. Token આ browserમાં સાચવાશે; તેને public join linkમાં શેર ન કરો.</div>';
         var sb = document.getElementById('supabaseConfigBlock');
         var anchor = sb || jb;
         anchor.parentNode.insertBefore(blk, anchor.nextSibling);

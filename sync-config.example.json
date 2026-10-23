@@ -1,0 +1,11 @@
+{
+  "enabled": false,
+  "_note": "વાપરવા માટે આ ફાઇલની નકલ sync-config.json નામે બનાવો અને enabled ને true કરો. Server પર sync-config.json default રીતે જાહેર થતી નથી; તેને જાહેર રીતે serve કરવા .env માં PUBLIC_SYNC_CONFIG=true સેટ કરવું પડે. આ ફાઇલમાં cloud keys હોય તો તેને public website અથવા ખુલ્લા repository પર ક્યારેય ન મૂકો. વધુ સુરક્ષિત રીત: ખાનગી My Server provider અને ACCESS_TOKEN વાપરો; Join Link ને પણ password જેવી ગુપ્ત આમંત્રણ લિંક ગણો.",
+  "provider": "github",
+  "ghToken": "",
+  "ghOwner": "",
+  "ghRepo": "ansar-ledger-data",
+  "ghBranch": "main",
+  "ghPath": "ledger-data.json",
+  "autoSync": true
+}

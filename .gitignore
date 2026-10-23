@@ -1,0 +1,15 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Local ledger records, sync credentials, and atomic-write temporary files
+/sync-config.json
+/data-store.json
+/data-store.json.*.tmp
+/data/
+
+# Node.js tooling and generated artifacts
+/node_modules/
+/coverage/
+*.log
