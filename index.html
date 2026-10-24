@@ -7713,41 +7713,73 @@ body.ns2026 #wsDock button{position:relative}
 @page ledgerWide{size:A4 landscape;margin:10mm}
 @media print{
   html,body{height:auto!important;min-height:0!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-  /* --- print isolation: ONLY #ledgerPrintRoot may reach the paper --- */
   body.ledger-print-mode>*:not(#ledgerPrintRoot){display:none!important}
-  body.ledger-print-mode>*:not(#ledgerPrintRoot) *{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
-  body.ledger-print-mode>#app,body.ledger-print-mode>#loginOverlay,body.ledger-print-mode>#wsDock,
-  body.ledger-print-mode>.modal-overlay,body.ledger-print-mode>.entry-modal-overlay,
-  body.ledger-print-mode>#toastContainer,body.ledger-print-mode>dialog,
-  body.ledger-print-mode>[data-lp-hidden="1"]{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
-  body.ledger-print-mode>#ledgerPrintRoot{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important}
+  /* ===== MOBILE PRINT FIX =====
+     Mobile browsers (Chrome Android / Safari iOS) do NOT reliably apply
+     `display:none` from a parent to their fixed/sticky/overlay children —
+     so the header, dock, FAB, toast, sync pill, sidebar and modals keep
+     bleeding into the printed page. Hide them directly and force
+     visibility so only #ledgerPrintRoot ever prints. */
+  body.ledger-print-mode .header,
+  body.ledger-print-mode .header.ns-topbar,
+  body.ledger-print-mode .ns-topnav,
+  body.ledger-print-mode .sidebar,
+  body.ledger-print-mode .sidebar-backdrop,
+  body.ledger-print-mode .sidebar-toggle,
+  body.ledger-print-mode .ws-mobile-nav,
+  body.ledger-print-mode #wsDock,
+  body.ledger-print-mode .fab,
+  body.ledger-print-mode #fabAddEntry,
+  body.ledger-print-mode .ns-online-pill,
+  body.ledger-print-mode #nsOnlinePill,
+  body.ledger-print-mode #toastContainer,
+  body.ledger-print-mode #wsSearchDialog,
+  body.ledger-print-mode .modal-overlay,
+  body.ledger-print-mode .entry-modal-overlay,
+  body.ledger-print-mode #entryPenaltyPicker,
+  body.ledger-print-mode .login-overlay,
+  body.ledger-print-mode #loginOverlay,
+  body.ledger-print-mode .ns-sheet,
+  body.ledger-print-mode .ns-sheet-backdrop,
+  body.ledger-print-mode .ns-pagebar,
+  body.ledger-print-mode .ws-pagebar,
+  body.ledger-print-mode .account-tabs,
+  body.ledger-print-mode .date-filter-row,
+  body.ledger-print-mode .report-inline-actions,
+  body.ledger-print-mode .card-header .header-actions-right {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+  }
+  body.ledger-print-mode #app,
+  body.ledger-print-mode .main-area,
+  body.ledger-print-mode .app-shell,
+  body.ledger-print-mode .container {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  body.ledger-print-mode .view-section { display: none !important; }
+  body.ledger-print-mode .view-section.active { display: block !important; }
   body.ledger-print-mode #ledgerPrintRoot{display:block!important;position:static!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important;color:#000!important;font-family:Arial,'Noto Sans Gujarati',sans-serif!important;font-size:10pt!important;line-height:1.4!important;box-shadow:none!important}
   #ledgerPrintRoot *{box-sizing:border-box!important;animation:none!important;transition:none!important;text-shadow:none!important;box-shadow:none!important;opacity:1!important;transform:none!important}
   #ledgerPrintRoot ::before,#ledgerPrintRoot ::after{opacity:1!important;transform:none!important}
   #ledgerPrintRoot,#ledgerPrintRoot *,#ledgerPrintRoot ::before,#ledgerPrintRoot ::after{color:#000!important;-webkit-text-fill-color:#000!important}
   #ledgerPrintRoot.ledger-print-landscape{page:ledgerWide}
   #ledgerPrintRoot .ledger-print-masthead{border-bottom:2px solid #173a3a!important;margin:0 0 12px!important;padding:0 0 8px!important;display:flex!important;justify-content:space-between!important;align-items:center!important;gap:12px!important}
-  #ledgerPrintRoot .ledger-print-masthead{flex-wrap:wrap!important;align-items:center!important;row-gap:4px!important}
-  #ledgerPrintRoot .ledger-print-org{white-space:normal!important;overflow-wrap:anywhere!important}
   #ledgerPrintRoot .ledger-print-logo{height:15mm!important;max-height:15mm!important;width:auto!important;max-width:48mm!important;object-fit:contain!important;flex:0 0 auto!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
-  /* ---- A4 letterhead: logo block ---- */
-  #ledgerPrintRoot .ledger-print-logo-box{
-    flex:0 0 auto!important;width:20mm!important;height:20mm!important;min-width:20mm!important;
-    border:1px solid #173a3a!important;border-radius:2mm!important;background:#fff!important;
-    display:flex!important;align-items:center!important;justify-content:center!important;
-    padding:1.4mm!important;box-sizing:border-box!important;overflow:hidden!important}
-  #ledgerPrintRoot .ledger-print-logo-box img{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;display:block!important}
-  #ledgerPrintRoot .ledger-print-logo-box svg{width:100%!important;height:100%!important;display:block!important}
-  #ledgerPrintRoot .ledger-print-logo-box .ledger-emblem-initials{font-family:Arial,sans-serif!important;font-weight:700!important;font-size:12pt!important;letter-spacing:.5pt!important;color:#0B1A2E!important}
-  #ledgerPrintRoot .ledger-print-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important}
-  #ledgerPrintRoot .ledger-print-footer .lpf-left{display:flex!important;align-items:center!important;gap:5px!important;font-size:7.5pt!important;color:#000!important}
-  #ledgerPrintRoot .ledger-print-footer .lpf-logo{width:6mm!important;height:6mm!important;object-fit:contain!important;display:block!important}
-  #ledgerPrintRoot .ledger-print-footer .lpf-emblem{width:6mm!important;height:6mm!important;display:block!important}
   #ledgerPrintRoot .ledger-print-mast-text{min-width:0!important;flex:1 1 auto!important}
   #ledgerPrintRoot .ledger-print-org{font-size:15pt!important;font-weight:700!important;color:#000!important;margin:0 0 3px!important}
   #ledgerPrintRoot .ledger-print-title{font-size:12pt!important;font-weight:700!important;color:#000!important;margin:0!important}
   #ledgerPrintRoot .ledger-print-subtitle{font-size:8.5pt!important;color:#000!important;margin-top:3px!important}
-  #ledgerPrintRoot .ledger-print-stamp{font-size:8pt!important;color:#000!important;text-align:right!important;white-space:normal!important;max-width:52mm!important;flex:0 0 auto!important;line-height:1.35!important}
+  #ledgerPrintRoot .ledger-print-stamp{font-size:8pt!important;color:#000!important;text-align:right!important;white-space:nowrap!important}
   #ledgerPrintRoot .ledger-print-content{width:100%!important;max-width:none!important;overflow:visible!important}
   #ledgerPrintRoot .ledger-print-footer{border-top:1px solid #bbb!important;margin-top:12px!important;padding-top:5px!important;color:#000!important;font-size:8pt!important;text-align:right!important}
   #ledgerPrintRoot table{width:100%!important;min-width:0!important;max-width:100%!important;border-collapse:collapse!important;table-layout:auto!important;page-break-inside:auto!important;break-inside:auto!important;font-size:8.5pt!important;color:#000!important}
@@ -7763,22 +7795,6 @@ body.ns2026 #wsDock button{position:relative}
   #ledgerPrintRoot .card,#ledgerPrintRoot .loan-form-paper,#ledgerPrintRoot .view-entry-header-card,#ledgerPrintRoot .view-entry-rows{width:100%!important;max-width:none!important;margin:0 0 8px!important;overflow:visible!important;break-inside:auto!important;page-break-inside:auto!important;background:#fff!important;border-color:#b8c0c8!important}
   #ledgerPrintRoot .loan-form-paper{padding:0!important;border:0!important;border-radius:0!important}
   #ledgerPrintRoot .loan-form-header,#ledgerPrintRoot .loan-form-sec-title{break-after:avoid!important;page-break-after:avoid!important}
-  /* official forms: white paper look (dark bands become white + border so the
-     black print text stays readable on every printer) */
-  #ledgerPrintRoot .loan-form-header{background:#fff!important;background-image:none!important;border:1px solid #173a3a!important;border-bottom:2px solid #b08d2f!important;padding:12px 14px!important}
-  #ledgerPrintRoot .loan-form-header::before{display:none!important}
-  #ledgerPrintRoot .loan-form-header::after{display:none!important}
-  #ledgerPrintRoot .loan-form-logo{background:#fff!important;border:1px solid #173a3a!important;color:#000!important;box-shadow:none!important;width:18mm!important;height:18mm!important;min-width:18mm!important;max-width:18mm!important;max-height:18mm!important;overflow:hidden!important;border-radius:2mm!important;align-items:center!important;justify-content:center!important;font-size:0!important}
-  #ledgerPrintRoot .loan-form-logo img,#ledgerPrintRoot .loan-form-logo svg{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;display:block!important}
-  #ledgerPrintRoot .loan-form-logo-wrap{gap:6mm!important;justify-content:center!important}
-  #ledgerPrintRoot .loan-form-logo-title{background:none!important;-webkit-text-fill-color:#000!important;color:#000!important;text-shadow:none!important;font-size:14pt!important}
-  #ledgerPrintRoot .loan-form-header-sub,.ledger-print-form-sub{color:#000!important;-webkit-text-fill-color:#000!important;letter-spacing:.08em!important;font-size:7.5pt!important}
-  #ledgerPrintRoot .loan-form-sec{background:#fff!important;border:1px solid #b9c0c6!important;border-radius:0!important;box-shadow:none!important}
-  #ledgerPrintRoot .loan-form-sec-title{background:#f2f4f3!important;background-image:none!important;border-bottom:1px solid #b08d2f!important;padding:4px 8px!important}
-  #ledgerPrintRoot .loan-form-sec-title i,#ledgerPrintRoot .loan-form-sec-title strong{background:#fff!important;color:#000!important}
-  #ledgerPrintRoot .loan-note-special{background:#FBF3DC!important;background-image:none!important;border:1px solid #b08d2f!important}
-  #ledgerPrintRoot .loan-photo-box{background:#fff!important}
-  #ledgerPrintRoot .loan-form-paper{background:#fff!important;background-image:none!important}
   #ledgerPrintRoot .loan-form-sec{break-inside:avoid-page!important;page-break-inside:avoid!important}
   #ledgerPrintRoot .loan-photo-box{min-height:34mm!important;max-width:34mm!important;background:#fff!important;border:1px solid #777!important}
   #ledgerPrintRoot .loan-photo-box img{display:block!important;width:100%!important;height:auto!important;max-height:42mm!important;object-fit:contain!important}
@@ -7806,122 +7822,6 @@ body.ns2026 #wsDock button{position:relative}
   #ledgerPrintRoot tfoot td,#ledgerPrintRoot tr.total-row td{background:#eef2ef!important;font-weight:700!important}
   #ledgerPrintRoot .table-wrapper,#ledgerPrintRoot .report-output{background:#fff!important}
   #ledgerPrintRoot h1,#ledgerPrintRoot h2,#ledgerPrintRoot h3,#ledgerPrintRoot h4{break-after:avoid-page!important;page-break-after:avoid!important}
-}
-
-/* ==========================================================================
-   GLOBAL PRINT GUARD
-   Stops the app shell (header, top-nav, sidebar, bottom dock, FAB, buttons,
-   filters, toast, modal chrome) from being printed — also when the print is
-   started from the browser menu / Share → Print on a mobile phone, where the
-   app's own #ledgerPrintRoot does not exist.
-   ========================================================================== */
-@media print{
-  @page{size:A4 portrait;margin:12mm 10mm}
-  html,body{background:#fff!important;color:#000!important;overflow:visible!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important}
-  html body .ns-topbar.ns-topbar,
-  html body .header.header,
-  html body .ns-topnav.ns-topnav,
-  html body .ns-nav-inner,
-  html body .sidebar.sidebar,
-  html body .sidebar-backdrop,
-  html body .sidebar-toggle,
-  html body #wsDock,
-  html body .ws-mobile-nav.ws-mobile-nav,
-  html body #fabAddEntry,
-  html body .fab.fab,
-  html body #toastContainer,
-  html body .toast-container,
-  html body .ns-online-pill,
-  html body .sync-status,
-  html body .ws-pagebar,
-  html body .ws-breadcrumb,
-  html body .studio-page-actions,
-  html body .page-actions,
-  html body .table-filters,
-  html body .filter-bar,
-  html body .status-bar,
-  html body .view-entry-actions,
-  html body .desktop-hint,
-  html body .no-print.no-print,
-  html body .multi-select-dropdown,
-  html body .modal-close,
-  html body .qr-sticky-actions,
-  html body .inline-add,
-  html body dialog{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
-  html body button,html body .btn{display:none!important}
-  html body .app-shell{display:block!important;margin:0!important;padding:0!important;width:100%!important;max-width:none!important;gap:0!important}
-  html body .main-area{margin:0!important;padding:0!important;width:100%!important;max-width:none!important;min-width:0!important;display:block!important;position:static!important}
-  html body .main-area>*{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}
-  html body .table-wrapper,html body .report-output,html body .qr-passbook-table-wrap{
-    overflow:visible!important;max-height:none!important;height:auto!important;
-    border:0!important;box-shadow:none!important;border-radius:0!important}
-  html body table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:auto!important;border-collapse:collapse!important;font-size:9pt!important}
-  html body thead{display:table-header-group!important}
-  html body thead th{position:static!important;background:#e8eeeb!important;color:#000!important;-webkit-text-fill-color:#000!important;white-space:normal!important;border:1px solid #9aa5b1!important;font-size:8.5pt!important}
-  html body td{border:1px solid #c3cad2!important;color:#000!important;overflow-wrap:anywhere!important}
-  html body tr{break-inside:avoid!important;page-break-inside:avoid!important}
-  html body .card,html body .dash-card,html body .panel,html body .modal-module{
-    box-shadow:none!important;background:#fff!important;border-color:#c3cad2!important}
-  html body .modal-overlay,html body .entry-modal-overlay{
-    position:static!important;background:#fff!important;padding:0!important;overflow:visible!important;align-items:stretch!important}
-  html body .modal{max-width:100%!important;max-height:none!important;height:auto!important;overflow:visible!important;box-shadow:none!important;border:0!important;border-radius:0!important;padding:0!important;position:static!important}
-  html body .ns-footer,
-  html body .ns-sheet,
-  html body .ns-sheet-backdrop,
-  html body #nsSheetBackdrop,
-  html body #nsModuleSheet,
-  html body #nsOnlinePill,
-  html body .ns-online-pill,
-  html body [role="dialog"]:not(#ledgerPrintRoot *),
-  html body .drawer-backdrop,
-  html body .sheet-backdrop{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
-  html body h1,html body h2,html body h3,html body h4{break-after:avoid!important;page-break-after:avoid!important;color:#000!important}
-  html body input,html body select,html body textarea{
-    background:#fff!important;color:#000!important;-webkit-text-fill-color:#000!important;
-    border:0!important;border-bottom:1px solid #7a8691!important;border-radius:0!important;
-    box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important;
-    padding:1px 2px!important;min-height:0!important;height:auto!important;font-size:9pt!important;
-    background-image:none!important}
-  html body input[type="checkbox"],html body input[type="radio"]{
-    appearance:auto!important;-webkit-appearance:auto!important;border:0!important;width:10pt!important;height:10pt!important}
-  html body select{padding-right:2px!important}
-  /* entrance animations freeze at their 0% state (opacity:0) when animations
-     are disabled for printing -> force full visibility of real content */
-  html body #app,html body #app *,html body #ledgerPrintRoot,html body #ledgerPrintRoot *{
-    opacity:1!important;filter:none!important;-webkit-filter:none!important;transform:none!important;
-    -webkit-text-fill-color:currentColor}
-  html body #app *,html body #ledgerPrintRoot *{animation:none!important;transition:none!important}
-  html body .view-section{position:static!important;overflow:visible!important;height:auto!important}
-  /* when an entry/receipt dialog is open, ONLY that dialog is printed */
-  html.lp-modal-print body>#app,
-  html.lp-modal-print body .app-shell,
-  html.lp-modal-print body .main-area,
-  html.lp-modal-print body .ns-topbar,
-  html.lp-modal-print body .ns-topnav,
-  html.lp-modal-print body .ns-footer,
-  html.lp-modal-print body #ledgerPrintRoot{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
-  html.lp-modal-print body>.modal-overlay,
-  html.lp-modal-print body>.entry-modal-overlay{display:block!important;position:static!important;padding:0!important;margin:0!important;background:#fff!important;overflow:visible!important}
-  html.lp-modal-print body>.modal-overlay:not(.lp-open),
-  html.lp-modal-print body>.entry-modal-overlay:not(.lp-open){display:none!important}
-  /* print-safe palette: the paper stays readable even if the browser is told
-     NOT to print background graphics (default on most phones) */
-  html body #app,html body #app *,html body .modal,html body .modal *{
-    color:#000!important;-webkit-text-fill-color:#000!important;text-shadow:none!important;
-    background-image:none!important;text-decoration-color:#000!important}
-  html body #app .view-entry-header-card,html body .modal .view-entry-header-card,
-  html body #app .dash-card,html body .modal .dash-card,
-  html body #app .card-header,html body .modal .card-header,
-  html body #app thead th,html body .modal thead th,
-  html body #app .ns-pagebar,html body .modal .ns-pagebar{
-    background:#fff!important;background-color:#fff!important;border:1px solid #9aa5b1!important}
-  html body #app .badge-income,html body #app .ve-type-badge.inc,
-  html body .modal .badge-income,html body .modal .ve-type-badge.inc{background:#EEF4F0!important;border:1px solid #7d9c8a!important}
-  html body #app .badge-expense,html body #app .ve-type-badge.exp,
-  html body .modal .badge-expense,html body .modal .ve-type-badge.exp{background:#FBF0F0!important;border:1px solid #b98b8b!important}
-  html body #app .amount-income,html body #app .amount-expense{color:#000!important;font-weight:700!important}
-  html body img{max-width:100%!important}
-  html body *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-shadow:none!important;text-shadow:none!important;animation:none!important;transition:none!important}
 }
 /* ===== QR features: join QR, member passbook card, camera scanner ===== */
 .qr-modal-box{max-width:420px!important;text-align:center;}
@@ -14872,9 +14772,7 @@ LedgerFeatures.qr = {
     document.body.appendChild(root);
     document.body.classList.add('ledger-print-mode');
     document.documentElement.classList.add('ledger-printing');
-    const restoreChrome = () => { if (typeof window.ledgerPrintRestore === 'function') window.ledgerPrintRestore(); };
-    if (typeof window.ledgerPrintIsolate === 'function') window.ledgerPrintIsolate(root);
-    const after = () => { window.removeEventListener('afterprint', after); restoreChrome(); root.remove(); document.body.classList.remove('ledger-print-mode'); document.documentElement.classList.remove('ledger-printing'); };
+    const after = () => { window.removeEventListener('afterprint', after); root.remove(); document.body.classList.remove('ledger-print-mode'); document.documentElement.classList.remove('ledger-printing'); };
     window.addEventListener('afterprint', after);
     const settle = () => { try { window.print(); setTimeout(after, 120000); } catch (err) { after(); showToast('⚠️ પ્રિન્ટ શરૂ થઈ શકી નથી'); } };
     Promise.all(Array.from(root.querySelectorAll('img')).map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = res; img.onerror = res; }))).then(settle);
@@ -20396,81 +20294,6 @@ scheduleLoanBalanceRefresh();
 })();
 </script>
 
-<script id="ledger-print-relax">
-/* ============================================================
-   Mobile/browser-menu friendly printing
-   ------------------------------------------------------------
-   1) before the print dialog opens, scrollable / height-clipped
-      boxes (max-height:xxx;overflow:auto) are relaxed so that the
-      complete list is printed instead of only the visible part;
-   2) everything is restored exactly as it was after printing.
-   ============================================================ */
-(function(){
-  'use strict';
-  var changed=[];
-  var SKIP={SCRIPT:1,STYLE:1,LINK:1,META:1,HEAD:1,HTML:1,BODY:1};
-  function openDialogs(){
-    var list=document.querySelectorAll('.modal-overlay,.entry-modal-overlay,.qr-modal-overlay');
-    var open=[];
-    for(var i=0;i<list.length;i++){
-      var el=list[i],cs=window.getComputedStyle(el);
-      if(cs.display==='none'||cs.visibility==='hidden')continue;
-      if(!el.querySelector('.modal,.entry-modal,.qr-modal-box'))continue;
-      open.push(el);
-    }
-    return open;
-  }
-  var markedDialogs=[];
-  function markDialogs(){
-    var open=openDialogs();
-    if(!open.length)return;
-    for(var i=0;i<open.length;i++){
-      open[i].classList.add('lp-open');
-      markedDialogs.push(open[i]);
-    }
-    document.documentElement.classList.add('lp-modal-print');
-  }
-  function unmarkDialogs(){
-    for(var i=0;i<markedDialogs.length;i++){if(markedDialogs[i])markedDialogs[i].classList.remove('lp-open');}
-    markedDialogs=[];
-    document.documentElement.classList.remove('lp-modal-print');
-  }
-  function relax(){
-    if(document.body.classList.contains('ledger-print-mode'))return; /* own print engine handles this */
-    changed=[];
-    markDialogs();
-    var nodes=document.querySelectorAll('#app *, #app');
-    for(var i=0;i<nodes.length;i++){
-      var el=nodes[i];
-      if(SKIP[el.tagName])continue;
-      var inline=el.getAttribute('style')||'';
-      var clipped=/max-height|overflow/i.test(inline)&&(el.scrollHeight>el.clientHeight+4||el.scrollWidth>el.clientWidth+4);
-      if(!clipped)continue;
-      changed.push({el:el,style:inline});
-      el.style.setProperty('max-height','none','important');
-      el.style.setProperty('height','auto','important');
-      el.style.setProperty('overflow','visible','important');
-      el.style.setProperty('overflow-x','visible','important');
-      el.style.setProperty('overflow-y','visible','important');
-    }
-    document.documentElement.classList.add('ledger-printing');
-  }
-  function restore(){
-    for(var i=0;i<changed.length;i++){
-      var rec=changed[i];
-      if(!rec.el)continue;
-      if(rec.style){rec.el.setAttribute('style',rec.style);}else{rec.el.removeAttribute('style');}
-    }
-    changed=[];
-    unmarkDialogs();
-    if(!document.body.classList.contains('ledger-print-mode'))document.documentElement.classList.remove('ledger-printing');
-  }
-  window.addEventListener('beforeprint',relax);
-  window.addEventListener('afterprint',restore);
-  window.ledgerPrintRelax=relax;window.ledgerPrintRelaxRestore=restore;
-})();
-</script>
-
 <script id="ledger-print-function">
 (function(){
   'use strict';
@@ -20551,98 +20374,7 @@ scheduleLoanBalanceRefresh();
     removeActionColumns(clone);
     return clone;
   }
-  /* put the organisation logo (or the emblem) inside official forms */
-  function stampLogoOnForm(clone,logo){
-    if(!clone)return;
-    var boxes=clone.querySelectorAll('.loan-form-logo,#loanFormLogoBox,#gcFormLogoBox,.ledger-form-logo-box');
-    if(!boxes.length)return;
-    for(var i=0;i<boxes.length;i++){
-      var box=boxes[i];
-      box.innerHTML='';
-      if(logo){ box.appendChild(logoImageElement(logo,'ledger-print-logo')); }
-      else { box.innerHTML=PRINT_EMBLEM_SVG; }
-      var inner=box.querySelector('svg,img');
-      if(inner){
-        var side=box.classList.contains('ledger-print-logo-box')?'100%':'48px';
-        inner.setAttribute('style','width:'+side+';height:'+side+';max-width:100%;max-height:100%;display:block');
-      }
-    }
-  }
   function makeElement(tag,className,text){var el=document.createElement(tag);if(className)el.className=className;if(text!=null)el.textContent=text;return el;}
-
-  /* ---------- Letterhead / logo helpers (A4 print) ---------- */
-  var PRINT_EMBLEM_SVG='<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Emblem">'
-    +'<circle cx="50" cy="50" r="47" fill="#ffffff" stroke="#173a3a" stroke-width="2.6"/>'
-    +'<circle cx="50" cy="50" r="40" fill="#0B1A2E" stroke="#C9A84C" stroke-width="2"/>'
-    +'<path d="M50 20.5l3.6 8.1 8.8.7-6.7 5.8 2 8.7-7.7-4.5-7.7 4.5 2-8.7-6.7-5.8 8.8-.7z" fill="#C9A84C"/>'
-    +'<path d="M50 64c-5.4-4-11.2-5.4-17-5.9v-13c5.8.5 11.6 1.9 17 5.9 5.4-4 11.2-5.4 17-5.9v13c-5.8.5-11.6 1.9-17 5.9z" fill="#ffffff"/>'
-    +'<path d="M50 64v-13" stroke="#0B1A2E" stroke-width="1.6"/>'
-    +'<path d="M33 55.5h11M56 55.5h11" stroke="#0B1A2E" stroke-width="1.1" stroke-linecap="round"/>'
-    +'<path d="M20 72h60" stroke="#C9A84C" stroke-width="2.4" stroke-linecap="round"/>'
-    +'</svg>';
-  function initialsOf(name){
-    var words=String(name||'').replace(/[^A-Za-z\u0A80-\u0AFF ]+/g,' ').trim().split(/\s+/);
-    var out='';for(var i=0;i<words.length;i++){if(/^[A-Za-z]/.test(words[i])&&out.length<3)out+=words[i].charAt(0).toUpperCase();}
-    return out||'SL';
-  }
-  /* true when a usable logo image is available anywhere in the app */
-  function resolvePrintLogo(){
-    var candidates=[];
-    try{ if(typeof logoSettings!=='undefined'&&logoSettings&&logoSettings.image)candidates.push(logoSettings.image); }catch(e){}
-    try{
-      ['#logoIcon img','#settingsLogoPreview img','#loginLogoPreview img','#loanFormLogoBox img','#gcFormLogoBox img'].forEach(function(sel){
-        var img=document.querySelector(sel); if(img&&img.getAttribute('src'))candidates.push(img.getAttribute('src'));
-      });
-    }catch(e){}
-    for(var i=0;i<candidates.length;i++){
-      var src=String(candidates[i]||'');
-      if(/^data:image\/(png|jpe?g|webp|gif|svg\+xml);base64,/i.test(src))return src;
-      if(/^data:image\/svg\+xml,|<svg/i.test(src))return src;
-      if(/^(https?:|blob:)/i.test(src))return src;
-    }
-    return '';
-  }
-  function logoImageElement(src,className){
-    var img=document.createElement('img');
-    img.src=src;img.alt='Logo';img.className=className||'ledger-print-logo';
-    return img;
-  }
-  function fillLogoBox(box,src,brand){
-    if(!box)return;
-    box.innerHTML='';
-    if(src){ box.appendChild(logoImageElement(src,'ledger-print-logo')); return; }
-    box.innerHTML=PRINT_EMBLEM_SVG;
-  }
-  function buildMasthead(config,brand,logo){
-    var mast=makeElement('header','ledger-print-masthead');
-    var logoBox=makeElement('div','ledger-print-logo-box');
-    fillLogoBox(logoBox,logo,brand);
-    mast.appendChild(logoBox);
-    var left=makeElement('div','ledger-print-mast-text');
-    left.appendChild(makeElement('div','ledger-print-org',brand));
-    left.appendChild(makeElement('h1','ledger-print-title',config.title));
-    if(config.subtitle)left.appendChild(makeElement('div','ledger-print-subtitle',config.subtitle));
-    mast.appendChild(left);
-    var stamp=makeElement('div','ledger-print-stamp');
-    var pad=function(n){return n<10?'0'+n:''+n;};
-    var d=new Date();
-    stamp.textContent='';
-    stamp.appendChild(document.createTextNode('તારીખ: '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()));
-    stamp.appendChild(document.createElement('br'));
-    stamp.appendChild(document.createTextNode('પ્રિન્ટ: '+pad(d.getHours())+':'+pad(d.getMinutes())));
-    mast.appendChild(stamp);
-    return mast;
-  }
-  function buildFooter(brand,logo){
-    var foot=makeElement('footer','ledger-print-footer');
-    var left=makeElement('div','lpf-left');
-    if(logo){ left.appendChild(logoImageElement(logo,'lpf-logo')); }
-    else { var sp=document.createElement('span');sp.className='lpf-emblem';sp.innerHTML=PRINT_EMBLEM_SVG;left.appendChild(sp); }
-    left.appendChild(makeElement('span','',brand));
-    foot.appendChild(left);
-    foot.appendChild(makeElement('span','','પ્રિન્ટ તારીખ: '+new Date().toLocaleString('en-GB')));
-    return foot;
-  }
   function printSources(kind){
     var title='', subtitle='', sources=[], officialForm=false;
     if(kind==='summary'){
@@ -20681,37 +20413,8 @@ scheduleLoanBalanceRefresh();
     }
     return {title:title,subtitle:subtitle,sources:sources,officialForm:officialForm};
   }
-  /* Hard isolation: everything except the print root is taken out of the
-     printed page. CSS already hides the shell, but in-line !important styles
-     are added as well so that no device/browser stylesheet can win. */
-  var parkedChrome=[];
-  function isolatePrintRoot(root){
-    restoreAppChrome();
-    var children=document.body.children;
-    for(var i=0;i<children.length;i++){
-      var el=children[i];
-      if(el===root || el.tagName==='SCRIPT' || el.tagName==='STYLE' || el.tagName==='LINK') continue;
-      parkedChrome.push({el:el,value:el.style.getPropertyValue('display'),priority:el.style.getPropertyPriority('display'),hidden:el.getAttribute('data-lp-hidden')});
-      el.style.setProperty('display','none','important');
-      el.setAttribute('data-lp-hidden','1');
-    }
-  }
-  function restoreAppChrome(){
-    for(var i=0;i<parkedChrome.length;i++){
-      var rec=parkedChrome[i], el=rec.el;
-      if(!el) continue;
-      if(rec.value){el.style.setProperty('display',rec.value,rec.priority);}
-      else{el.style.removeProperty('display');}
-      if(rec.hidden==null) el.removeAttribute('data-lp-hidden');
-      else el.setAttribute('data-lp-hidden',rec.hidden);
-    }
-    parkedChrome=[];
-  }
-  window.ledgerPrintIsolate=isolatePrintRoot;
-  window.ledgerPrintRestore=restoreAppChrome;
   function cleanup(){
     if(cleanupTimer){window.clearTimeout(cleanupTimer);cleanupTimer=0;}
-    restoreAppChrome();
     document.body.classList.remove('ledger-print-mode');document.documentElement.classList.remove('ledger-printing');
     var root=document.getElementById('ledgerPrintRoot');if(root)root.remove();
     if(window.__ledgerPrintOldTitle!=null){document.title=window.__ledgerPrintOldTitle;window.__ledgerPrintOldTitle=null;}
@@ -20731,29 +20434,42 @@ scheduleLoanBalanceRefresh();
     printBusy=true;
     var root=makeElement('section','ledger-print-page');root.id='ledgerPrintRoot';
     var brand=(document.getElementById('logoTitle') && textOf(document.getElementById('logoTitle'))) || 'ANSAR YUVA MANDAL, Modasa';
-    var printLogoFirst=resolvePrintLogo();
     if(!config.officialForm){
-      root.appendChild(buildMasthead(config,brand,printLogoFirst));
+      var mast=makeElement('header','ledger-print-masthead');var left=makeElement('div','ledger-print-mast-text');
+      if (typeof isSafeLogoData === 'function' && isSafeLogoData(logoSettings.image)) {
+        var logoImg=document.createElement('img');
+        logoImg.src=logoSettings.image;logoImg.alt='Logo';logoImg.className='ledger-print-logo';
+        mast.appendChild(logoImg);
+      }
+      left.appendChild(makeElement('div','ledger-print-org',brand));left.appendChild(makeElement('h1','ledger-print-title',config.title));
+      if(config.subtitle)left.appendChild(makeElement('div','ledger-print-subtitle',config.subtitle));
+      mast.appendChild(left);mast.appendChild(makeElement('div','ledger-print-stamp','પ્રિન્ટ તારીખ: '+new Date().toLocaleString()));root.appendChild(mast);
     }
-    var printLogo=resolvePrintLogo();
-    var content=makeElement('main','ledger-print-content');
-    config.sources.forEach(function(source){
-      var clone=cloneForPrint(source);
-      if(config.officialForm)stampLogoOnForm(clone,printLogo);
-      content.appendChild(clone);
-    });
-    root.appendChild(content);
-    root.appendChild(buildFooter(brand,printLogo));
+    var content=makeElement('main','ledger-print-content');config.sources.forEach(function(source){content.appendChild(cloneForPrint(source));});root.appendChild(content);
+    root.appendChild(makeElement('footer','ledger-print-footer','પ્રિન્ટ તારીખ: '+new Date().toLocaleString()));
     var maxColumns=0;root.querySelectorAll('table').forEach(function(table){var row=table.querySelector('thead tr:last-child');if(row)maxColumns=Math.max(maxColumns,row.cells.length);});
     if(maxColumns>8)root.classList.add('ledger-print-landscape');
     document.body.appendChild(root);window.__ledgerPrintOldTitle=document.title;document.title=(config.title||'Print')+' - '+brand;
     document.body.classList.add('ledger-print-mode');document.documentElement.classList.add('ledger-printing');
-    isolatePrintRoot(root);
     var after=function(){window.removeEventListener('afterprint',after);cleanup();};window.addEventListener('afterprint',after);
-    try{await waitForImages(root);window.print();if(printBusy)cleanupTimer=window.setTimeout(cleanup,120000);}
+    try{
+      await waitForImages(root);
+      /* Mobile print fix: force the browser to finish CSS reflow with the
+         hidden shell (fixed header/dock/FAB, overlays) BEFORE opening the
+         print dialog. Without this the mobile preview sometimes captured
+         the old paint (header + dock + whole page). Two rAFs + a short
+         timeout is enough for Chrome Android / Safari iOS. */
+      await new Promise(function(resolve){
+        if(window.requestAnimationFrame){
+          requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(resolve,80); }); });
+        } else { setTimeout(resolve,150); }
+      });
+      window.print();
+      if(printBusy)cleanupTimer=window.setTimeout(cleanup,60000);
+    }
     catch(err){cleanup();toast('પ્રિન્ટ શરૂ થઈ શકી નથી. બ્રાઉઝરનું Print વિકલ્પ અજમાવો.');}
   };
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4f7f303fb5ece27',t:'MTc5MjgzNDA4NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
