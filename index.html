@@ -7707,80 +7707,322 @@ body.ns2026 #wsDock button{position:relative}
 
 </style>
 
+<style id="ns-mobile-fixpack">
+/* =====================================================================
+   MOBILE FIX PACK  (phones / small tablets only — desktop untouched)
+   ===================================================================== */
+@media (max-width:1023.98px){
+
+  /* ---- 1. App header: full organisation name, no clipped text ---- */
+  body.ns2026 .header{padding:6px 10px!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important;overflow:hidden!important}
+  body.ns2026 .header .logo{min-width:0!important;flex:1 1 auto!important;gap:8px!important}
+  body.ns2026 .header .logo .brand{min-width:0!important;flex:1 1 auto!important;overflow:hidden!important}
+  body.ns2026 .header .logo .brand .title{
+    white-space:normal!important;overflow:hidden!important;text-overflow:clip!important;
+    -webkit-line-clamp:2!important;line-clamp:2!important;display:-webkit-box!important;-webkit-box-orient:vertical!important;
+    line-height:1.18!important;font-size:.82rem!important;letter-spacing:0!important;
+    word-break:break-word!important;overflow-wrap:anywhere!important;
+    min-width:0!important;max-width:100%!important;flex:1 1 auto!important}
+  body.ns2026 .header-actions{flex:0 0 auto!important;gap:5px!important;min-width:0!important;justify-self:end!important;overflow:visible!important}
+  body.ns2026 .header-actions .sync-status{flex:0 0 auto!important}
+  body.ns2026 .header-actions .ws-launch{flex:0 0 auto!important;width:38px!important;height:38px!important;min-width:38px!important}
+  body.ns2026 #headerLogoutBtn{flex:0 0 auto!important;width:38px!important;height:38px!important;min-width:38px!important}
+
+  /* ---- 2. Sync badge: compact round indicator (no text overflow) ---- */
+  body.ns2026 .header-actions .sync-status{
+    width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;
+    padding:0!important;border-radius:50%!important;justify-content:center!important;align-items:center!important;gap:0!important;
+    flex:0 0 36px!important;overflow:hidden!important}
+  body.ns2026 .header-actions .sync-status #syncStatusText{
+    position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;
+    clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important;padding:0!important;margin:-1px!important}
+  body.ns2026 .header-actions .sync-status .dot{width:10px!important;height:10px!important;display:block!important}
+
+  /* ---- 3. Card-header action buttons (Excel / પ્રિન્ટ / New ...) ---- */
+  body.ns2026 .card-header{padding:12px!important;gap:8px!important;flex-wrap:wrap!important;align-items:center!important}
+  body.ns2026 .card-header .header-actions-right{gap:6px!important;flex-wrap:wrap!important;justify-content:flex-end!important;margin-left:auto!important}
+  body.ns2026 .card-header .header-actions-right .btn{
+    min-width:46px!important;min-height:46px!important;padding:5px 8px!important;overflow:visible!important;
+    border-radius:12px!important;gap:2px!important}
+  body.ns2026 .card-header .header-actions-right .btn .icon{font-size:1rem!important;line-height:1!important}
+  body.ns2026 .card-header .header-actions-right .btn .label{
+    font-size:.54rem!important;line-height:1.1!important;white-space:nowrap!important;letter-spacing:0!important;
+    max-width:100%!important;overflow:visible!important;text-overflow:clip!important}
+
+  /* ---- 4. Filters: label | control grid — nothing is squeezed or clipped ---- */
+  body.ns2026 .date-filter-row{
+    display:grid!important;
+    grid-template-columns:auto minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:8px 9px!important;
+    width:100%!important;max-width:100%!important}
+  body.ns2026 .date-filter-row .filter-section-label{
+    margin:0!important;flex:none!important;white-space:nowrap!important;
+    font-size:.63rem!important;letter-spacing:.02em!important;min-width:0!important}
+  body.ns2026 .date-filter-row .date-preset-select,
+  body.ns2026 .date-filter-row .multi-select,
+  body.ns2026 .date-filter-row #partySearchInput{
+    grid-column:2!important;min-width:0!important;width:100%!important;max-width:100%!important;
+    height:42px!important;min-height:42px!important;text-overflow:ellipsis!important}
+  body.ns2026 .date-filter-row .multi-select .multi-select-btn{width:100%!important;min-width:0!important}
+  body.ns2026 .date-filter-row .multi-select-btn span,
+  body.ns2026 .date-filter-row .multi-select-btn #catSelectedText{
+    overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;min-width:0!important}
+  body.ns2026 .date-filter-row #customDateInputs{grid-column:2!important;min-width:0!important;flex-wrap:wrap!important;gap:6px!important}
+  body.ns2026 .date-filter-row .btn,
+  body.ns2026 .date-filter-row .btn-ghost,
+  body.ns2026 .date-filter-row .btn-select-all-dates{
+    grid-column:2!important;justify-self:start!important;width:auto!important;min-width:0!important}
+  @media (max-width:344px){
+    body.ns2026 .date-filter-row{grid-template-columns:minmax(0,1fr)!important;gap:6px!important}
+    body.ns2026 .date-filter-row .filter-section-label{grid-column:1!important;font-size:.6rem!important}
+    body.ns2026 .date-filter-row .date-preset-select,
+    body.ns2026 .date-filter-row .multi-select,
+    body.ns2026 .date-filter-row #partySearchInput,
+    body.ns2026 .date-filter-row #customDateInputs,
+    body.ns2026 .date-filter-row .btn,
+    body.ns2026 .date-filter-row .btn-ghost,
+    body.ns2026 .date-filter-row .btn-select-all-dates{grid-column:1!important}
+  }
+
+  /* ---- 5. Multi-select dropdown must stay inside the screen ---- */
+  body.ns2026 .multi-select-dropdown{
+    max-width:calc(100vw - 24px)!important;left:auto!important;right:0!important;z-index:1200!important}
+
+  /* ---- 6. Touch targets ---- */
+  body.ns2026 .btn:not(.btn-xs){min-height:42px!important}
+  body.ns2026 .btn.btn-xs, body.ns2026 .btn-xs{min-width:34px!important;min-height:34px!important;padding:6px 9px!important}
+  body.ns2026 .icon-btn, body.ns2026 .modal-close{min-width:38px!important;min-height:38px!important}
+  body.ns2026 .item-actions{flex-wrap:wrap!important;gap:5px!important}
+
+  /* ---- 7. Dialogs / sheets ---- */
+  body.ns2026 .modal{max-height:calc(100dvh - 16px)!important;overflow:auto!important;-webkit-overflow-scrolling:touch!important}
+  body.ns2026 .ns-sheet:not(.open){visibility:hidden!important}
+  body.ns2026 .ns-sheet.open{visibility:visible!important}
+  @media (hover:none){
+    body.ns2026 .desktop-hint,body.ns2026 .entry-modal-footer .desktop-hint{display:none!important}
+  body.ns2026 .entry-modal-footer{display:none!important}
+  }
+
+  /* ---- 8. No double page title: keep only the back chip ---- */
+  body.ns2026.ns-mpage .view-section.active .ns-pagebar-title{display:none!important}
+  body.ns2026.ns-mpage .view-section.active .ns-pagebar{
+    gap:6px!important;padding:0!important;margin:0 0 6px!important;
+    background:transparent!important;border:0!important;box-shadow:none!important;
+    position:static!important;justify-content:flex-start!important}
+  body.ns2026.ns-mpage .view-section.active .ns-pagebar .ns-pagebar-back{
+    min-height:34px!important;height:34px!important;padding:5px 13px 5px 10px!important;font-size:.74rem!important;
+    border-radius:999px!important;box-shadow:0 3px 9px rgba(14,117,105,.18)!important;gap:5px!important}
+  body.ns2026.ns-mpage .view-section.active .ns-pagebar .ns-pagebar-back i{font-size:.8rem!important}
+
+  /* ---- 9. Tables: visible "swipe" affordance, shadow only while scrollable left ---- */
+  body.ns2026 .table-wrapper{position:relative!important}
+  body.ns2026 .table-wrapper table{min-width:540px!important}
+  body.ns2026 .table-wrapper.at-end{box-shadow:none!important}
+  body.ns2026 .table-wrapper.is-scrollable:not(.at-end)::after{
+    content:'→';position:sticky;right:0;float:right;bottom:0;
+    font-size:.8rem;color:#0E7569;background:linear-gradient(90deg,transparent,#fff 40%);
+    padding:2px 6px 2px 14px;pointer-events:none;margin-top:-22px;font-weight:800}
+
+  /* ---- 10. Bottom spacing so the dock / FAB never hide content ---- */
+  body.ns2026:not(.ns-mpage){padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
+  body.ns2026.ns-mpage{padding-bottom:calc(28px + env(safe-area-inset-bottom))!important}
+  body.ns2026.ns-mpage .fab{bottom:calc(20px + env(safe-area-inset-bottom))!important}
+  body.ns2026 .toast-container,body.ns2026 #toastContainer{bottom:calc(var(--dock-h,84px) + 14px + env(safe-area-inset-bottom))!important}
+
+  /* ---- 11. Login card: centred when it fits, scrollable (never cut) when not ---- */
+  body.ns2026 .login-overlay{
+    justify-content:flex-start!important;align-items:center!important;
+    overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;padding:14px!important}
+  body.ns2026 .login-card{margin:auto 0!important;max-height:none!important;flex:0 0 auto!important}
+
+  /* ---- 12. Reports screen: one control per row (no orphan labels) ---- */
+  body.ns2026 .ns-report-tools{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:6px 0!important;padding:12px!important}
+  body.ns2026 .ns-report-tools .ns-tool-label{grid-column:1!important;margin-top:4px!important;font-size:.62rem!important}
+  body.ns2026 .ns-report-tools .ns-tool-input,
+  body.ns2026 .ns-report-tools .ns-tool-dates{grid-column:1!important;width:100%!important;max-width:100%!important;min-width:0!important;flex:1 1 auto!important}
+  body.ns2026 .ns-report-tools .ns-tool-dates{display:flex!important;gap:6px!important;flex-wrap:wrap!important}
+  body.ns2026 .ns-report-tools .ns-tool-dates input{flex:1 1 120px!important;min-width:0!important}
+  body.ns2026 .ns-report-tools .ns-tool-actions{grid-column:1!important;display:flex!important;gap:8px!important;width:100%!important;margin:8px 0 0!important}
+  body.ns2026 .ns-report-tools .ns-tool-actions .btn{flex:1 1 0!important;min-width:0!important}
+  body.ns2026 .report-inline-actions{display:flex!important;flex-wrap:wrap!important;gap:6px!important;padding:10px!important}
+  body.ns2026 .report-inline-actions .btn{flex:1 1 68px!important;min-width:0!important;justify-content:center!important;font-size:.6rem!important;padding:8px 6px!important}
+
+  /* ---- 13. Generated report table: readable size, swipeable (not crammed) ---- */
+  body.ns2026 #reportOutput table,
+  body.ns2026 .report-output table,
+  body.ns2026 .report-section table{width:100%!important;min-width:520px!important;table-layout:auto!important}
+  body.ns2026 #reportOutput th,body.ns2026 #reportOutput td,
+  body.ns2026 .report-output th,body.ns2026 .report-output td{
+    padding:8px 9px!important;font-size:.7rem!important;line-height:1.4!important;white-space:normal!important;overflow-wrap:break-word!important}
+  body.ns2026 #reportOutput h3,body.ns2026 #reportOutput h4,
+  body.ns2026 .report-output h3,body.ns2026 .report-output h4{font-size:.82rem!important}
+
+  /* ---- 14. Compact header buttons on very narrow phones ---- */
+  @media (max-width:430px){
+    body.ns2026 .header-actions .ws-launch,
+    body.ns2026 #headerLogoutBtn{width:36px!important;height:36px!important;min-width:36px!important}
+    body.ns2026 .header-actions .sync-status{min-height:32px!important;padding:3px 7px!important}
+    body.ns2026 .header-actions .sync-status #syncStatusText{font-size:.5rem!important}
+  }
+  @media (max-width:360px){
+    body.ns2026 .header-actions{gap:4px!important}
+    body.ns2026 .header-actions .ws-launch,
+    body.ns2026 #headerLogoutBtn{width:33px!important;height:33px!important;min-width:33px!important}
+    body.ns2026 .header-actions .sync-status{min-height:30px!important;padding:3px 6px!important}
+  }
+
+  /* ---- 15. Landscape / short screens: login stays fully usable ---- */
+  @media (max-height:540px){
+    body.ns2026 .login-overlay{justify-content:flex-start!important;align-items:center!important;overflow-y:auto!important;padding:10px!important}
+    body.ns2026 .login-card{overflow:visible!important;max-height:none!important;margin:0 0 12px!important;padding:16px 18px!important}
+    body.ns2026 .login-card .login-logo{width:46px!important;height:46px!important;font-size:1.15rem!important;margin-bottom:6px!important}
+    body.ns2026 .login-card h2,body.ns2026 #loginOrgTitle{font-size:1.02rem!important;line-height:1.25!important}
+    body.ns2026 .login-card .login-sub{display:none!important}
+    body.ns2026 .login-card .login-tabs{margin:8px 0 6px!important}
+    body.ns2026 .login-card .form-group{margin-bottom:8px!important}
+    body.ns2026 .login-card .login-links{margin-top:8px!important;flex-wrap:wrap!important;gap:6px!important}
+    body.ns2026 .login-card .login-error{min-height:0!important}
+  }
+
+  /* ---- 16. Settings panel sub-header: back chip wraps instead of overlapping ---- */
+  body.ns2026 .settings-panel-head,
+  body.ns2026 .settings-panel-header{flex-wrap:wrap!important;gap:8px!important;align-items:center!important}
+  body.ns2026 .settings-panel-scroll{padding:0 2px 10px!important}
+  body.ns2026 #settingsModal .settings-panel-section h2,
+  body.ns2026 #settingsModal .settings-panel-title{font-size:1.28rem!important;word-break:break-word!important}
+
+  /* ---- 17. Page bar + its action group: wrap on wide-but-short (landscape) screens ---- */
+  body.ns2026 .ws-pagebar{flex-wrap:wrap!important;gap:8px 10px!important;max-width:100%!important;min-width:0!important}
+  body.ns2026 .ws-pagebar>*{min-width:0!important}
+  body.ns2026 .ws-pagebar h1,body.ns2026 .ws-pagebar .ns-page-h1{flex:1 1 auto!important;min-width:0!important;overflow-wrap:anywhere!important}
+  body.ns2026 .ws-pagebar .studio-page-actions{
+    width:auto!important;max-width:100%!important;flex:0 1 auto!important;
+    justify-content:flex-end!important;flex-wrap:wrap!important;gap:6px!important}
+  body.ns2026 .ws-pagebar .studio-primary{min-height:38px!important;padding:8px 12px!important;white-space:nowrap!important}
+  body.ns2026 .studio-page-actions .ws-date{display:none!important}
+
+  /* ---- 18. Settings sub-header: crumb truncates, back chip never overlaps ---- */
+  body.ns2026 .settings-section-heading{
+    display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;
+    width:100%!important;min-width:0!important}
+  body.ns2026 .settings-section-heading>span{
+    flex:1 1 auto!important;min-width:0!important;overflow:hidden!important;
+    text-overflow:ellipsis!important;white-space:nowrap!important}
+  body.ns2026 .ws-settings-back{flex:0 0 auto!important;margin:0 0 0 auto!important;order:2!important}
+
+  /* ---- 19. Dialog action rows: comfortable 2-per-row grid, none orphaned ---- */
+  body.ns2026 .view-entry-actions{
+    display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;justify-items:stretch!important}
+  body.ns2026 .view-entry-actions .btn{min-width:0!important;width:100%!important;justify-content:center!important}
+  body.ns2026 .view-entry-actions .btn:last-child:nth-child(odd){grid-column:1 / -1!important}
+  body.ns2026 .modal-actions{display:flex!important;flex-wrap:wrap!important;gap:8px!important}
+  body.ns2026 .modal-actions .btn{flex:1 1 130px!important;min-width:0!important;justify-content:center!important}
+
+  /* ---- 20. Mobile polish: no double-tap zoom lag, no scroll-chaining behind sheets ---- */
+  body.ns2026 button,body.ns2026 .btn,body.ns2026 a,body.ns2026 [onclick],
+  body.ns2026 .ns-nav-btn,body.ns2026 .ws-mobile-nav button{touch-action:manipulation!important}
+  body.ns2026 .modal,body.ns2026 .entry-modal,body.ns2026 .ns-sheet,
+  body.ns2026 .table-wrapper,body.ns2026 .multi-select-dropdown{overscroll-behavior:contain!important}
+  html{-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important}
+
+  /* ---- 21. No floating FAB over the data on phones ----
+     The bottom dock already carries a big "નવી એન્ટ્રી" button, so the
+     round FAB only duplicated it *and* covered the last table rows. */
+  body.ns2026 .fab{display:none!important}
+  body.ns2026.ns-mpage .fab{display:none!important}
+  /* tablet band (700–1023.98px) has no bottom dock -> keep the FAB there
+     (only while it is actually needed: the app.js toggles an inline display) */
+  @media (min-width:700px){
+    body.ns2026 .fab:not([style*="none"]){display:flex!important;bottom:calc(24px + var(--safe-bottom))!important}
+  }
+
+  /* ---- 22. Login helper links: breathing room ---- */
+  body.ns2026 .login-links{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;gap:8px 14px!important}
+  body.ns2026 .login-links a{white-space:nowrap!important}
+
+  /* ---- 23. Entry filters: 2-up (Date | Cat) on normal phones, compact ---- */
+  @media (min-width:380px){
+    body.ns2026 .date-filter-row{
+      grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr)!important;
+      column-gap:6px!important;row-gap:8px!important}
+    body.ns2026 .date-filter-row .filter-section-label:nth-of-type(1){grid-column:1!important;grid-row:1!important}
+    body.ns2026 .date-filter-row #datePresetSelect{grid-column:2!important;grid-row:1!important}
+    body.ns2026 .date-filter-row .filter-section-label:nth-of-type(2){grid-column:3!important;grid-row:1!important}
+    body.ns2026 .date-filter-row .multi-select{grid-column:4!important;grid-row:1!important}
+    body.ns2026 .date-filter-row .filter-section-label:nth-of-type(3){grid-column:1!important;grid-row:2!important}
+    body.ns2026 .date-filter-row #partySearchInput{grid-column:2 / 4!important;grid-row:2!important}
+    body.ns2026 .date-filter-row button[onclick*="clearAllReportFilters"]{grid-column:4!important;grid-row:2!important;justify-self:stretch!important;width:100%!important}
+    body.ns2026 .date-filter-row #customDateInputs{grid-column:2 / 5!important;grid-row:2!important}
+    body.ns2026 .date-filter-row .filter-section-label{font-size:.58rem!important}
+    body.ns2026 .date-filter-row .date-preset-select,
+    body.ns2026 .date-filter-row #partySearchInput,
+    body.ns2026 .date-filter-row .multi-select .multi-select-btn{height:40px!important;min-height:40px!important;font-size:14px!important}
+  }
+
+  /* ---- 24. Summary chips: pills instead of stray "/" separators ---- */
+  body.ns2026 .summary-line{gap:6px!important;row-gap:6px!important;padding:8px!important;flex-wrap:wrap!important}
+  body.ns2026 .summary-line>span[style*="gray-400"]{display:none!important}
+  body.ns2026 .summary-line .summary-item{
+    font-size:.66rem!important;padding:6px 10px!important;border-radius:999px!important;
+    background:rgba(255,255,255,.75)!important;white-space:nowrap!important;
+    line-height:1.35!important;display:inline-flex!important;align-items:center!important;overflow:visible!important}
+
+  /* ---- 25. Small-screen typography tighten ---- */
+  @media (max-width:380px){
+    body.ns2026 .header .logo .brand .sub{display:none!important}
+    body.ns2026 .card-header>span,body.ns2026 .card-header h3{font-size:.86rem!important}
+    body.ns2026 .ws-pagebar h1,body.ns2026 .ns-page-h1{font-size:1.12rem!important}
+  }
+}
+</style>
+
 <style id="ledger-print-styles">
 #ledgerPrintRoot{display:none}
 @page{size:A4 portrait;margin:12mm 10mm}
 @page ledgerWide{size:A4 landscape;margin:10mm}
 @media print{
   html,body{height:auto!important;min-height:0!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  /* --- print isolation: ONLY #ledgerPrintRoot may reach the paper --- */
   body.ledger-print-mode>*:not(#ledgerPrintRoot){display:none!important}
-  /* ===== MOBILE PRINT FIX =====
-     Mobile browsers (Chrome Android / Safari iOS) do NOT reliably apply
-     `display:none` from a parent to their fixed/sticky/overlay children —
-     so the header, dock, FAB, toast, sync pill, sidebar and modals keep
-     bleeding into the printed page. Hide them directly and force
-     visibility so only #ledgerPrintRoot ever prints. */
-  body.ledger-print-mode .header,
-  body.ledger-print-mode .header.ns-topbar,
-  body.ledger-print-mode .ns-topnav,
-  body.ledger-print-mode .sidebar,
-  body.ledger-print-mode .sidebar-backdrop,
-  body.ledger-print-mode .sidebar-toggle,
-  body.ledger-print-mode .ws-mobile-nav,
-  body.ledger-print-mode #wsDock,
-  body.ledger-print-mode .fab,
-  body.ledger-print-mode #fabAddEntry,
-  body.ledger-print-mode .ns-online-pill,
-  body.ledger-print-mode #nsOnlinePill,
-  body.ledger-print-mode #toastContainer,
-  body.ledger-print-mode #wsSearchDialog,
-  body.ledger-print-mode .modal-overlay,
-  body.ledger-print-mode .entry-modal-overlay,
-  body.ledger-print-mode #entryPenaltyPicker,
-  body.ledger-print-mode .login-overlay,
-  body.ledger-print-mode #loginOverlay,
-  body.ledger-print-mode .ns-sheet,
-  body.ledger-print-mode .ns-sheet-backdrop,
-  body.ledger-print-mode .ns-pagebar,
-  body.ledger-print-mode .ws-pagebar,
-  body.ledger-print-mode .account-tabs,
-  body.ledger-print-mode .date-filter-row,
-  body.ledger-print-mode .report-inline-actions,
-  body.ledger-print-mode .card-header .header-actions-right {
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    width: 0 !important;
-    overflow: hidden !important;
-  }
-  body.ledger-print-mode #app,
-  body.ledger-print-mode .main-area,
-  body.ledger-print-mode .app-shell,
-  body.ledger-print-mode .container {
-    display: block !important;
-    visibility: visible !important;
-    position: static !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: #fff !important;
-    border: 0 !important;
-    box-shadow: none !important;
-  }
-  body.ledger-print-mode .view-section { display: none !important; }
-  body.ledger-print-mode .view-section.active { display: block !important; }
+  body.ledger-print-mode>*:not(#ledgerPrintRoot) *{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
+  body.ledger-print-mode>#app,body.ledger-print-mode>#loginOverlay,body.ledger-print-mode>#wsDock,
+  body.ledger-print-mode>.modal-overlay,body.ledger-print-mode>.entry-modal-overlay,
+  body.ledger-print-mode>#toastContainer,body.ledger-print-mode>dialog,
+  body.ledger-print-mode>[data-lp-hidden="1"]{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
+  body.ledger-print-mode>#ledgerPrintRoot{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important}
   body.ledger-print-mode #ledgerPrintRoot{display:block!important;position:static!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important;color:#000!important;font-family:Arial,'Noto Sans Gujarati',sans-serif!important;font-size:10pt!important;line-height:1.4!important;box-shadow:none!important}
   #ledgerPrintRoot *{box-sizing:border-box!important;animation:none!important;transition:none!important;text-shadow:none!important;box-shadow:none!important;opacity:1!important;transform:none!important}
   #ledgerPrintRoot ::before,#ledgerPrintRoot ::after{opacity:1!important;transform:none!important}
   #ledgerPrintRoot,#ledgerPrintRoot *,#ledgerPrintRoot ::before,#ledgerPrintRoot ::after{color:#000!important;-webkit-text-fill-color:#000!important}
   #ledgerPrintRoot.ledger-print-landscape{page:ledgerWide}
   #ledgerPrintRoot .ledger-print-masthead{border-bottom:2px solid #173a3a!important;margin:0 0 12px!important;padding:0 0 8px!important;display:flex!important;justify-content:space-between!important;align-items:center!important;gap:12px!important}
+  #ledgerPrintRoot .ledger-print-masthead{flex-wrap:wrap!important;align-items:center!important;row-gap:4px!important}
+  #ledgerPrintRoot .ledger-print-org{white-space:normal!important;overflow-wrap:anywhere!important}
   #ledgerPrintRoot .ledger-print-logo{height:15mm!important;max-height:15mm!important;width:auto!important;max-width:48mm!important;object-fit:contain!important;flex:0 0 auto!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
+  /* ---- A4 letterhead: logo block ---- */
+  #ledgerPrintRoot .ledger-print-logo-box{
+    flex:0 0 auto!important;width:20mm!important;height:20mm!important;min-width:20mm!important;
+    border:1px solid #173a3a!important;border-radius:2mm!important;background:#fff!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;
+    padding:1.4mm!important;box-sizing:border-box!important;overflow:hidden!important}
+  #ledgerPrintRoot .ledger-print-logo-box img{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;display:block!important}
+  #ledgerPrintRoot .ledger-print-logo-box svg{width:100%!important;height:100%!important;display:block!important}
+  #ledgerPrintRoot .ledger-print-logo-box .ledger-emblem-initials{font-family:Arial,sans-serif!important;font-weight:700!important;font-size:12pt!important;letter-spacing:.5pt!important;color:#0B1A2E!important}
+  #ledgerPrintRoot .ledger-print-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important}
+  #ledgerPrintRoot .ledger-print-footer .lpf-left{display:flex!important;align-items:center!important;gap:5px!important;font-size:7.5pt!important;color:#000!important}
+  #ledgerPrintRoot .ledger-print-footer .lpf-logo{width:6mm!important;height:6mm!important;object-fit:contain!important;display:block!important}
+  #ledgerPrintRoot .ledger-print-footer .lpf-emblem{width:6mm!important;height:6mm!important;display:block!important}
   #ledgerPrintRoot .ledger-print-mast-text{min-width:0!important;flex:1 1 auto!important}
   #ledgerPrintRoot .ledger-print-org{font-size:15pt!important;font-weight:700!important;color:#000!important;margin:0 0 3px!important}
   #ledgerPrintRoot .ledger-print-title{font-size:12pt!important;font-weight:700!important;color:#000!important;margin:0!important}
   #ledgerPrintRoot .ledger-print-subtitle{font-size:8.5pt!important;color:#000!important;margin-top:3px!important}
-  #ledgerPrintRoot .ledger-print-stamp{font-size:8pt!important;color:#000!important;text-align:right!important;white-space:nowrap!important}
+  #ledgerPrintRoot .ledger-print-stamp{font-size:8pt!important;color:#000!important;text-align:right!important;white-space:normal!important;max-width:52mm!important;flex:0 0 auto!important;line-height:1.35!important}
   #ledgerPrintRoot .ledger-print-content{width:100%!important;max-width:none!important;overflow:visible!important}
+  #ledgerPrintRoot .summary-line{background-image:none!important;border:0!important;box-shadow:none!important}
+  #ledgerPrintRoot .summary-line::before,#ledgerPrintRoot .summary-line::after{display:none!important}
+  #ledgerPrintRoot [style*="dashed"]{border-style:solid!important}
   #ledgerPrintRoot .ledger-print-footer{border-top:1px solid #bbb!important;margin-top:12px!important;padding-top:5px!important;color:#000!important;font-size:8pt!important;text-align:right!important}
   #ledgerPrintRoot table{width:100%!important;min-width:0!important;max-width:100%!important;border-collapse:collapse!important;table-layout:auto!important;page-break-inside:auto!important;break-inside:auto!important;font-size:8.5pt!important;color:#000!important}
   #ledgerPrintRoot thead{display:table-header-group!important;position:static!important}
@@ -7795,6 +8037,22 @@ body.ns2026 #wsDock button{position:relative}
   #ledgerPrintRoot .card,#ledgerPrintRoot .loan-form-paper,#ledgerPrintRoot .view-entry-header-card,#ledgerPrintRoot .view-entry-rows{width:100%!important;max-width:none!important;margin:0 0 8px!important;overflow:visible!important;break-inside:auto!important;page-break-inside:auto!important;background:#fff!important;border-color:#b8c0c8!important}
   #ledgerPrintRoot .loan-form-paper{padding:0!important;border:0!important;border-radius:0!important}
   #ledgerPrintRoot .loan-form-header,#ledgerPrintRoot .loan-form-sec-title{break-after:avoid!important;page-break-after:avoid!important}
+  /* official forms: white paper look (dark bands become white + border so the
+     black print text stays readable on every printer) */
+  #ledgerPrintRoot .loan-form-header{background:#fff!important;background-image:none!important;border:1px solid #173a3a!important;border-bottom:2px solid #b08d2f!important;padding:12px 14px!important}
+  #ledgerPrintRoot .loan-form-header::before{display:none!important}
+  #ledgerPrintRoot .loan-form-header::after{display:none!important}
+  #ledgerPrintRoot .loan-form-logo{background:#fff!important;border:1px solid #173a3a!important;color:#000!important;box-shadow:none!important;width:18mm!important;height:18mm!important;min-width:18mm!important;max-width:18mm!important;max-height:18mm!important;overflow:hidden!important;border-radius:2mm!important;align-items:center!important;justify-content:center!important;font-size:0!important}
+  #ledgerPrintRoot .loan-form-logo img,#ledgerPrintRoot .loan-form-logo svg{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;display:block!important}
+  #ledgerPrintRoot .loan-form-logo-wrap{gap:6mm!important;justify-content:center!important}
+  #ledgerPrintRoot .loan-form-logo-title{background:none!important;-webkit-text-fill-color:#000!important;color:#000!important;text-shadow:none!important;font-size:14pt!important}
+  #ledgerPrintRoot .loan-form-header-sub,.ledger-print-form-sub{color:#000!important;-webkit-text-fill-color:#000!important;letter-spacing:.08em!important;font-size:7.5pt!important}
+  #ledgerPrintRoot .loan-form-sec{background:#fff!important;border:1px solid #b9c0c6!important;border-radius:0!important;box-shadow:none!important}
+  #ledgerPrintRoot .loan-form-sec-title{background:#f2f4f3!important;background-image:none!important;border-bottom:1px solid #b08d2f!important;padding:4px 8px!important}
+  #ledgerPrintRoot .loan-form-sec-title i,#ledgerPrintRoot .loan-form-sec-title strong{background:#fff!important;color:#000!important}
+  #ledgerPrintRoot .loan-note-special{background:#FBF3DC!important;background-image:none!important;border:1px solid #b08d2f!important}
+  #ledgerPrintRoot .loan-photo-box{background:#fff!important}
+  #ledgerPrintRoot .loan-form-paper{background:#fff!important;background-image:none!important}
   #ledgerPrintRoot .loan-form-sec{break-inside:avoid-page!important;page-break-inside:avoid!important}
   #ledgerPrintRoot .loan-photo-box{min-height:34mm!important;max-width:34mm!important;background:#fff!important;border:1px solid #777!important}
   #ledgerPrintRoot .loan-photo-box img{display:block!important;width:100%!important;height:auto!important;max-height:42mm!important;object-fit:contain!important}
@@ -7812,6 +8070,9 @@ body.ns2026 #wsDock button{position:relative}
   #ledgerPrintRoot .badge-income,#ledgerPrintRoot .ve-type-badge.inc{background:#E6F4EC!important;border:1px solid #6FA886!important;color:#000!important}
   #ledgerPrintRoot .badge-expense,#ledgerPrintRoot .ve-type-badge.exp{background:#F8ECEC!important;border:1px solid #D08A8A!important;color:#000!important}
   #ledgerPrintRoot .party-count-badge{background:#eef2f7!important;border:1px solid #b9c4d0!important;color:#000!important}
+  #ledgerPrintRoot .ve-type-badge,#ledgerPrintRoot .badge,#ledgerPrintRoot .status-badge,#ledgerPrintRoot .party-count-badge{
+    white-space:nowrap!important;padding:1px 5px!important;font-size:7.5pt!important;min-width:0!important;max-width:none!important;
+    line-height:1.45!important;display:inline-block!important;border-radius:6px!important;letter-spacing:0!important}
   #ledgerPrintRoot .summary-placeholder{background:#FBF3DC!important;color:#000!important}
   #ledgerPrintRoot .view-entry-header-card{background:#f4f8f5!important}
   #ledgerPrintRoot .dash-card,#ledgerPrintRoot .card{background:#f7f9f8!important}
@@ -7822,6 +8083,129 @@ body.ns2026 #wsDock button{position:relative}
   #ledgerPrintRoot tfoot td,#ledgerPrintRoot tr.total-row td{background:#eef2ef!important;font-weight:700!important}
   #ledgerPrintRoot .table-wrapper,#ledgerPrintRoot .report-output{background:#fff!important}
   #ledgerPrintRoot h1,#ledgerPrintRoot h2,#ledgerPrintRoot h3,#ledgerPrintRoot h4{break-after:avoid-page!important;page-break-after:avoid!important}
+}
+
+/* ==========================================================================
+   GLOBAL PRINT GUARD
+   Stops the app shell (header, top-nav, sidebar, bottom dock, FAB, buttons,
+   filters, toast, modal chrome) from being printed — also when the print is
+   started from the browser menu / Share → Print on a mobile phone, where the
+   app's own #ledgerPrintRoot does not exist.
+   ========================================================================== */
+@media print{
+  @page{size:A4 portrait;margin:12mm 10mm}
+  html,body{background:#fff!important;color:#000!important;overflow:visible!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important}
+  html body .ns-topbar.ns-topbar,
+  html body .header.header,
+  html body .ns-topnav.ns-topnav,
+  html body .ns-nav-inner,
+  html body .sidebar.sidebar,
+  html body .sidebar-backdrop,
+  html body .sidebar-toggle,
+  html body #wsDock,
+  html body .ws-mobile-nav.ws-mobile-nav,
+  html body #fabAddEntry,
+  html body .fab.fab,
+  html body #toastContainer,
+  html body .toast-container,
+  html body .ns-online-pill,
+  html body .sync-status,
+  html body .ws-pagebar,
+  html body .ws-breadcrumb,
+  html body .studio-page-actions,
+  html body .page-actions,
+  html body .table-filters,
+  html body .filter-bar,
+  html body .status-bar,
+  html body .view-entry-actions,
+  html body .desktop-hint,
+  html body .no-print.no-print,
+  html body .multi-select-dropdown,
+  html body .modal-close,
+  html body .qr-sticky-actions,
+  html body .inline-add,
+  html body dialog{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
+  html body button,html body .btn{display:none!important}
+  /* screen-only helpers: filters, swipe hints and row chevrons never reach paper */
+  html body .date-filter-row,html body .table-scroll-hint,html body .ns-table-scroll,
+  html body .row-chevron,html body .ns-row-chevron,html body .summary-clear{display:none!important}
+  /* count/status pills must stay readable when the phone prints without backgrounds */
+  html body .party-count-badge,html body .badge,html body .ve-type-badge,
+  html body .status-badge,html body .chip{background:#fff!important;border:1px solid #8d97a1!important;
+    color:#000!important;-webkit-text-fill-color:#000!important;box-shadow:none!important}
+  html body .app-shell{display:block!important;margin:0!important;padding:0!important;width:100%!important;max-width:none!important;gap:0!important}
+  html body .main-area{margin:0!important;padding:0!important;width:100%!important;max-width:none!important;min-width:0!important;display:block!important;position:static!important}
+  html body .main-area>*{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}
+  html body .table-wrapper,html body .report-output,html body .qr-passbook-table-wrap{
+    overflow:visible!important;max-height:none!important;height:auto!important;
+    border:0!important;box-shadow:none!important;border-radius:0!important}
+  html body table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:auto!important;border-collapse:collapse!important;font-size:9pt!important}
+  html body thead{display:table-header-group!important}
+  html body thead th{position:static!important;background:#e8eeeb!important;color:#000!important;-webkit-text-fill-color:#000!important;white-space:normal!important;border:1px solid #9aa5b1!important;font-size:8.5pt!important}
+  html body td{border:1px solid #c3cad2!important;color:#000!important;overflow-wrap:anywhere!important}
+  html body tr{break-inside:avoid!important;page-break-inside:avoid!important}
+  html body .card,html body .dash-card,html body .panel,html body .modal-module{
+    box-shadow:none!important;background:#fff!important;border-color:#c3cad2!important}
+  html body .modal-overlay,html body .entry-modal-overlay{
+    position:static!important;background:#fff!important;padding:0!important;overflow:visible!important;align-items:stretch!important}
+  html body .modal{max-width:100%!important;max-height:none!important;height:auto!important;overflow:visible!important;box-shadow:none!important;border:0!important;border-radius:0!important;padding:0!important;position:static!important}
+  html body .ns-footer,
+  html body .ns-sheet,
+  html body .ns-sheet-backdrop,
+  html body #nsSheetBackdrop,
+  html body #nsModuleSheet,
+  html body #nsOnlinePill,
+  html body .ns-online-pill,
+  html body [role="dialog"]:not(#ledgerPrintRoot *),
+  html body .drawer-backdrop,
+  html body .sheet-backdrop{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
+  html body h1,html body h2,html body h3,html body h4{break-after:avoid!important;page-break-after:avoid!important;color:#000!important}
+  html body input,html body select,html body textarea{
+    background:#fff!important;color:#000!important;-webkit-text-fill-color:#000!important;
+    border:0!important;border-bottom:1px solid #7a8691!important;border-radius:0!important;
+    box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important;
+    padding:1px 2px!important;min-height:0!important;height:auto!important;font-size:9pt!important;
+    background-image:none!important}
+  html body input[type="checkbox"],html body input[type="radio"]{
+    appearance:auto!important;-webkit-appearance:auto!important;border:0!important;width:10pt!important;height:10pt!important}
+  html body select{padding-right:2px!important}
+  /* entrance animations freeze at their 0% state (opacity:0) when animations
+     are disabled for printing -> force full visibility of real content */
+  html body #app,html body #app *,html body #ledgerPrintRoot,html body #ledgerPrintRoot *{
+    opacity:1!important;filter:none!important;-webkit-filter:none!important;transform:none!important;
+    -webkit-text-fill-color:currentColor}
+  html body #app *,html body #ledgerPrintRoot *{animation:none!important;transition:none!important}
+  html body .view-section{position:static!important;overflow:visible!important;height:auto!important}
+  /* when an entry/receipt dialog is open, ONLY that dialog is printed */
+  html.lp-modal-print body>#app,
+  html.lp-modal-print body .app-shell,
+  html.lp-modal-print body .main-area,
+  html.lp-modal-print body .ns-topbar,
+  html.lp-modal-print body .ns-topnav,
+  html.lp-modal-print body .ns-footer,
+  html.lp-modal-print body #ledgerPrintRoot{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
+  html.lp-modal-print body>.modal-overlay,
+  html.lp-modal-print body>.entry-modal-overlay{display:block!important;position:static!important;padding:0!important;margin:0!important;background:#fff!important;overflow:visible!important}
+  html.lp-modal-print body>.modal-overlay:not(.lp-open),
+  html.lp-modal-print body>.entry-modal-overlay:not(.lp-open){display:none!important}
+  /* print-safe palette: the paper stays readable even if the browser is told
+     NOT to print background graphics (default on most phones) */
+  html body #app,html body #app *,html body .modal,html body .modal *{
+    color:#000!important;-webkit-text-fill-color:#000!important;text-shadow:none!important;
+    background-image:none!important;text-decoration-color:#000!important}
+  html body #app .view-entry-header-card,html body .modal .view-entry-header-card,
+  html body #app .dash-card,html body .modal .dash-card,
+  html body #app .card-header,html body .modal .card-header,
+  html body #app thead th,html body .modal thead th,
+  html body #app .ns-pagebar,html body .modal .ns-pagebar{
+    background:#fff!important;background-color:#fff!important;border:1px solid #9aa5b1!important}
+  html body #app .badge-income,html body #app .ve-type-badge.inc,
+  html body .modal .badge-income,html body .modal .ve-type-badge.inc{background:#EEF4F0!important;border:1px solid #7d9c8a!important}
+  html body #app .badge-expense,html body #app .ve-type-badge.exp,
+  html body .modal .badge-expense,html body .modal .ve-type-badge.exp{background:#FBF0F0!important;border:1px solid #b98b8b!important}
+  html body #app .amount-income,html body #app .amount-expense{color:#000!important;font-weight:700!important}
+  html body img{max-width:100%!important}
+  html body *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-shadow:none!important;text-shadow:none!important;animation:none!important;transition:none!important}
 }
 /* ===== QR features: join QR, member passbook card, camera scanner ===== */
 .qr-modal-box{max-width:420px!important;text-align:center;}
@@ -7962,7 +8346,7 @@ body.ns2026 #wsDock button{position:relative}
 </div>
 <div class="header-actions"><button type="button" class="ws-launch" id="wsOpenSearch" aria-label="વિકલ્પ શોધો" aria-haspopup="dialog"><i class="fas fa-search" aria-hidden="true"></i><span class="ws-search-label">વિકલ્પ શોધો</span><kbd>Ctrl K</kbd></button>
 <button id="headerLogoutBtn" onclick="doLogout()" title="Logout"><i class="fas fa-right-from-bracket"></i> Logout</button>
-<span class="sync-status" id="syncStatusBadge"><span class="dot"></span> <span id="syncStatusText">Offline</span></span>
+<span class="sync-status" id="syncStatusBadge" title="Offline"><span class="dot"></span> <span id="syncStatusText" data-short-text="ઑફલાઇન">Offline</span></span>
 </div>
 </header>
 
@@ -9483,10 +9867,19 @@ LedgerFeatures.cloud.setSyncStatus = function (status, label) {
     error: 'Error',
     idle: 'Offline'
   };
+  /* short labels for the tiny mobile chip in the header */
+  const shortLabels = {
+    synced: 'સિંક થયું',
+    syncing: 'સિંક…',
+    error: 'ભૂલ',
+    idle: 'ઑફલાઇન'
+  };
   const finalLabel = label || labels[status] || status;
   if (badge && text) {
     badge.className = 'sync-status ' + status;
     text.textContent = finalLabel;
+    badge.setAttribute('title', finalLabel);
+    badge.setAttribute('aria-label', 'સિંક સ્થિતિ: ' + finalLabel);
   }
   const sb = document.getElementById('sidebarSync'),
     sbT = document.getElementById('sidebarSyncText');
@@ -14772,7 +15165,9 @@ LedgerFeatures.qr = {
     document.body.appendChild(root);
     document.body.classList.add('ledger-print-mode');
     document.documentElement.classList.add('ledger-printing');
-    const after = () => { window.removeEventListener('afterprint', after); root.remove(); document.body.classList.remove('ledger-print-mode'); document.documentElement.classList.remove('ledger-printing'); };
+    const restoreChrome = () => { if (typeof window.ledgerPrintRestore === 'function') window.ledgerPrintRestore(); };
+    if (typeof window.ledgerPrintIsolate === 'function') window.ledgerPrintIsolate(root);
+    const after = () => { window.removeEventListener('afterprint', after); restoreChrome(); root.remove(); document.body.classList.remove('ledger-print-mode'); document.documentElement.classList.remove('ledger-printing'); };
     window.addEventListener('afterprint', after);
     const settle = () => { try { window.print(); setTimeout(after, 120000); } catch (err) { after(); showToast('⚠️ પ્રિન્ટ શરૂ થઈ શકી નથી'); } };
     Promise.all(Array.from(root.querySelectorAll('img')).map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = res; img.onerror = res; }))).then(settle);
@@ -20294,6 +20689,157 @@ scheduleLoanBalanceRefresh();
 })();
 </script>
 
+<script id="ledger-print-relax">
+/* ============================================================
+   Mobile/browser-menu friendly printing
+   ------------------------------------------------------------
+   1) before the print dialog opens, scrollable / height-clipped
+      boxes (max-height:xxx;overflow:auto) are relaxed so that the
+      complete list is printed instead of only the visible part;
+   2) everything is restored exactly as it was after printing.
+   ============================================================ */
+(function(){
+  'use strict';
+  var changed=[];
+  var SKIP={SCRIPT:1,STYLE:1,LINK:1,META:1,HEAD:1,HTML:1,BODY:1};
+  function openDialogs(){
+    var list=document.querySelectorAll('.modal-overlay,.entry-modal-overlay,.qr-modal-overlay');
+    var open=[];
+    for(var i=0;i<list.length;i++){
+      var el=list[i],cs=window.getComputedStyle(el);
+      if(cs.display==='none'||cs.visibility==='hidden')continue;
+      if(!el.querySelector('.modal,.entry-modal,.qr-modal-box'))continue;
+      open.push(el);
+    }
+    return open;
+  }
+  var markedDialogs=[];
+  function markDialogs(){
+    if(document.body.classList.contains('ledger-print-mode') || document.getElementById('ledgerPrintRoot')) return;
+    var open=openDialogs();
+    if(!open.length)return;
+    for(var i=0;i<open.length;i++){
+      open[i].classList.add('lp-open');
+      markedDialogs.push(open[i]);
+    }
+    document.documentElement.classList.add('lp-modal-print');
+  }
+  function unmarkDialogs(){
+    for(var i=0;i<markedDialogs.length;i++){if(markedDialogs[i])markedDialogs[i].classList.remove('lp-open');}
+    markedDialogs=[];
+    document.documentElement.classList.remove('lp-modal-print');
+  }
+  function relax(){
+    if(document.body.classList.contains('ledger-print-mode'))return; /* own print engine handles this */
+    changed=[];
+    markDialogs();
+    var nodes=document.querySelectorAll('#app *, #app');
+    for(var i=0;i<nodes.length;i++){
+      var el=nodes[i];
+      if(SKIP[el.tagName])continue;
+      var inline=el.getAttribute('style')||'';
+      var clipped=/max-height|overflow/i.test(inline)&&(el.scrollHeight>el.clientHeight+4||el.scrollWidth>el.clientWidth+4);
+      if(!clipped)continue;
+      changed.push({el:el,style:inline});
+      el.style.setProperty('max-height','none','important');
+      el.style.setProperty('height','auto','important');
+      el.style.setProperty('overflow','visible','important');
+      el.style.setProperty('overflow-x','visible','important');
+      el.style.setProperty('overflow-y','visible','important');
+    }
+    document.documentElement.classList.add('ledger-printing');
+  }
+  function restore(){
+    for(var i=0;i<changed.length;i++){
+      var rec=changed[i];
+      if(!rec.el)continue;
+      if(rec.style){rec.el.setAttribute('style',rec.style);}else{rec.el.removeAttribute('style');}
+    }
+    changed=[];
+    unmarkDialogs();
+    if(!document.body.classList.contains('ledger-print-mode'))document.documentElement.classList.remove('ledger-printing');
+  }
+  window.addEventListener('beforeprint',relax);
+  window.addEventListener('afterprint',restore);
+  window.ledgerPrintRelax=relax;window.ledgerPrintRelaxRestore=restore;
+})();
+</script>
+
+<script id="ns-mobile-fixpack-js">
+/* ---------------------------------------------------------------
+   MOBILE FIX PACK runtime:
+   1) --dock-h : real height of the bottom dock, so FAB / toast /
+      page padding can never sit under it;
+   2) table wrappers know whether they actually scroll, so the
+      "swipe →" affordance and the edge shadow only appear when needed.
+   --------------------------------------------------------------- */
+(function(){
+  'use strict';
+  function px(n){return Math.round(n)+'px';}
+  function syncDockHeight(){
+    var dock=document.getElementById('wsDock');
+    var h=0;
+    if(dock && getComputedStyle(dock).display!=='none' && getComputedStyle(dock).visibility!=='hidden'){
+      var r=dock.getBoundingClientRect();
+      if(r.height>0) h=Math.max(0, window.innerHeight - r.top);
+    }
+    document.documentElement.style.setProperty('--dock-h', px(h));
+  }
+  function syncTables(){
+    var list=document.querySelectorAll('.table-wrapper,.report-output,.qr-passbook-table-wrap');
+    for(var i=0;i<list.length;i++){
+      var el=list[i];
+      var scrollable=el.scrollWidth > el.clientWidth + 2;
+      el.classList.toggle('is-scrollable', scrollable);
+      var atEnd=!scrollable || el.scrollLeft + el.clientWidth >= el.scrollWidth - 3;
+      el.classList.toggle('at-end', atEnd);
+    }
+  }
+  var rafId=0;
+  function schedule(){ if(rafId) return; rafId=window.requestAnimationFrame(function(){ rafId=0; syncTables(); syncDockHeight(); }); }
+  function all(){ schedule(); }
+
+  /* FAB slides out of the way while the user scrolls down a long list */
+  var lastY=window.pageYOffset||0, fabHidden=false;
+  function setFabHidden(hide){
+    var fab=document.getElementById('fabAddEntry');
+    if(!fab) return;
+    if(hide===fabHidden) return;
+    fabHidden=hide;
+    fab.classList.toggle('fab-hidden',hide);
+  }
+  window.addEventListener('scroll', function(){
+    var y=window.pageYOffset||0;
+    if(y>lastY+6 && y>120) setFabHidden(true);
+    else if(y<lastY-6 || y<=120) setFabHidden(false);
+    lastY=y;
+  }, {passive:true});
+
+  document.addEventListener('scroll', function(e){
+    var t=e.target;
+    if(t && t.nodeType===1 && t.classList && (t.classList.contains('table-wrapper')||t.classList.contains('report-output'))) schedule();
+  }, true);
+  window.addEventListener('resize', all);
+  window.addEventListener('orientationchange', function(){ setTimeout(all, 300); });
+  document.addEventListener('DOMContentLoaded', all);
+  window.addEventListener('load', all);
+
+  /* re-run after any view / dialog render (throttled, no polling) */
+  var obs=new MutationObserver(function(){ schedule(); });
+  function boot(){
+    obs.observe(document.body, {attributes:true, attributeFilter:['class','style','hidden'], childList:true, subtree:true});
+    all();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+
+  /* keep the FAB/dock in sync when the soft keyboard opens */
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', syncDockHeight);
+  }
+  window.nsMobileFixpackSync=all;
+})();
+</script>
+
 <script id="ledger-print-function">
 (function(){
   'use strict';
@@ -20361,6 +20907,164 @@ scheduleLoanBalanceRefresh();
       });
     });
   }
+  /* ---------- Gujarati print labels (paper must never show English headers) ---------- */
+  var PRINT_LABELS={
+    'party':'પાર્ટી','parties':'પાર્ટી','party name':'પાર્ટીનું નામ','entries':'એન્ટ્રી',
+    'income':'આવક','expense':'ખર્ચ','net':'બાકી','balance':'બાકી','total':'કુલ',
+    'date':'તારીખ','category':'કેટેગરી','cat':'કેટેગરી','amount':'રકમ','type':'પ્રકાર',
+    'voucher':'વાઉચર','voucher no':'વાઉચર નં.','voucher no.':'વાઉચર નં.','remarks':'નોંધ',
+    'mode':'ચુકવણી','payment':'ચુકવણી','payment mode':'ચુકવણી','account':'ખાતું',
+    'name':'નામ','mobile':'મોબાઇલ','details':'વિગત','action':'ક્રિયા','actions':'ક્રિયા',
+    'no':'ક્રમ','no.':'ક્રમ','sr':'ક્રમ','sr.':'ક્રમ','s.no':'ક્રમ','count':'સંખ્યા',
+    'paid':'ચૂકવેલ','due':'બાકી','status':'સ્થિતિ','given':'અપાયેલ','received':'જમા',
+    'cash':'રોકડ','bank':'બેંક','id':'ક્રમ','doc':'દસ્તાવેજ','document':'દસ્તાવેજ',
+    'new entry':'નવી એન્ટ્રી','income total':'કુલ આવક','expense total':'કુલ ખર્ચ',
+    'grand total':'એકંદર કુલ','opening balance':'શરૂઆતની બાકી','closing balance':'અંતિમ બાકી',
+    'particulars':'વિગત','description':'વિગત','note':'નોંધ','notes':'નોંધ','address':'સરનામું',
+    'doc number':'વાઉચર નં.','doc. number':'વાઉચર નં.','document number':'વાઉચર નં.',
+    'category type':'કેટેગરી અને પ્રકાર','category & type':'કેટેગરી અને પ્રકાર',
+    'category & type multiple lines split entries':'કેટેગરી અને પ્રકાર (એક લાઇન = એક એન્ટ્રી)',
+    'category type multiple lines split entries':'કેટેગરી અને પ્રકાર (એક લાઇન = એક એન્ટ્રી)',
+    'date dmy':'તારીખ','total amount':'કુલ રકમ','enter amount':'રકમ લખો','select party':'પાર્ટી પસંદ કરો',
+    'select or type party':'પાર્ટી પસંદ કરો કે લખો','category':'કેટેગરી','amount':'રકમ',
+    'add new entry':'નવી એન્ટ્રી','edit entry':'એન્ટ્રીમાં સુધારો','update entry':'એન્ટ્રીમાં સુધારો',
+    'add entry':'એન્ટ્રી ઉમેરો','entry details':'એન્ટ્રીની વિગત','add new record':'નવો રેકોર્ડ',
+    'payment note':'ચુકવણી અને નોંધ','payment mode':'ચુકવણી','search':'શોધો'
+  };
+  var PRINT_MONTHS={'jan':'જાન્યુ','january':'જાન્યુ','feb':'ફેબ્રુ','february':'ફેબ્રુ','mar':'માર્ચ','march':'માર્ચ',
+    'apr':'એપ્રિલ','april':'એપ્રિલ','may':'મે','jun':'જૂન','june':'જૂન','jul':'જુલાઈ','july':'જુલાઈ',
+    'aug':'ઓગસ્ટ','august':'ઓગસ્ટ','sep':'સપ્ટે','sept':'સપ્ટે','september':'સપ્ટે','oct':'ઓક્ટો',
+    'october':'ઓક્ટો','nov':'નવે','november':'નવે','dec':'ડિસે','december':'ડિસે'};
+  /* English month names inside dates read badly on a Gujarati ledger */
+  function gujaratiMonths(root){
+    var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);
+    var nodes=[],node;
+    while((node=walker.nextNode())){ if(/[A-Za-z]{3}/.test(node.nodeValue)) nodes.push(node); }
+    nodes.forEach(function(n){
+      var text=n.nodeValue;
+      var next=text.replace(/\b(jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|sept|september|oct|october|nov|november|dec|december)\b/gi,function(m){
+        return PRINT_MONTHS[m.toLowerCase()]||m;
+      });
+      if(next!==text) n.nodeValue=next;
+    });
+  }
+  var PRINT_FILTER_LABELS={
+    'All Dates':'બધી તારીખો','All':'બધી કેટેગરી','All Parties':'બધા સભ્યો',
+    'All Categories':'બધી કેટેગરી','Today':'આજે','This Month':'આ મહિનો',
+    'Last Month':'ગયો મહિનો','This Year':'આ વર્ષ','Custom':'પસંદ કરેલી તારીખો',
+    'None (List All)':'બધા','—':'—'
+  };
+  function guFilter(value,fallback){
+    var text=String(value||'').replace(/\s+/g,' ').trim();
+    if(!text) return fallback||'';
+    return PRINT_FILTER_LABELS[text] || text;
+  }
+  /* rewrites English table headers (and removes sort arrows / expand chevrons) */
+  function localizePrintTable(root){
+    var tables=Array.prototype.slice.call(root.querySelectorAll('table'));
+    if(root.matches && root.matches('table')) tables.unshift(root);
+    tables.forEach(function(table){
+      var headRows=Array.prototype.slice.call(table.querySelectorAll('thead tr'));
+      headRows.forEach(function(row){
+        Array.prototype.slice.call(row.cells).forEach(function(cell){
+          var label=textOf(cell).replace(/[▲▼▽△▴▾▿↑↓⇕⇳]/g,'').trim().toLowerCase();
+          var gu=PRINT_LABELS[label];
+          if(gu){ cell.textContent=gu; }
+          else{
+            Array.prototype.slice.call(cell.querySelectorAll('i,svg,.sort-indicator,.sort-icon')).forEach(function(ic){ic.remove();});
+          }
+        });
+      });
+    });
+    root.querySelectorAll('td i.fa-chevron-right,td i.fa-chevron-down,td i.fa-angle-right,td i.fa-caret-right,.row-chevron,.ns-row-chevron,.expand-icon,.table-scroll-hint,.ns-table-scroll').forEach(function(el){el.remove();});
+  }
+  function isAmountText(text){
+    var t=String(text||'').replace(/[₹,\s]/g,'');
+    return /^-?\d+(\.\d+)?$/.test(t);
+  }
+  function polishPrintClone(clone){
+    /* "Total:" chip label (English) -> Gujarati */
+    Array.prototype.slice.call(clone.querySelectorAll('*')).forEach(function(el){
+      if(el.children.length) return;
+      var t=String(el.textContent||'');
+      if(/^\s*Total\s*:/i.test(t)) el.textContent=t.replace(/^\s*Total\s*:/i,'કુલ:');
+    });
+    /* INC / EXP badges on printed rows */
+    Array.prototype.slice.call(clone.querySelectorAll('.ve-type-badge,.badge,.type-badge')).forEach(function(el){
+      var t=textOf(el).toUpperCase();
+      if(t==='INC'||t==='INCOME') el.textContent='આવક';
+      else if(t==='EXP'||t==='EXPENSE') el.textContent='ખર્ચ';
+    });
+    try{ gujaratiMonths(clone); }catch(e){}
+    /* section headings (they carry emoji + English words) -> plain Gujarati */
+    var headingSel='h1,h2,h3,h4,h5,th,.card-title,.report-section-title,.loan-form-sec-title,.section-title,.page-title,.card-header strong,.panel-title';
+    Array.prototype.slice.call(clone.querySelectorAll(headingSel)).forEach(function(el){
+      if(el.querySelector('table,div,p')) return;
+      var raw=String(el.textContent||'').replace(/[\u2190-\u21FF\u2300-\u27BF\uD800-\uDBFF\uDC00-\uDFFF\uFE0F\u2B00-\u2BFF]/g,' ');
+      var label=raw.replace(/[^A-Za-z\s]/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
+      if(!label) return;
+      var gu=PRINT_LABELS[label];
+      if(gu) el.textContent=gu;
+      else if(/^(income|expense|total)$/.test(label)) el.textContent=PRINT_LABELS[label];
+    });
+    /* decorative dashed / dotted separators are screen-only */
+    Array.prototype.slice.call(clone.querySelectorAll('*')).forEach(function(el){
+      var cs=window.getComputedStyle(el);
+      if((cs.borderBottomStyle==='dashed'||cs.borderBottomStyle==='dotted') && textOf(el)==='') el.style.borderBottom='0';
+      if(cs.backgroundImage && /repeating-linear-gradient/.test(cs.backgroundImage)) el.style.backgroundImage='none';
+    });
+    /* numbers read better flushed right on paper */
+    var tables=Array.prototype.slice.call(clone.querySelectorAll('table'));
+    if(clone.matches && clone.matches('table')) tables.unshift(clone);
+    tables.forEach(function(table){
+      var bodyRows=Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
+      if(!bodyRows.length) return;
+      var width=bodyRows[0].cells.length;
+      for(var c=0;c<width;c++){
+        var numeric=true, seen=0;
+        bodyRows.forEach(function(row){
+          var cell=row.cells[c];
+          if(!cell){numeric=false;return;}
+          var text=textOf(cell);
+          if(!text) return;
+          seen++;
+          if(!isAmountText(text)) numeric=false;
+        });
+        if(seen && numeric){
+          table.querySelectorAll('tr').forEach(function(row){
+            var cell=row.cells[c];
+            if(cell) cell.style.setProperty('text-align','right','important');
+          });
+        }
+      }
+    });
+  }
+  /* short English labels inside forms ("DATE", "PARTY", "Amount" …) */
+  function exactLabelPass(clone){
+    var els=Array.prototype.slice.call(clone.querySelectorAll('label,span,div,strong,b,small,p,legend'));
+    els.forEach(function(el){
+      if(el.closest('table')) return;
+      if(el.children.length){
+        /* only icon / wrapper children may be flattened away */
+        var simple=Array.prototype.every.call(el.children,function(k){return /^(I|SVG|SPAN|B|SMALL|EM)$/.test(k.tagName);});
+        if(!simple) return;
+      }
+      var raw=String(el.textContent||'').trim();
+      if(!raw || raw.length>64) return;
+      var label=raw.replace(/[^A-Za-z&.\s]/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
+      if(!label || label.length<2) return;
+      var gu=PRINT_LABELS[label];
+      if(!gu && /^category\s*(&|and)?\s*type\b/.test(label)) gu=PRINT_LABELS['category & type'];
+      if(!gu && /^payment\b/.test(label) && label.length<26) gu=PRINT_LABELS['payment mode'];
+      if(gu) el.textContent=gu;
+    });
+  }
+  function printReady(clone){
+    try{ localizePrintTable(clone); }catch(e){}
+    try{ polishPrintClone(clone); }catch(e){}
+    try{ exactLabelPass(clone); }catch(e){}
+    return clone;
+  }
   function cloneForPrint(source){
     var clone=source.cloneNode(true);
     syncAndReplaceControls(source,clone);
@@ -20372,9 +21076,102 @@ scheduleLoanBalanceRefresh();
     clone.querySelectorAll('#lfTermsBody,#gcTermsBody').forEach(function(el){el.style.display='block';});
     clone.querySelectorAll('#gcTermsPreview,.loan-terms-toggle button,#gcTermsToggleBtn').forEach(function(el){el.remove();});
     removeActionColumns(clone);
-    return clone;
+    return printReady(clone);
+  }
+  /* put the organisation logo (or the emblem) inside official forms */
+  function stampLogoOnForm(clone,logo){
+    if(!clone)return;
+    var boxes=clone.querySelectorAll('.loan-form-logo,#loanFormLogoBox,#gcFormLogoBox,.ledger-form-logo-box');
+    if(!boxes.length)return;
+    for(var i=0;i<boxes.length;i++){
+      var box=boxes[i];
+      box.innerHTML='';
+      if(logo){ box.appendChild(logoImageElement(logo,'ledger-print-logo')); }
+      else { box.innerHTML=PRINT_EMBLEM_SVG; }
+      var inner=box.querySelector('svg,img');
+      if(inner){
+        var side=box.classList.contains('ledger-print-logo-box')?'100%':'48px';
+        inner.setAttribute('style','width:'+side+';height:'+side+';max-width:100%;max-height:100%;display:block');
+      }
+    }
   }
   function makeElement(tag,className,text){var el=document.createElement(tag);if(className)el.className=className;if(text!=null)el.textContent=text;return el;}
+
+  /* ---------- Letterhead / logo helpers (A4 print) ---------- */
+  var PRINT_EMBLEM_SVG='<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Emblem">'
+    +'<circle cx="50" cy="50" r="47" fill="#ffffff" stroke="#173a3a" stroke-width="2.6"/>'
+    +'<circle cx="50" cy="50" r="40" fill="#0B1A2E" stroke="#C9A84C" stroke-width="2"/>'
+    +'<path d="M50 20.5l3.6 8.1 8.8.7-6.7 5.8 2 8.7-7.7-4.5-7.7 4.5 2-8.7-6.7-5.8 8.8-.7z" fill="#C9A84C"/>'
+    +'<path d="M50 64c-5.4-4-11.2-5.4-17-5.9v-13c5.8.5 11.6 1.9 17 5.9 5.4-4 11.2-5.4 17-5.9v13c-5.8.5-11.6 1.9-17 5.9z" fill="#ffffff"/>'
+    +'<path d="M50 64v-13" stroke="#0B1A2E" stroke-width="1.6"/>'
+    +'<path d="M33 55.5h11M56 55.5h11" stroke="#0B1A2E" stroke-width="1.1" stroke-linecap="round"/>'
+    +'<path d="M20 72h60" stroke="#C9A84C" stroke-width="2.4" stroke-linecap="round"/>'
+    +'</svg>';
+  function initialsOf(name){
+    var words=String(name||'').replace(/[^A-Za-z\u0A80-\u0AFF ]+/g,' ').trim().split(/\s+/);
+    var out='';for(var i=0;i<words.length;i++){if(/^[A-Za-z]/.test(words[i])&&out.length<3)out+=words[i].charAt(0).toUpperCase();}
+    return out||'SL';
+  }
+  /* true when a usable logo image is available anywhere in the app */
+  function resolvePrintLogo(){
+    var candidates=[];
+    try{ if(typeof logoSettings!=='undefined'&&logoSettings&&logoSettings.image)candidates.push(logoSettings.image); }catch(e){}
+    try{
+      ['#logoIcon img','#settingsLogoPreview img','#loginLogoPreview img','#loanFormLogoBox img','#gcFormLogoBox img'].forEach(function(sel){
+        var img=document.querySelector(sel); if(img&&img.getAttribute('src'))candidates.push(img.getAttribute('src'));
+      });
+    }catch(e){}
+    for(var i=0;i<candidates.length;i++){
+      var src=String(candidates[i]||'');
+      if(/^data:image\/(png|jpe?g|webp|gif|svg\+xml);base64,/i.test(src))return src;
+      if(/^data:image\/svg\+xml,|<svg/i.test(src))return src;
+      if(/^(https?:|blob:)/i.test(src))return src;
+    }
+    return '';
+  }
+  function logoImageElement(src,className){
+    var img=document.createElement('img');
+    img.src=src;img.alt='Logo';img.className=className||'ledger-print-logo';
+    return img;
+  }
+  function fillLogoBox(box,src,brand){
+    if(!box)return;
+    box.innerHTML='';
+    if(src){ box.appendChild(logoImageElement(src,'ledger-print-logo')); return; }
+    box.innerHTML=PRINT_EMBLEM_SVG;
+  }
+  function buildMasthead(config,brand,logo){
+    var mast=makeElement('header','ledger-print-masthead');
+    var logoBox=makeElement('div','ledger-print-logo-box');
+    fillLogoBox(logoBox,logo,brand);
+    mast.appendChild(logoBox);
+    var left=makeElement('div','ledger-print-mast-text');
+    left.appendChild(makeElement('div','ledger-print-org',brand));
+    var printTitle=String(config.title||'');
+    var mappedTitle=PRINT_LABELS[printTitle.replace(/[^A-Za-z&\s]/g,' ').replace(/\s+/g,' ').trim().toLowerCase()];
+    left.appendChild(makeElement('h1','ledger-print-title',mappedTitle||printTitle));
+    if(config.subtitle)left.appendChild(makeElement('div','ledger-print-subtitle',config.subtitle));
+    mast.appendChild(left);
+    var stamp=makeElement('div','ledger-print-stamp');
+    var pad=function(n){return n<10?'0'+n:''+n;};
+    var d=new Date();
+    stamp.textContent='';
+    stamp.appendChild(document.createTextNode('તારીખ: '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()));
+    stamp.appendChild(document.createElement('br'));
+    stamp.appendChild(document.createTextNode('પ્રિન્ટ: '+pad(d.getHours())+':'+pad(d.getMinutes())));
+    mast.appendChild(stamp);
+    return mast;
+  }
+  function buildFooter(brand,logo){
+    var foot=makeElement('footer','ledger-print-footer');
+    var left=makeElement('div','lpf-left');
+    if(logo){ left.appendChild(logoImageElement(logo,'lpf-logo')); }
+    else { var sp=document.createElement('span');sp.className='lpf-emblem';sp.innerHTML=PRINT_EMBLEM_SVG;left.appendChild(sp); }
+    left.appendChild(makeElement('span','',brand));
+    foot.appendChild(left);
+    foot.appendChild(makeElement('span','','પ્રિન્ટ તારીખ: '+new Date().toLocaleString('en-GB')));
+    return foot;
+  }
   function printSources(kind){
     var title='', subtitle='', sources=[], officialForm=false;
     if(kind==='summary'){
@@ -20386,12 +21183,12 @@ scheduleLoanBalanceRefresh();
       title='એન્ટ્રી — હિસાબ';
       var cats=textOf(document.getElementById('catSelectedText')) || 'બધી કેટેગરી';
       var party=(document.getElementById('partySearchInput')||{}).value || 'બધા સભ્યો';
-      subtitle='તારીખ: '+(dateRangeText()||'બધી તારીખો')+'  |  કેટેગરી: '+cats+'  |  પાર્ટી: '+party;
+      subtitle='તારીખ: '+guFilter(dateRangeText(),'બધી તારીખો')+'  |  કેટેગરી: '+guFilter(cats,'બધી કેટેગરી')+'  |  પાર્ટી: '+guFilter(party,'બધા સભ્યો');
       var sum=document.getElementById('categorySummaryLine');if(sum && textOf(sum))sources.push(sum);
       var table=document.getElementById('mainTable');if(table)sources.push(table);
     } else if(kind==='report'){
       title='તૈયાર રિપોર્ટ';
-      subtitle='તારીખ: '+(reportRangeText()||'બધી તારીખો')+'  |  ગ્રુપ: '+(selectedText('reportGroupBy')||'—');
+      subtitle='તારીખ: '+guFilter(reportRangeText(),'બધી તારીખો')+'  |  ગ્રુપ: '+guFilter(selectedText('reportGroupBy'),'—');
       var rp=(document.getElementById('reportPartySearch')||{}).value;if(rp)subtitle+='  |  પાર્ટી: '+rp;
       var details=document.getElementById('reportShowDetails');subtitle+='  |  વિગત: '+(details && details.checked?'હા':'ના');
       var report=document.getElementById('reportOutput');if(report)sources.push(report);
@@ -20413,12 +21210,42 @@ scheduleLoanBalanceRefresh();
     }
     return {title:title,subtitle:subtitle,sources:sources,officialForm:officialForm};
   }
+  /* Hard isolation: everything except the print root is taken out of the
+     printed page. CSS already hides the shell, but in-line !important styles
+     are added as well so that no device/browser stylesheet can win. */
+  var parkedChrome=[];
+  function isolatePrintRoot(root){
+    restoreAppChrome();
+    var children=document.body.children;
+    for(var i=0;i<children.length;i++){
+      var el=children[i];
+      if(el===root || el.tagName==='SCRIPT' || el.tagName==='STYLE' || el.tagName==='LINK') continue;
+      parkedChrome.push({el:el,value:el.style.getPropertyValue('display'),priority:el.style.getPropertyPriority('display'),hidden:el.getAttribute('data-lp-hidden')});
+      el.style.setProperty('display','none','important');
+      el.setAttribute('data-lp-hidden','1');
+    }
+  }
+  function restoreAppChrome(){
+    for(var i=0;i<parkedChrome.length;i++){
+      var rec=parkedChrome[i], el=rec.el;
+      if(!el) continue;
+      if(rec.value){el.style.setProperty('display',rec.value,rec.priority);}
+      else{el.style.removeProperty('display');}
+      if(rec.hidden==null) el.removeAttribute('data-lp-hidden');
+      else el.setAttribute('data-lp-hidden',rec.hidden);
+    }
+    parkedChrome=[];
+  }
+  window.ledgerPrintIsolate=isolatePrintRoot;
+  window.ledgerPrintRestore=restoreAppChrome;
   function cleanup(){
     if(cleanupTimer){window.clearTimeout(cleanupTimer);cleanupTimer=0;}
+    restoreAppChrome();
     document.body.classList.remove('ledger-print-mode');document.documentElement.classList.remove('ledger-printing');
     var root=document.getElementById('ledgerPrintRoot');if(root)root.remove();
     if(window.__ledgerPrintOldTitle!=null){document.title=window.__ledgerPrintOldTitle;window.__ledgerPrintOldTitle=null;}
-    printBusy=false;
+    printBusy=false;autoPrinting=false;
+    document.documentElement.classList.remove('lp-modal-print');
   }
   async function waitForImages(root){
     var images=Array.prototype.slice.call(root.querySelectorAll('img'));
@@ -20427,46 +21254,128 @@ scheduleLoanBalanceRefresh();
       return new Promise(function(resolve){img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true});window.setTimeout(resolve,1800);});
     }));
   }
+  /* Builds the complete A4 letterhead page (logo + title + content + footer).
+     Reused by both the in-app print buttons and by the browser's own print
+     command (mobile Share → Print / Chrome menu → Print). */
+  function buildPrintRoot(config){
+    var root=makeElement('section','ledger-print-page');root.id='ledgerPrintRoot';
+    var brand=(document.getElementById('logoTitle') && textOf(document.getElementById('logoTitle'))) || 'ANSAR YUVA MANDAL, Modasa';
+    if(!config.officialForm){
+      root.appendChild(buildMasthead(config,brand,resolvePrintLogo()));
+    }
+    var printLogo=resolvePrintLogo();
+    var content=makeElement('main','ledger-print-content');
+    config.sources.forEach(function(source){
+      var clone=cloneForPrint(source);
+      if(config.officialForm)stampLogoOnForm(clone,printLogo);
+      content.appendChild(clone);
+    });
+    root.appendChild(content);
+    root.appendChild(buildFooter(brand,printLogo));
+    var maxColumns=0;root.querySelectorAll('table').forEach(function(table){var row=table.querySelector('thead tr:last-child');if(row)maxColumns=Math.max(maxColumns,row.cells.length);});
+    if(maxColumns>8)root.classList.add('ledger-print-landscape');
+    return root;
+  }
+  /* which print layout matches the screen the user is looking at */
+  var VIEW_PRINT_KIND={viewEntries:'entries',viewReports:'report',viewCustomModule:'module',
+    viewLoanForm:'loan-list',viewGuarantorChange:'gc-list',viewAvailableGuarantors:'available-guarantors',
+    viewHome:'summary',viewPartyDashboard:'summary'};
+  var VIEW_PRINT_TITLE={viewHome:'મુખ્ય પાનું',viewPartyDashboard:'મારું ખાતું',viewEntries:'એન્ટ્રીની યાદી',
+    viewReports:'રિપોર્ટ',viewCustomModule:'વિભાગનો હિસાબ',viewLoanForm:'લોન અરજી',
+    viewGuarantorChange:'જામીન ફેરફાર',viewAvailableGuarantors:'ઉપલબ્ધ જામીનદાર',viewMessages:'સંદેશા'};
+  function isShown(el){
+    if(!el) return false;
+    var cs=window.getComputedStyle(el);
+    return cs.display!=='none' && cs.visibility!=='hidden' && el.getClientRects().length>0;
+  }
+  function openPrintDialog(){
+    var all=document.querySelectorAll('.modal-overlay,.entry-modal-overlay');
+    for(var i=0;i<all.length;i++){ if(isShown(all[i])) return all[i]; }
+    return null;
+  }
+  function autoPrintConfig(){
+    if(openPrintDialog()) return null;              /* dialogs keep their own print flow */
+    var view=document.querySelector('.view-section.active');
+    if(!view) return null;
+    if(view.id==='viewLoanForm'){
+      var paper=document.getElementById('loanFormPaper');
+      if(isShown(paper)) return printSources('loan-form');
+      return printSources('loan-list');
+    }
+    if(view.id==='viewGuarantorChange'){
+      var gcPaper=document.getElementById('gcFormPaper');
+      if(isShown(gcPaper)) return printSources('gc-form');
+      return printSources('gc-list');
+    }
+    var kind=VIEW_PRINT_KIND[view.id];
+    if(kind){
+      var config=printSources(kind);
+      if(config && config.sources.length) return config;
+    }
+    /* fallback: print whatever is on screen, with the same letterhead */
+    return {title:VIEW_PRINT_TITLE[view.id] || 'હિસાબ',subtitle:'',sources:[view],officialForm:false};
+  }
+  /* open dialog (entry form, receipt, module detail …) also gets the letterhead */
+  function dialogPrintConfig(){
+    var overlay=openPrintDialog();
+    if(!overlay) return null;
+    var modal=overlay.querySelector('.modal') || overlay;
+    var paper=modal.querySelector('.loan-form-paper,#loanFormPaper,#gcFormPaper');
+    var titleEl=modal.querySelector('.modal-header h2,.modal-header h3,.modal-title,.entry-modal-title,'+
+      '.entry-modal-head strong,.entry-modal-head h2,.entry-modal-head h3,[class*="modal-title"],.panel-title,'+
+      '#entryModalTitle,.em-title span[id],.em-title,.modal-head,header h2,header h3,h2,h3');
+    var title=titleEl?textOf(titleEl):'';
+    if(paper) return {title:title||'અરજી ફોર્મ',subtitle:'',sources:[paper],officialForm:true};
+    var body=modal.querySelector('.entry-modal-body') || modal.querySelector('.entry-form-body') || modal;
+    return {title:title||'વિગત',subtitle:'',sources:[body],officialForm:false};
+  }
+  var autoPrinting=false;
+  function prepareBrowserPrint(){
+    if(autoPrinting) return;
+    if(document.body.classList.contains('ledger-print-mode')) return;
+    autoPrinting=true;
+    try{
+      var dialogConfig=dialogPrintConfig();
+      var config=dialogConfig || autoPrintConfig();
+      if(!config || !config.sources.length){ document.documentElement.classList.add('lp-modal-print'); return; }
+      var stale=document.getElementById('ledgerPrintRoot'); if(stale) stale.remove();
+      var root=buildPrintRoot(config);
+      document.body.appendChild(root);
+      window.__ledgerPrintOldTitle=document.title;
+      document.title=(config.title||'Print');
+      document.body.classList.add('ledger-print-mode');
+      document.documentElement.classList.add('ledger-printing');
+      isolatePrintRoot(root);
+      /* the older dialog-print helper marks dialogs on beforeprint; the
+         letterhead root wins, so that marker must not hide it */
+      document.documentElement.classList.remove('lp-modal-print');
+    }catch(err){}
+  }
+  function finishBrowserPrint(){
+    document.documentElement.classList.remove('lp-modal-print');
+    if(printBusy) return;
+    autoPrinting=false;
+    cleanup();
+  }
+  window.addEventListener('beforeprint',prepareBrowserPrint);
+  window.addEventListener('afterprint',finishBrowserPrint);
+  try{
+    var printMq=window.matchMedia && window.matchMedia('print');
+    if(printMq && printMq.addEventListener) printMq.addEventListener('change',function(ev){ if(ev.matches) prepareBrowserPrint(); });
+    else if(printMq && printMq.addListener) printMq.addListener(function(ev){ if(ev.matches) prepareBrowserPrint(); });
+  }catch(e){}
   window.printLedger=async function(kind){
     if(printBusy)return;
     var config=printSources(kind);
     if(!config.sources.length){toast('પ્રિન્ટ કરવા માટે માહિતી ઉપલબ્ધ નથી.');return;}
-    printBusy=true;
-    var root=makeElement('section','ledger-print-page');root.id='ledgerPrintRoot';
-    var brand=(document.getElementById('logoTitle') && textOf(document.getElementById('logoTitle'))) || 'ANSAR YUVA MANDAL, Modasa';
-    if(!config.officialForm){
-      var mast=makeElement('header','ledger-print-masthead');var left=makeElement('div','ledger-print-mast-text');
-      if (typeof isSafeLogoData === 'function' && isSafeLogoData(logoSettings.image)) {
-        var logoImg=document.createElement('img');
-        logoImg.src=logoSettings.image;logoImg.alt='Logo';logoImg.className='ledger-print-logo';
-        mast.appendChild(logoImg);
-      }
-      left.appendChild(makeElement('div','ledger-print-org',brand));left.appendChild(makeElement('h1','ledger-print-title',config.title));
-      if(config.subtitle)left.appendChild(makeElement('div','ledger-print-subtitle',config.subtitle));
-      mast.appendChild(left);mast.appendChild(makeElement('div','ledger-print-stamp','પ્રિન્ટ તારીખ: '+new Date().toLocaleString()));root.appendChild(mast);
-    }
-    var content=makeElement('main','ledger-print-content');config.sources.forEach(function(source){content.appendChild(cloneForPrint(source));});root.appendChild(content);
-    root.appendChild(makeElement('footer','ledger-print-footer','પ્રિન્ટ તારીખ: '+new Date().toLocaleString()));
-    var maxColumns=0;root.querySelectorAll('table').forEach(function(table){var row=table.querySelector('thead tr:last-child');if(row)maxColumns=Math.max(maxColumns,row.cells.length);});
-    if(maxColumns>8)root.classList.add('ledger-print-landscape');
-    document.body.appendChild(root);window.__ledgerPrintOldTitle=document.title;document.title=(config.title||'Print')+' - '+brand;
+    printBusy=true;autoPrinting=true;
+    var stale=document.getElementById('ledgerPrintRoot'); if(stale) stale.remove();
+    var root=buildPrintRoot(config);
+    document.body.appendChild(root);window.__ledgerPrintOldTitle=document.title;document.title=(config.title||'Print')+' - '+((document.getElementById('logoTitle')&&textOf(document.getElementById('logoTitle')))||'ANSAR YUVA MANDAL, Modasa');
     document.body.classList.add('ledger-print-mode');document.documentElement.classList.add('ledger-printing');
+    isolatePrintRoot(root);
     var after=function(){window.removeEventListener('afterprint',after);cleanup();};window.addEventListener('afterprint',after);
-    try{
-      await waitForImages(root);
-      /* Mobile print fix: force the browser to finish CSS reflow with the
-         hidden shell (fixed header/dock/FAB, overlays) BEFORE opening the
-         print dialog. Without this the mobile preview sometimes captured
-         the old paint (header + dock + whole page). Two rAFs + a short
-         timeout is enough for Chrome Android / Safari iOS. */
-      await new Promise(function(resolve){
-        if(window.requestAnimationFrame){
-          requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(resolve,80); }); });
-        } else { setTimeout(resolve,150); }
-      });
-      window.print();
-      if(printBusy)cleanupTimer=window.setTimeout(cleanup,60000);
-    }
+    try{await waitForImages(root);window.print();if(printBusy)cleanupTimer=window.setTimeout(cleanup,120000);}
     catch(err){cleanup();toast('પ્રિન્ટ શરૂ થઈ શકી નથી. બ્રાઉઝરનું Print વિકલ્પ અજમાવો.');}
   };
 })();
