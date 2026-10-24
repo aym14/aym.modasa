@@ -1,0 +1,20 @@
+{
+  "_readme": "આ ફાઇલ index.html ની બાજુમાં રાખો. enabled=false રહે ત્યાં સુધી એપ કંઈ નહીં કરે. સેટિંગ્સ → ક્લાઉડ સિંકમાંથી Cloud સેટ કરીને '⬇️ sync-config.json' બટન દબાવો — એ જ નામની તૈયાર ફાઇલ મળશે, તેને આ ફાઇલ પર બદલી નાખો. (આ ફાઇલમાં ગુપ્ત Key આવે — રિપો, જાહેર જગ્યાએ ન મૂકો.)",
+  "enabled": false,
+  "provider": "jsonbin",
+  "autoSync": true,
+  "apiKey": "",
+  "binId": "",
+  "supabaseUrl": "",
+  "supabaseAnonKey": "",
+  "supabaseTable": "ledger_data",
+  "supabaseSyncKey": "default",
+  "serverUrl": "",
+  "serverSyncKey": "",
+  "serverToken": "",
+  "ghToken": "",
+  "ghOwner": "",
+  "ghRepo": "",
+  "ghBranch": "main",
+  "ghPath": "ledger-data.json"
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Ansar Yuva Mandal — Smart Ledger",
+  "short_name": "AYM Ledger",
+  "description": "ANSAR YUVA MANDAL, Modasa — હિસાબ, એન્ટ્રી, રિપોર્ટ અને પ્રિન્ટ",
+  "lang": "gu",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5F3ED",
+  "theme_color": "#0E7569",
+  "icons": [
+    { "src": "icons/app-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/app-icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/app-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
