@@ -1,0 +1,7 @@
+# એપની ફાઇલો build વખતે રૂટમાંથી કોપી થાય
+assets/
+.build/
+dist/
+*.iml
+.idea/
+local.properties
