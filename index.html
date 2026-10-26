@@ -9164,78 +9164,78 @@ input[id^="gcOldG"][id$="Replace"]:checked{ background-color: #E65100 !important
 <div class="login-card" id="loginCard" role="region" aria-label="લોગિન ફોર્મ">
 <div class="login-logo" id="loginLogoPreview"><i class="fas fa-book"></i></div>
 <h2 id="loginOrgTitle">Ansar Yuva Mandal - Modasa</h2>
-<p class="login-sub">Smart Ledger<span class="aym-ver-chip is-login" id="aymVerLogin"><i class="fas fa-tag" aria-hidden="true"></i> v1.2.0</span></p>
+<p class="login-sub">Smart Ledger<span class="aym-ver-chip is-login" id="aymVerLogin"><i class="fas fa-tag" aria-hidden="true"></i> v1.2.1</span></p>
 <div class="login-tabs" id="loginTabs">
-<button class="login-tab active" type="button" data-login-role="admin" onclick="showAdminLoginForm()">Admin Login</button>
-<button class="login-tab" type="button" data-login-role="party" onclick="showPartyLoginForm()">Party Login</button>
+<button class="login-tab active" type="button" data-login-role="admin" onclick="showAdminLoginForm()">એડમિન લોગિન</button>
+<button class="login-tab" type="button" data-login-role="party" onclick="showPartyLoginForm()">પાર્ટી લોગિન</button>
 </div>
 <div id="loginFormBlock" data-role="admin">
-<div class="form-group"><label><i class="fas fa-user"></i> Username / Mobile</label><input type="text" id="loginUsername" placeholder="Enter admin username" autocomplete="username"></div>
-<div class="form-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password"></div>
+<div class="form-group"><label><i class="fas fa-user"></i> યુઝરનેમ / મોબાઇલ</label><input type="text" id="loginUsername" placeholder="એડમિન યુઝરનેમ નાખો" autocomplete="username"></div>
+<div class="form-group"><label><i class="fas fa-lock"></i> પાસવર્ડ</label><input type="password" id="loginPassword" placeholder="પાસવર્ડ નાખો" autocomplete="current-password"></div>
 <div class="login-error" id="loginError"></div>
-<button class="btn-login" id="loginSubmitBtn" onclick="doLogin()"><i class="fas fa-right-to-bracket"></i> Sign In</button>
+<button class="btn-login" id="loginSubmitBtn" onclick="doLogin()"><i class="fas fa-right-to-bracket"></i> લોગિન કરો</button>
 <div class="login-links">
-<a id="loginCreateAdminLink" onclick="showSignupForm()"><i class="fas fa-user-plus"></i> Create Admin</a>
-<a id="loginVerifyPartyLink" style="display:none;" onclick="showVerifyMobileForm()"><i class="fas fa-phone"></i> Verify Mobile</a>
-<a onclick="showForgotForm()"><i class="fas fa-question-circle"></i> Forgot Password?</a>
+<a id="loginCreateAdminLink" onclick="showSignupForm()"><i class="fas fa-user-plus"></i> નવો એડમિન બનાવો</a>
+<a id="loginVerifyPartyLink" style="display:none;" onclick="showVerifyMobileForm()"><i class="fas fa-phone"></i> મોબાઇલ ચકાસો</a>
+<a onclick="showForgotForm()"><i class="fas fa-question-circle"></i> પાસવર્ડ ભૂલી ગયા?</a>
 </div>
 </div>
 <div id="signupFormBlock" style="display:none;">
-<div class="form-group"><label><i class="fas fa-user"></i> Full Name</label><input type="text" id="signupName" placeholder="Your full name"></div>
+<div class="form-group"><label><i class="fas fa-user"></i> પૂરું નામ</label><input type="text" id="signupName" placeholder="તમારું પૂરું નામ"></div>
 
 
 
-<div class="form-group"><label><i class="fas fa-mobile-alt"></i> Mobile / Username</label><input type="text" id="signupUsername" placeholder="Mobile number" class="auto-prefix-mobile"></div>
-<div class="form-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="signupPassword" placeholder="Min 8 characters"></div>
-<div class="form-group"><label><i class="fas fa-lock"></i> Confirm Password</label><input type="password" id="signupConfirmPassword" placeholder="Re-enter password"></div>
-<div class="form-group"><label><i class="fas fa-shield-alt"></i> Security Question</label><select id="signupSecurityQ"><option value="">-- Select --</option><option>What is your mother's maiden name?</option><option>What city were you born in?</option><option>What is your favorite color?</option><option>What was your first pet's name?</option></select></div>
-<div class="form-group"><label><i class="fas fa-key"></i> Security Answer</label><input type="text" id="signupSecurityA" placeholder="Your answer"></div>
+<div class="form-group"><label><i class="fas fa-mobile-alt"></i> મોબાઇલ / યુઝરનેમ</label><input type="text" id="signupUsername" placeholder="મોબાઇલ નંબર" class="auto-prefix-mobile"></div>
+<div class="form-group"><label><i class="fas fa-lock"></i> પાસવર્ડ</label><input type="password" id="signupPassword" placeholder="ઓછામાં ઓછા 8 અક્ષર"></div>
+<div class="form-group"><label><i class="fas fa-lock"></i> પાસવર્ડ ફરી નાખો</label><input type="password" id="signupConfirmPassword" placeholder="પાસવર્ડ ફરી લખો"></div>
+<div class="form-group"><label><i class="fas fa-shield-alt"></i> સુરક્ષા પ્રશ્ન</label><select id="signupSecurityQ"><option value="">-- પસંદ કરો --</option><option>તમારી માતાનું પિયરનું નામ શું છે?</option><option>તમે કયા શહેરમાં જન્મ્યા છો?</option><option>તમારો પ્રિય રંગ કયો છે?</option><option>તમારા પહેલા પાળેલા પ્રાણીનું નામ શું હતું?</option></select></div>
+<div class="form-group"><label><i class="fas fa-key"></i> સુરક્ષા જવાબ</label><input type="text" id="signupSecurityA" placeholder="તમારો જવાબ"></div>
 <div class="login-error" id="signupError"></div>
-<button class="btn-login" onclick="doSignup()"><i class="fas fa-check-circle"></i> Create Account</button>
-<div class="login-links"><a onclick="showLoginForm()"><i class="fas fa-arrow-left"></i> Back to Sign In</a></div>
+<button class="btn-login" onclick="doSignup()"><i class="fas fa-check-circle"></i> ખાતું બનાવો</button>
+<div class="login-links"><a onclick="showLoginForm()"><i class="fas fa-arrow-left"></i> લોગિન પર પાછા</a></div>
 </div>
 <div id="verifyMobileBlock" style="display:none;">
 <div id="verifyStep1">
-<p style="font-size:.7rem;color:var(--gray-600);margin-bottom:8px;font-family:var(--font);">Enter the mobile number that was added by the admin.</p>
-<div class="form-group"><label><i class="fas fa-mobile-alt"></i> Mobile Number</label><input type="text" id="verifyMobileInput" placeholder="Enter your mobile number" class="auto-prefix-mobile"></div>
+<p style="font-size:.7rem;color:var(--gray-600);margin-bottom:8px;font-family:var(--font);">એડમિને ઉમેરેલો મોબાઇલ નંબર નાખો.</p>
+<div class="form-group"><label><i class="fas fa-mobile-alt"></i> મોબાઇલ નંબર</label><input type="text" id="verifyMobileInput" placeholder="તમારો મોબાઇલ નંબર નાખો" class="auto-prefix-mobile"></div>
 <div class="login-error" id="verifyError"></div>
-<button class="btn-login" onclick="checkVerifyMobile()"><i class="fas fa-check-circle"></i> Verify Mobile</button>
-<div class="login-links"><a onclick="showLoginForm()"><i class="fas fa-arrow-left"></i> Back to Sign In</a></div>
+<button class="btn-login" onclick="checkVerifyMobile()"><i class="fas fa-check-circle"></i> મોબાઇલ ચકાસો</button>
+<div class="login-links"><a onclick="showLoginForm()"><i class="fas fa-arrow-left"></i> લોગિન પર પાછા</a></div>
 </div>
 <div id="verifyStep2" style="display:none;">
-<div class="verify-success"><i class="fas fa-check-circle"></i> Mobile verified! Set your password.</div>
-<div class="form-group"><label><i class="fas fa-user"></i> Full Name *</label><input type="text" id="verifyPartyName" autocomplete="name" maxlength="120" required></div>
-<div class="form-group"><label><i class="fas fa-user-friends"></i> Father’s Name *</label><input type="text" id="verifyFatherName" maxlength="120" required></div>
-<div class="form-group"><label><i class="fas fa-map-marker-alt"></i> Address *</label><textarea id="verifyPartyAddress" rows="2" maxlength="500" required style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;background:var(--gray-50);font-family:var(--font);"></textarea></div>
-<div class="form-group"><label><i class="fas fa-briefcase"></i> Occupation</label><input type="text" id="verifyPartyOccupation" maxlength="120"></div>
-<div class="form-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="verifyPassword" placeholder="Min 4 characters"></div>
-<div class="form-group"><label><i class="fas fa-lock"></i> Confirm Password</label><input type="password" id="verifyConfirmPassword" placeholder="Re-enter password"></div>
-<div class="form-group"><label><i class="fas fa-shield-alt"></i> Security Question</label><select id="verifySecurityQ"><option value="">-- Select --</option><option>What is your mother's maiden name?</option><option>What city were you born in?</option><option>What is your favorite color?</option><option>What was your first pet's name?</option></select></div>
-<div class="form-group"><label><i class="fas fa-key"></i> Security Answer</label><input type="text" id="verifySecurityA" placeholder="Your answer"></div>
+<div class="verify-success"><i class="fas fa-check-circle"></i> મોબાઇલ ચકાસાયો! હવે તમારો પાસવર્ડ બનાવો.</div>
+<div class="form-group"><label><i class="fas fa-user"></i> પૂરું નામ *</label><input type="text" id="verifyPartyName" autocomplete="name" maxlength="120" required></div>
+<div class="form-group"><label><i class="fas fa-user-friends"></i> પિતાનું નામ *</label><input type="text" id="verifyFatherName" maxlength="120" required></div>
+<div class="form-group"><label><i class="fas fa-map-marker-alt"></i> સરનામું *</label><textarea id="verifyPartyAddress" rows="2" maxlength="500" required style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;background:var(--gray-50);font-family:var(--font);"></textarea></div>
+<div class="form-group"><label><i class="fas fa-briefcase"></i> વ્યવસાય</label><input type="text" id="verifyPartyOccupation" maxlength="120"></div>
+<div class="form-group"><label><i class="fas fa-lock"></i> પાસવર્ડ</label><input type="password" id="verifyPassword" placeholder="ઓછામાં ઓછા 4 અક્ષર"></div>
+<div class="form-group"><label><i class="fas fa-lock"></i> પાસવર્ડ ફરી નાખો</label><input type="password" id="verifyConfirmPassword" placeholder="પાસવર્ડ ફરી લખો"></div>
+<div class="form-group"><label><i class="fas fa-shield-alt"></i> સુરક્ષા પ્રશ્ન</label><select id="verifySecurityQ"><option value="">-- પસંદ કરો --</option><option>તમારી માતાનું પિયરનું નામ શું છે?</option><option>તમે કયા શહેરમાં જન્મ્યા છો?</option><option>તમારો પ્રિય રંગ કયો છે?</option><option>તમારા પહેલા પાળેલા પ્રાણીનું નામ શું હતું?</option></select></div>
+<div class="form-group"><label><i class="fas fa-key"></i> સુરક્ષા જવાબ</label><input type="text" id="verifySecurityA" placeholder="તમારો જવાબ"></div>
 <div class="login-error" id="verifyStep2Error"></div>
-<button class="btn-login" onclick="completeVerifyMobile()"><i class="fas fa-check-circle"></i> Create Account</button>
+<button class="btn-login" onclick="completeVerifyMobile()"><i class="fas fa-check-circle"></i> ખાતું બનાવો</button>
 <div class="login-links"><a onclick="showVerifyMobileForm()"><i class="fas fa-arrow-left"></i> Back</a></div>
 </div>
 </div>
 <div id="forgotFormBlock" style="display:none;">
-<p style="font-size:.7rem;color:var(--gray-600);margin-bottom:8px;font-family:var(--font);">Enter your username/mobile to recover your password.</p>
-<div class="form-group"><label><i class="fas fa-user"></i> Username / Mobile</label><input type="text" id="forgotUsername" placeholder="Enter your username or mobile"></div>
+<p style="font-size:.7rem;color:var(--gray-600);margin-bottom:8px;font-family:var(--font);">પાસવર્ડ પાછો મેળવવા તમારું યુઝરનેમ / મોબાઇલ નાખો.</p>
+<div class="form-group"><label><i class="fas fa-user"></i> યુઝરનેમ / મોબાઇલ</label><input type="text" id="forgotUsername" placeholder="યુઝરનેમ કે મોબાઇલ નાખો"></div>
 <div class="login-error" id="forgotError"></div>
-<div id="forgotStep1"><button class="btn-login" onclick="checkForgotUser()"><i class="fas fa-search"></i> Find Account</button></div>
+<div id="forgotStep1"><button class="btn-login" onclick="checkForgotUser()"><i class="fas fa-search"></i> ખાતું શોધો</button></div>
 <div id="forgotStep2" style="display:none;">
-<div class="form-group"><label><i class="fas fa-shield-alt"></i> Security Question</label><p id="forgotSecurityQ" style="font-weight:700;color:var(--navy);font-size:.75rem;font-family:var(--font);"></p></div>
-<div class="form-group"><label><i class="fas fa-key"></i> Your Answer</label><input type="text" id="forgotSecurityA" placeholder="Enter your answer"></div>
-<div class="form-group"><label><i class="fas fa-lock"></i> New Password</label><input type="password" id="forgotNewPassword" placeholder="Min 4 characters"></div>
-<button class="btn-login" onclick="doResetPassword()"><i class="fas fa-sync-alt"></i> Reset Password</button>
+<div class="form-group"><label><i class="fas fa-shield-alt"></i> સુરક્ષા પ્રશ્ન</label><p id="forgotSecurityQ" style="font-weight:700;color:var(--navy);font-size:.75rem;font-family:var(--font);"></p></div>
+<div class="form-group"><label><i class="fas fa-key"></i> તમારો જવાબ</label><input type="text" id="forgotSecurityA" placeholder="જવાબ લખો"></div>
+<div class="form-group"><label><i class="fas fa-lock"></i> નવો પાસવર્ડ</label><input type="password" id="forgotNewPassword" placeholder="ઓછામાં ઓછા 4 અક્ષર"></div>
+<button class="btn-login" onclick="doResetPassword()"><i class="fas fa-sync-alt"></i> પાસવર્ડ રીસેટ કરો</button>
 </div>
 <div id="forgotStep3" style="display:none;">
-<p style="color:var(--income);font-weight:700;font-size:.7rem;font-family:var(--font);"><i class="fas fa-check-circle"></i> Password reset successful! Please sign in.</p>
-<button class="btn-login" onclick="showLoginForm()"><i class="fas fa-right-to-bracket"></i> Sign In</button>
+<p style="color:var(--income);font-weight:700;font-size:.7rem;font-family:var(--font);"><i class="fas fa-check-circle"></i> પાસવર્ડ રીસેટ થઈ ગયો! હવે લોગિન કરો.</p>
+<button class="btn-login" onclick="showLoginForm()"><i class="fas fa-right-to-bracket"></i> લોગિન કરો</button>
 </div>
-<div class="login-links"><a onclick="showLoginForm()"><i class="fas fa-arrow-left"></i> Back to Sign In</a></div>
+<div class="login-links"><a onclick="showLoginForm()"><i class="fas fa-arrow-left"></i> લોગિન પર પાછા</a></div>
 </div>
 </div>
-<div class="login-footer" role="contentinfo"><i class="fas fa-shield-alt"></i> Secure Local Ledger · Ansar Yuva Mandal - Modasa</div>
+<div class="login-footer" role="contentinfo"><i class="fas fa-shield-alt"></i> સુરક્ષિત સ્થાનિક હિસાબ · Ansar Yuva Mandal - Modasa</div>
 </div>
 
 
@@ -9247,7 +9247,7 @@ input[id^="gcOldG"][id$="Replace"]:checked{ background-color: #E65100 !important
 <div class="icon" id="logoIcon"><i class="fas fa-landmark"></i></div>
 <div class="brand">
 <span class="title" id="logoTitle">Ansar Yuva Mandal - Modasa</span>
-<span class="sub"><span class="aym-sub-text">Smart Ledger</span><span class="aym-ver-chip" id="aymVerChip" role="button" tabindex="0" title="એપનું વર્ઝન — અપડેટ માટે ક્લિક કરો"><i class="fas fa-tag" aria-hidden="true"></i> v1.2.0</span></span>
+<span class="sub"><span class="aym-sub-text">Smart Ledger</span><span class="aym-ver-chip" id="aymVerChip" role="button" tabindex="0" title="એપનું વર્ઝન — અપડેટ માટે ક્લિક કરો"><i class="fas fa-tag" aria-hidden="true"></i> v1.2.1</span></span>
 </div>
 </div>
 <div class="header-actions"><button type="button" class="ws-launch" id="wsOpenSearch" aria-label="વિકલ્પ શોધો" aria-haspopup="dialog"><i class="fas fa-search" aria-hidden="true"></i><span class="ws-search-label">વિકલ્પ શોધો</span><kbd>Ctrl K</kbd></button>
@@ -9258,8 +9258,8 @@ input[id^="gcOldG"][id$="Replace"]:checked{ background-color: #E65100 !important
 
 <nav class="ns-topnav" id="nsTopNav" aria-label="મુખ્ય મેનુ">
   <div class="ns-nav-inner">
-    <button id="navHome" class="ns-nav-btn active" onclick="sidebarAction('home')"><i class="fas fa-house"></i><span>Home</span></button>
-    <button id="navEntries" class="ns-nav-btn" onclick="sidebarAction('entries')"><i class="fas fa-list-ul"></i><span>Entries</span></button>
+    <button id="navHome" class="ns-nav-btn active" onclick="sidebarAction('home')"><i class="fas fa-house"></i><span>મુખ્ય પાનું</span></button>
+    <button id="navEntries" class="ns-nav-btn" onclick="sidebarAction('entries')"><i class="fas fa-list-ul"></i><span>એન્ટ્રી</span></button>
     <div class="ns-drop" data-drop>
       <button type="button" class="ns-nav-btn" data-drop-btn aria-expanded="false" aria-haspopup="true"><i class="fas fa-layer-group"></i><span>હિસાબના વિભાગ</span><i class="fas fa-chevron-down ns-chev"></i></button>
       <div class="ns-drop-panel" data-drop-panel>
@@ -9275,8 +9275,8 @@ input[id^="gcOldG"][id$="Replace"]:checked{ background-color: #E65100 !important
         <button id="navGuarantorChange" onclick="sidebarAction('guarantorChange')"><i class="fas fa-user-shield"></i> Guarantor Change Form</button>
       </div>
     </div>
-    <button id="navMessages" class="ns-nav-btn" onclick="sidebarAction('messages')"><i class="fas fa-comments"></i><span>Messages</span> <span id="sidebarUnreadBadge" class="msg-badge" style="display:none;">0</span></button>
-    <button class="ns-nav-btn" onclick="openReportsGenerator()"><i class="fas fa-chart-bar"></i><span>Reports</span></button>
+    <button id="navMessages" class="ns-nav-btn" onclick="sidebarAction('messages')"><i class="fas fa-comments"></i><span>મેસેજ</span> <span id="sidebarUnreadBadge" class="msg-badge" style="display:none;">0</span></button>
+    <button class="ns-nav-btn" onclick="openReportsGenerator()"><i class="fas fa-chart-bar"></i><span>રિપોર્ટ</span></button>
     <div class="ns-drop ns-drop-end" data-drop>
       <button type="button" class="ns-nav-btn" data-drop-btn aria-expanded="false" aria-haspopup="true"><i class="fas fa-ellipsis"></i><span>વધુ</span><i class="fas fa-chevron-down ns-chev"></i></button>
       <div class="ns-drop-panel" data-drop-panel>
@@ -10642,7 +10642,7 @@ LedgerFeatures.cloud.syncPushToCloud = async function () {
       showToast('⚠️ Supabase સેટિંગ ભરો');
       return;
     }
-    setSyncStatus('syncing', 'Pushing…');
+    setSyncStatus('syncing', 'મોકલાય છે…');
     appendSyncLog('Push → Supabase', 'info');
     try {
       const payload = getCloudDataPayload();
@@ -10652,12 +10652,12 @@ LedgerFeatures.cloud.syncPushToCloud = async function () {
       cloudCfg.lastSyncTs = Date.now();
       saveCloudConfig(cloudCfg);
       updateCloudUI();
-      setSyncStatus('synced', 'Synced');
+      setSyncStatus('synced', 'સિંક થયું');
       appendSyncLog('Push OK', 'ok');
       showToast('☁️ ક્લાઉડ પર મોકલ્યું');
       refreshEntryViews();
     } catch (err) {
-      setSyncStatus('error', 'Failed');
+      setSyncStatus('error', 'નિષ્ફળ');
       appendSyncLog('Push err: ' + err.message, 'err');
       showToast('❌ ' + err.message);
       throw err;
@@ -10668,7 +10668,7 @@ LedgerFeatures.cloud.syncPushToCloud = async function () {
     showToast('⚠️ API કી અને Bin ID ભરો');
     return;
   }
-  setSyncStatus('syncing', 'Pushing…');
+  setSyncStatus('syncing', 'મોકલાય છે…');
   appendSyncLog('Push → JSONBin', 'info');
   try {
     const payload = getCloudDataPayload();
@@ -10690,12 +10690,12 @@ LedgerFeatures.cloud.syncPushToCloud = async function () {
     cloudCfg.lastSyncTs = Date.now();
     saveCloudConfig(cloudCfg);
     updateCloudUI();
-    setSyncStatus('synced', 'Synced');
+    setSyncStatus('synced', 'સિંક થયું');
     appendSyncLog('Push OK', 'ok');
     showToast('☁️ ક્લાઉડ પર મોકલ્યું');
     refreshEntryViews();
   } catch (err) {
-    setSyncStatus('error', 'Failed');
+    setSyncStatus('error', 'નિષ્ફળ');
     appendSyncLog('Err: ' + err.message, 'err');
     showToast('❌ ' + err.message);
     throw err;
@@ -10713,14 +10713,14 @@ LedgerFeatures.cloud.syncPullFromCloud = async function (silent) {
       return;
     }
     if (!silent) {
-      setSyncStatus('syncing', 'Pulling…');
+      setSyncStatus('syncing', 'લાવાય છે…');
       appendSyncLog('Pull ← Supabase', 'info');
     }
     try {
       const row = await supabaseFetchRow();
       if (!row || !row.data) {
         if (!silent) showToast('⚠️ ડેટા નથી');
-        setSyncStatus('idle', 'Ready');
+        setSyncStatus('idle', 'તૈયાર');
         return;
       }
       const remoteTs = row.updated_at;
@@ -10731,7 +10731,7 @@ LedgerFeatures.cloud.syncPullFromCloud = async function (silent) {
       cloudCfg.lastSyncTs = Date.now();
       saveCloudConfig(cloudCfg);
       updateCloudUI();
-      setSyncStatus('synced', 'Synced');
+      setSyncStatus('synced', 'સિંક થયું');
       appendSyncLog('Pull OK', 'ok');
       if (!silent) showToast('☁️ ક્લાઉડથી લીધું');
       applyLogo();
@@ -10748,7 +10748,7 @@ LedgerFeatures.cloud.syncPullFromCloud = async function (silent) {
       if (typeof renderGcFormList === 'function') renderGcFormList();
       if (typeof renderGcTermsList === 'function') renderGcTermsList();
     } catch (err) {
-      setSyncStatus('error', 'Failed');
+      setSyncStatus('error', 'નિષ્ફળ');
       appendSyncLog('Err: ' + err.message, 'err');
       if (!silent) showToast('❌ ' + err.message);
       throw err;
@@ -10760,7 +10760,7 @@ LedgerFeatures.cloud.syncPullFromCloud = async function (silent) {
     return;
   }
   if (!silent) {
-    setSyncStatus('syncing', 'Pulling…');
+    setSyncStatus('syncing', 'લાવાય છે…');
     appendSyncLog('Pull ← JSONBin', 'info');
   }
   try {
@@ -10784,7 +10784,7 @@ LedgerFeatures.cloud.syncPullFromCloud = async function (silent) {
     cloudCfg.lastSyncTs = Date.now();
     saveCloudConfig(cloudCfg);
     updateCloudUI();
-    setSyncStatus('synced', 'Synced');
+    setSyncStatus('synced', 'સિંક થયું');
     appendSyncLog('Pull OK', 'ok');
     if (!silent) showToast('☁️ ક્લાઉડથી લીધું');
     applyLogo();
@@ -10801,7 +10801,7 @@ LedgerFeatures.cloud.syncPullFromCloud = async function (silent) {
     if (typeof renderGcFormList === 'function') renderGcFormList();
     if (typeof renderGcTermsList === 'function') renderGcTermsList();
   } catch (err) {
-    setSyncStatus('error', 'Failed');
+    setSyncStatus('error', 'નિષ્ફળ');
     appendSyncLog('Err: ' + err.message, 'err');
     if (!silent) showToast('❌ ' + err.message);
     throw err;
@@ -10860,7 +10860,7 @@ LedgerFeatures.cloud.saveCloudSettings = function () {
   const ready = provider === 'supabase' ? cloudCfg.supabaseUrl && cloudCfg.supabaseAnonKey && cloudCfg.supabaseSyncKey : cloudCfg.apiKey && cloudCfg.binId;
   saveCloudConfig(cloudCfg);
   updateCloudUI();
-  setSyncStatus('idle', ready ? 'Ready' : 'Offline');
+  setSyncStatus('idle', ready ? 'તૈયાર' : 'ઓફલાઇન');
   appendSyncLog('Settings saved (' + provider + ')', 'info');
   showToast(ready ? '☁️ Saved' : '⚠️ Incomplete');
 };
@@ -10881,7 +10881,7 @@ LedgerFeatures.cloud.clearCloudSettings = function () {
   saveCloudConfig(cloudCfg);
   try { localStorage.removeItem('fm_live_link_v1'); } catch (e) {}
   updateCloudUI();
-  setSyncStatus('idle', 'Offline');
+  setSyncStatus('idle', 'ઓફલાઇન');
   appendSyncLog('Config cleared', 'info');
   showToast('☁️ ખાલી કર્યું');
 };
@@ -10966,7 +10966,7 @@ LedgerFeatures.cloud.updateCloudUI = function () {
     statusBadge.className = 'status-badge ' + (isSynced ? 'synced' : 'idle');
     statusBadge.textContent = isSynced ? 'Synced' : isReady ? 'Ready' : 'Idle';
   }
-  if (cfg.lastSync && Date.now() - cfg.lastSyncTs < 60000) setSyncStatus('synced', 'Synced');else setSyncStatus('idle', isReady ? 'Ready' : 'Offline');
+  if (cfg.lastSync && Date.now() - cfg.lastSyncTs < 60000) setSyncStatus('synced', 'સિંક થયું');else setSyncStatus('idle', isReady ? 'Ready' : 'Offline');
   if (cloudAutoSyncTimer) {
     clearInterval(cloudAutoSyncTimer);
     cloudAutoSyncTimer = null;
@@ -12454,10 +12454,10 @@ LedgerFeatures.identity.setLoginFormMode = function (mode) {
   const verifyPartyLink = $('#loginVerifyPartyLink');
   if (verifyPartyLink) verifyPartyLink.style.display = role === 'party' ? '' : 'none';
   const submitBtn = $('#loginSubmitBtn');
-  if (submitBtn) submitBtn.innerHTML = role === 'party' ? '<i class="fas fa-right-to-bracket"></i> Party Sign In' : '<i class="fas fa-right-to-bracket"></i> Admin Sign In';
+  if (submitBtn) submitBtn.innerHTML = role === 'party' ? '<i class="fas fa-right-to-bracket"></i> પાર્ટી લોગિન કરો' : '<i class="fas fa-right-to-bracket"></i> એડમિન લોગિન કરો';
   const usernameField = $('#loginUsername');
   if (usernameField) {
-    usernameField.placeholder = role === 'party' ? 'Enter party mobile' : 'Enter admin username';
+    usernameField.placeholder = role === 'party' ? 'પાર્ટીનો મોબાઇલ નંબર નાખો' : 'એડમિન યુઝરનેમ નાખો';
   }
   $('#loginError').textContent = '';
 };
@@ -13650,7 +13650,7 @@ LedgerFeatures.settings.switchSettingsTab = function (t) {
 };
 LedgerFeatures.settings.renderSettingsParties = function () {
   const list = $('#partySettingsList');
-  list.innerHTML = parties.length === 0 ? '<li style="color:#4C5A57;padding:12px;">હજી કોઈ પાર્ટી ઉમેરી નથી.</li>' : parties.map(p => `<li id="party-item-${p.id}" class="aym-party-li" data-search="${esc((p.name||'')+' '+(p.mobile||'')+' '+(p.fatherName||p.guardianName||'')+' '+(p.address||'')+' '+(p.occupation||''))}"><div class="item-info aym-party-info"><strong class="aym-pc aym-pc-name" title="${esc(p.name)}"><i class="fas fa-user" aria-hidden="true"></i><span>${esc(p.name)}</span></strong><span class="aym-pc" data-k="father" title="${esc(p.fatherName || p.guardianName || '')}"><i class="fas fa-user-tie" aria-hidden="true"></i><span>${(p.fatherName || p.guardianName) ? 'પિતા: ' + esc(p.fatherName || p.guardianName) : '—'}</span></span><span class="aym-pc" data-k="mobile" title="${esc(p.mobile || '')}"><i class="fas fa-mobile-alt" aria-hidden="true"></i><span>${p.mobile ? esc(p.mobile) : '—'}</span></span><span class="aym-pc" data-k="address" title="${esc(p.address || '')}"><i class="fas fa-location-dot" aria-hidden="true"></i><span>${p.address ? esc(p.address) : '—'}</span></span><span class="aym-pc" data-k="occupation" title="${esc(p.occupation || '')}"><i class="fas fa-briefcase" aria-hidden="true"></i><span>${p.occupation ? esc(p.occupation) : '—'}</span></span></div><div class="item-actions">${isAdmin() ? `<button class="btn btn-xs" title="સભ્ય પાસબુક / QR કાર્ડ" style="color:var(--navy);border-color:var(--gray-300);" onclick="openMemberPassbook('${p.id}')"><i class="fas fa-qrcode"></i></button><button class="btn btn-edit btn-xs" onclick="startEditParty('${p.id}')" title="પાર્ટી સુધારો" aria-label="પાર્ટી સુધારો"><i class="fas fa-pen-to-square" aria-hidden="true"></i></button><button class="btn btn-danger btn-xs" onclick="deletePartySettings('${p.id}')" title="પાર્ટી ડિલીટ કરો" aria-label="પાર્ટી ડિલીટ કરો"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>` : ''}</div></li>`).join('');
+  list.innerHTML = parties.length === 0 ? '<li style="color:#4C5A57;padding:12px;">હજી કોઈ પાર્ટી ઉમેરી નથી.</li>' : parties.map(p => `<li id="party-item-${p.id}" class="aym-party-li" data-search="${esc((p.name||'')+' '+(p.mobile||'')+' '+(p.fatherName||p.guardianName||'')+' '+(p.address||'')+' '+(p.occupation||''))}"><div class="item-info aym-party-info"><strong class="aym-pc aym-pc-name" title="${esc(p.name)}"><i class="fas fa-user" aria-hidden="true"></i><span>${esc(p.name)}</span></strong><span class="aym-pc" data-k="father" title="${esc(p.fatherName || p.guardianName || '')}"><i class="fas fa-user-tie" aria-hidden="true"></i><span>${(p.fatherName || p.guardianName) ? 'પિતા: ' + esc(p.fatherName || p.guardianName) : '—'}</span></span><span class="aym-pc" data-k="mobile" title="${esc(p.mobile || '')}"><i class="fas fa-mobile-alt" aria-hidden="true"></i><span>${p.mobile ? esc(p.mobile) : '—'}</span></span><span class="aym-pc" data-k="address" title="${esc(p.address || '')}"><i class="fas fa-location-dot" aria-hidden="true"></i><span>${p.address ? esc(p.address) : '—'}</span></span><span class="aym-pc" data-k="occupation" title="${esc(p.occupation || '')}"><i class="fas fa-briefcase" aria-hidden="true"></i><span>${p.occupation ? esc(p.occupation) : '—'}</span></span></div><div class="item-actions">${isAdmin() ? `<button class="btn btn-xs" title="સભ્ય પાસબુક / QR કાર્ડ" style="color:var(--navy);border-color:var(--gray-300);" onclick="openMemberPassbook('${p.id}')"><i class="fas fa-qrcode"></i></button>${(users || []).some(u => u && u.partyId === p.id && (u.role === 'party' || u.role === 'viewer')) ? '' : `<button class="btn btn-xs" title="આ સભ્યનું લોગિન બનાવો (હજી બન્યું નથી)" style="color:#8A6A12;border-color:#E3B757;background:#FFF8E8;" onclick="aymQuickLogin('${p.id}')"><i class="fas fa-key"></i></button>`}<button class="btn btn-edit btn-xs" onclick="startEditParty('${p.id}')" title="પાર્ટી સુધારો" aria-label="પાર્ટી સુધારો"><i class="fas fa-pen-to-square" aria-hidden="true"></i></button><button class="btn btn-danger btn-xs" onclick="deletePartySettings('${p.id}')" title="પાર્ટી ડિલીટ કરો" aria-label="પાર્ટી ડિલીટ કરો"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>` : ''}</div></li>`).join('');
   setTimeout(() => updateScrollHint('partySettingsScroll', 'partyScrollHint'), 40);
 };
 LedgerFeatures.settings.startEditParty = function (id) {
@@ -13831,7 +13831,10 @@ LedgerFeatures.settings.addUserFromSettings = function () {
     if (!name) return showToast('⚠️ વ્યુઅર માટે નામ જરૂરી');
   }
   if (!mobile) return showToast('⚠️ મોબાઇલ નંબર જરૂરી');
-  if (users.some(u => u.username === mobile)) return showToast('⚠️ આ લોગિન પહેલેથી છે');
+  /* એક જ મોબાઇલ (+91 / જગ્યા / - જુદી રીતે લખાયેલો) બે લોગિનમાં ન જાય — નહીં તો લોગિન વખતે ખોટી પાર્ટી ખૂલે */
+  const mobKey = v => String(v == null ? '' : v).replace(/\D/g, '').slice(-10);
+  const mk = mobKey(mobile);
+  if (users.some(u => mobKey(u.username) === mk && mk || mobKey(u.mobile) === mk && mk)) return showToast('⚠️ આ લોગિન પહેલેથી છે');
   users.push({
     id: uid(),
     username: mobile,
@@ -14932,8 +14935,8 @@ LedgerFeatures.accounts.startEditModule = function (id) {
             <div><label style="font-size:.55rem;font-weight:700;color:var(--gray-500);">Icon</label><input type="text" id="em_icon_${id}" value="${esc(modData.icon || 'fa-layer-group')}" style="font-size:.72rem;min-height:32px;padding:4px 8px;"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-            <div><label style="font-size:.55rem;font-weight:700;color:var(--expense);">Given (Expense) *</label><select id="em_given_${id}" style="font-size:.72rem;min-height:32px;padding:4px 8px;"><option value="">-- Select --</option>${givenOpts}</select></div>
-            <div><label style="font-size:.55rem;font-weight:700;color:var(--income);">Recovery (Income) *</label><select id="em_rec_${id}" style="font-size:.72rem;min-height:32px;padding:4px 8px;"><option value="">-- Select --</option>${recOpts}</select></div>
+            <div><label style="font-size:.55rem;font-weight:700;color:var(--expense);">આપેલ (જાવક) *</label><select id="em_given_${id}" style="font-size:.72rem;min-height:32px;padding:4px 8px;"><option value="">-- Select --</option>${givenOpts}</select></div>
+            <div><label style="font-size:.55rem;font-weight:700;color:var(--income);">વસૂલાત (આવક) *</label><select id="em_rec_${id}" style="font-size:.72rem;min-height:32px;padding:4px 8px;"><option value="">-- Select --</option>${recOpts}</select></div>
         </div>
         <div style="display:flex;gap:5px;justify-content:flex-end;margin-top:2px;"><button class="btn btn-success btn-xs" onclick="saveEditModule('${id}')" style="min-height:30px;padding:4px 12px;"><i class="fas fa-save"></i> સેવ</button><button class="btn btn-ghost btn-xs" onclick="renderSettingsModules()" style="color:var(--gray-600);border-color:var(--gray-300);min-height:30px;padding:4px 12px;"><i class="fas fa-times"></i></button></div>
     </div>`;
@@ -21072,7 +21075,7 @@ scheduleLoanBalanceRefresh();
   async function nsSrvPush(){
     if (!nsAdminOn()) { try { showToast('🔒'); } catch(e) {} return; }
     if (!nsServerReady()) { try { showToast('⚠️ સર્વર URL નાખો'); } catch(e) {} return; }
-    try { setSyncStatus('syncing', 'Pushing…'); } catch(e) {}
+    try { setSyncStatus('syncing', 'મોકલાય છે…'); } catch(e) {}
     try {
       var payload = getCloudDataPayload();
       var c = nsServerCfg();
@@ -21080,11 +21083,11 @@ scheduleLoanBalanceRefresh();
       if (!r.ok) throw new Error('Server HTTP ' + r.status);
       nsNoteSynced();
       try { if (typeof appendSyncLog === 'function') appendSyncLog('Push → Server OK', 'ok'); } catch(e) {}
-      try { setSyncStatus('synced', 'Synced'); } catch(e) {}
+      try { setSyncStatus('synced', 'સિંક થયું'); } catch(e) {}
       try { showToast('☁️ સર્વર પર મોકલ્યું'); } catch(e) {}
       try { if (typeof refreshEntryViews === 'function') refreshEntryViews(); } catch(e) {}
     } catch(err) {
-      try { setSyncStatus('error', 'Failed'); } catch(e2) {}
+      try { setSyncStatus('error', 'નિષ્ફળ'); } catch(e2) {}
       try { showToast('❌ ' + err.message); } catch(e2) {}
       throw err;
     }
@@ -21092,14 +21095,14 @@ scheduleLoanBalanceRefresh();
   async function nsSrvPull(silent){
     if (!nsAdminOn()) { if (!silent) { try { showToast('🔒'); } catch(e) {} } return; }
     if (!nsServerReady()) { if (!silent) { try { showToast('⚠️ સર્વર URL નાખો'); } catch(e) {} } return; }
-    if (!silent) { try { setSyncStatus('syncing', 'Pulling…'); } catch(e) {} }
+    if (!silent) { try { setSyncStatus('syncing', 'લાવાય છે…'); } catch(e) {} }
     var c = nsServerCfg();
     var r = await fetch(c.url + '/api/data/' + encodeURIComponent(c.key), { headers: { 'X-Access-Key': c.token } });
     if (!r.ok) throw new Error('Server HTTP ' + r.status);
     var j = await r.json();
     if (!j || !j.record) {
       if (!silent) { try { showToast('⚠️ Server પર ડેટા નથી'); } catch(e) {} }
-      try { setSyncStatus('idle', 'Ready'); } catch(e) {}
+      try { setSyncStatus('idle', 'તૈયાર'); } catch(e) {}
       return;
     }
     var ok = false;
@@ -21107,7 +21110,7 @@ scheduleLoanBalanceRefresh();
     if (!ok) throw new Error('Invalid server data');
     try { persistAll(); } catch(e) {}
     nsNoteSynced();
-    try { setSyncStatus('synced', 'Synced'); } catch(e) {}
+    try { setSyncStatus('synced', 'સિંક થયું'); } catch(e) {}
     nsRefreshAfterPull();
     if (!silent) { try { showToast('☁️ સર્વરથી લીધું'); } catch(e) {} }
   }
@@ -21115,7 +21118,7 @@ scheduleLoanBalanceRefresh();
   async function nsGhPush(){
     if (!nsAdminOn()) { try { showToast('🔒'); } catch(e) {} return; }
     if (!nsGhReady()) { try { showToast('⚠️ GitHub Token/Owner/Repo નાખો'); } catch(e) {} return; }
-    try { setSyncStatus('syncing', 'Pushing…'); } catch(e) {}
+    try { setSyncStatus('syncing', 'મોકલાય છે…'); } catch(e) {}
     try {
       var c = nsGhCfg();
       var payload = getCloudDataPayload();
@@ -21139,11 +21142,11 @@ scheduleLoanBalanceRefresh();
       if (!doneOk) throw lastErr || new Error('GitHub push failed');
       nsNoteSynced();
       try { if (typeof appendSyncLog === 'function') appendSyncLog('Push → GitHub OK', 'ok'); } catch(e) {}
-      try { setSyncStatus('synced', 'Synced'); } catch(e) {}
+      try { setSyncStatus('synced', 'સિંક થયું'); } catch(e) {}
       try { showToast('☁️ GitHub પર મોકલ્યું'); } catch(e) {}
       try { if (typeof refreshEntryViews === 'function') refreshEntryViews(); } catch(e) {}
     } catch(err) {
-      try { setSyncStatus('error', 'Failed'); } catch(e2) {}
+      try { setSyncStatus('error', 'નિષ્ફળ'); } catch(e2) {}
       try { showToast('❌ ' + err.message); } catch(e2) {}
       throw err;
     }
@@ -21151,11 +21154,11 @@ scheduleLoanBalanceRefresh();
   async function nsGhPull(silent){
     if (!nsAdminOn()) { if (!silent) { try { showToast('🔒'); } catch(e) {} } return; }
     if (!nsGhReady()) { if (!silent) { try { showToast('⚠️ GitHub Token/Owner/Repo નાખો'); } catch(e) {} } return; }
-    if (!silent) { try { setSyncStatus('syncing', 'Pulling…'); } catch(e) {} }
+    if (!silent) { try { setSyncStatus('syncing', 'લાવાય છે…'); } catch(e) {} }
     var got = await nsGhGetRecord();
     if (!got || !got.record) {
       if (!silent) { try { showToast('⚠️ GitHub પર ડેટા નથી — પહેલા Push કરો'); } catch(e) {} }
-      try { setSyncStatus('idle', 'Ready'); } catch(e) {}
+      try { setSyncStatus('idle', 'તૈયાર'); } catch(e) {}
       return;
     }
     var ok = false;
@@ -21163,7 +21166,7 @@ scheduleLoanBalanceRefresh();
     if (!ok) throw new Error('Invalid GitHub data');
     try { persistAll(); } catch(e) {}
     nsNoteSynced();
-    try { setSyncStatus('synced', 'Synced'); } catch(e) {}
+    try { setSyncStatus('synced', 'સિંક થયું'); } catch(e) {}
     nsRefreshAfterPull();
     if (!silent) { try { showToast('☁️ GitHub થી લીધું'); } catch(e) {} }
   }
@@ -21192,7 +21195,7 @@ scheduleLoanBalanceRefresh();
       } else {
         showToast('❌ Repo ન બન્યો: HTTP ' + r.status);
       }
-      setSyncStatus('idle', 'Ready');
+      setSyncStatus('idle', 'તૈયાર');
     } catch(e) { try { showToast('❌ ' + e.message); } catch(e2) {} }
   }
   try {
@@ -21524,6 +21527,7 @@ scheduleLoanBalanceRefresh();
       });
     } catch(e) {}
   }
+  try { window.aymLoginCloudPull = nsLoginCloudPull; window.aymCloudConfigured = nsCloudConfigured; } catch(e) {}
   /* Login anywhere: wrap doLogin so a first "not found" on a fresh device
      quietly pulls the accounts from the cloud and retries once. */
   try {
@@ -23095,7 +23099,7 @@ scheduleLoanBalanceRefresh();
    3) સેટિંગ્સ → અપડેટ માં જાતે તપાસી શકાય + લિંક સેટ કરી શકાય
    બધું try/catch માં — એપના બીજા કામમાં દખલ નહીં. */
 (function () {
-  var APP = { version: '1.2.0', code: 21 };
+  var APP = { version: '1.2.1', code: 22 };
   window.AYM_APP = APP;
   /* Android એપમાં મૂળ લિંક મૂકવી હોય તો અહીં લખો (ખાલી = એપ જ્યાં છે ત્યાં version.json) */
   window.AYM_UPDATE_URL = '';
@@ -25745,6 +25749,150 @@ scheduleLoanBalanceRefresh();
         });
       }
     } catch (e) {}
+  })();
+
+  /* ============ 1h) પાર્ટી લોગિન — "એકાઉન્ટ મળ્યું નથી" નો સાચો ઉકેલ ============
+     સમસ્યાઓ જે સામાન્ય છે:
+       1) ફોન પર ખાતું હજી આવ્યું નથી (ક્લાઉડથી આવવાનું બાકી) → લોગિન વખતે તરત લાવીએ.
+       2) ખાતું બીજી ભૂમિકામાં છે (એડમિન છે ને પાર્ટી ટૅબ પર લોગિન કરે) → ટૅબ જાતે બદલીએ.
+       3) સભ્ય ઉમેર્યો પણ **લોગિન બન્યું જ નથી** → સ્પષ્ટ સંદેશ + એડમિન માટે એક ક્લિકમાં લોગિન બનાવવાનો રસ્તો.
+       4) નામ/મોબાઇલ જુદી રીતે લખાયું (+91, જગ્યા, -) → સરળ મેળ બેસાડીએ. */
+  (function () {
+    function digits(v) { return String(v == null ? '' : v).replace(/\D/g, '').replace(/^0+/, ''); }
+    function last10(v) { var d = digits(v); return d.length > 10 ? d.slice(-10) : d; }
+    function norm(v) { return String(v == null ? '' : v).trim().toLowerCase(); }
+    function allUsers() { try { return Array.isArray(users) ? users : []; } catch (e) { return []; } }
+    window.aymFindUser = function (input) {
+      var t = norm(input);
+      if (!t) return null;
+      var d = last10(input);
+      var list = allUsers();
+      /* 1) સીધું નામ/યુઝરનેમ */
+      var u = list.find(function (x) { return norm(x.username) === t; });
+      if (u) return u;
+      /* 2) મોબાઇલ — +91 / 0 / જગ્યા / - બધું અવગણીને છેલ્લા 10 અંક */
+      if (d) {
+        u = list.find(function (x) { return last10(x.username) === d || last10(x.mobile) === d; });
+        if (u) return u;
+      }
+      /* 3) નામથી (એક જ નામ હોય તો) */
+      var byName = list.filter(function (x) { return norm(x.name) === t; });
+      if (byName.length === 1) return byName[0];
+      return null;
+    };
+    function setErr(msg) { try { var el = document.getElementById('loginError'); if (el) el.textContent = msg; } catch (e) {} }
+    function clrErr() { setErr(''); }
+    function roleOf(u) { return u && u.role === 'admin' ? 'admin' : 'party'; }
+    function partyForInput(input) {
+      try {
+        var d = last10(input);
+        var t = norm(input);
+        return (parties || []).find(function (p) {
+          return (d && (last10(p.mobile) === d)) || norm(p.name) === t;
+        }) || null;
+      } catch (e) { return null; }
+    }
+    function cloudOn() { try { return typeof window.aymCloudConfigured === 'function' && window.aymCloudConfigured(); } catch (e) { return false; } }
+
+    var orig = null;
+    try { orig = LedgerFeatures && LedgerFeatures.identity && LedgerFeatures.identity.doLogin; } catch (e) {}
+    if (typeof orig === 'function' && !orig.__aymFix) {
+      var fixed = async function () {
+        var unEl = document.getElementById('loginUsername'), pwEl = document.getElementById('loginPassword');
+        var input = unEl ? unEl.value.trim() : '';
+        var pw = pwEl ? pwEl.value : '';
+        if (!input || !pw) return orig.apply(this, arguments); /* મૂળ સંદેશ જ રહે */
+        var r = await orig.apply(this, arguments);
+        var logged = false;
+        try { logged = !!(typeof currentSession !== 'undefined' && currentSession); } catch (e) {}
+        if (logged) { clrErr(); return r; }
+        var msg = (document.getElementById('loginError') || {}).textContent || '';
+        if (msg.indexOf('મળ્યું નથી') === -1) return r;  /* પાસવર્ડ ખોટો વગેરે — એ જ રહેવા દો */
+
+        /* (1) ફોન પર ખાતું નથી → ક્લાઉડથી લાવીએ */
+        var u = window.aymFindUser(input);
+        if (!u && cloudOn() && typeof window.aymLoginCloudPull === 'function') {
+          try { showToast('🌐 ક્લાઉડથી ખાતું શોધીએ છીએ…'); } catch (e) {}
+          try { await window.aymLoginCloudPull(); } catch (e) {}
+          u = window.aymFindUser(input);
+          if (u) {
+            try { setLoginFormMode(roleOf(u)); } catch (e) {}
+            r = await orig.apply(this, arguments);
+            try { logged = !!(typeof currentSession !== 'undefined' && currentSession); } catch (e) {}
+            if (logged) { clrErr(); return r; }
+          }
+        }
+        if (u) {
+          /* (2) ખાતું મળ્યું પણ પહેલી કોશિશ નિષ્ફળ — કારણ ભૂમિકા ખોટી કે યુઝરનેમનું સ્વરૂપ (+91 / જગ્યા / - / નામ) */
+          var want = roleOf(u);
+          var switched = false;
+          if (want !== getLoginRole()) {
+            try { setLoginFormMode(want); switched = true; } catch (e) {}
+          }
+          try { var unFix = document.getElementById('loginUsername'); if (unFix && u.username) unFix.value = u.username; } catch (e) {}
+          r = await orig.apply(this, arguments);
+          try { logged = !!(typeof currentSession !== 'undefined' && currentSession); } catch (e) {}
+          if (logged) {
+            clrErr();
+            if (switched) { try { showToast(want === 'admin' ? '👤 એડમિન લોગિન તરીકે ખૂલ્યું' : '👤 પાર્ટી લોગિન તરીકે ખૂલ્યું'); } catch (e) {} }
+            return r;
+          }
+          /* ખાતું ચોક્કસ છે → હવે ખરેખર પાસવર્ડની ભૂલ */
+          var m2 = (document.getElementById('loginError') || {}).textContent || '';
+          setErr(m2 && m2.indexOf('મળ્યું નથી') === -1 ? m2 : 'પાસવર્ડ ખોટો છે.');
+          return r;
+        }
+        /* (3) સભ્ય છે પણ લોગિન બન્યું નથી */
+        var pt = partyForInput(input);
+        if (pt) {
+          setErr('આ સભ્ય ઉમેરાયેલા છે, પણ એનું લોગિન બન્યું નથી.\nએડમિને કરવાનું: સેટિંગ → વપરાશકર્તા → “નવું લોગિન બનાવો” → આ સભ્ય પસંદ કરી પાસવર્ડ નાખો.');
+          return r;
+        }
+        /* (4) સાફ સૂચના + મદદ */
+        var n = allUsers().length;
+        setErr('આ ફોન પર આ લોગિન મળ્યું નથી (આ ફોનમાં ' + n + ' લોગિન છે).' +
+          (cloudOn() ? '\nક્લાઉડ સિંક ચાલુ છે — એડમિને લોગિન બનાવ્યું હોય તો થોડી વારે ફરી પ્રયત્ન કરો.' :
+            '\nક્લાઉડ સિંક બંધ છે — સેટિંગ → ક્લાઉડ માં Auto Sync ચાલુ કરો અથવા એડમિનની Join લિંક ખોલો.'));
+        return r;
+      };
+      fixed.__aymFix = true;
+      try { LedgerFeatures.identity.doLogin = fixed; } catch (e) {}
+      try { window.doLogin = function () { return fixed.apply(this, arguments); }; } catch (e) {}
+    }
+
+    /* એડમિન માટે: સભ્યની પંક્તિમાંથી એક ક્લિકે લોગિન બનાવવાની સ્ક્રીન ખોલો */
+    window.aymQuickLogin = function (partyId) {
+      try {
+        var p = (parties || []).find(function (x) { return x.id === partyId; });
+        if (!p) return;
+        openSettings();
+        setTimeout(function () {
+          try { switchSettingsTab('users'); } catch (e) {}
+          setTimeout(function () {
+            try {
+              /* સભ્યનું નામ લોગિન ફોર્મમાં ભરો (input + datalist) */
+              var pi = document.getElementById('newUserPartyId');
+              if (pi) {
+                pi.value = p.name || '';
+                pi.dispatchEvent(new Event('input', { bubbles: true }));
+                pi.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+              var dl = document.getElementById('partyListForUser');
+              if (dl && dl.options && !Array.from(dl.options).some(function (o) { return o.dataset && o.dataset.id === partyId; })) {
+                try { refreshAllSelects(); } catch (e) {}
+              }
+              var mob = document.getElementById('newUserMobile');
+              if (mob && !mob.value) mob.value = p.mobile || '';
+              var nm = document.getElementById('newUserName');
+              if (nm && !nm.value) nm.value = p.name || '';
+              var pw = document.getElementById('newUserPassword');
+              if (pw) { pw.value = ''; pw.focus(); try { pw.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }
+              showToast('🔑 ' + (p.name || '') + ' — પાસવર્ડ નાખો અને “લોગિન બનાવો” દબાવો');
+            } catch (e) {}
+          }, 450);
+        }, 350);
+      } catch (e) {}
+    };
   })();
 
   /* ============ 2) ભાષા (ગુજરાતી / English / हिंदी) ============ */
