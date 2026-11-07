@@ -1,0 +1,4 @@
+project_id = "aym-smart-ledger"
+
+[functions.party-bootstrap]
+verify_jwt = true
