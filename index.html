@@ -9540,7 +9540,7 @@ body.ns-viewer:not(.ns-can-add-entry) #wsDockAdd{display:none!important}
 <div class="login-error" id="loginError"></div>
 <button class="btn-login" id="loginSubmitBtn" onclick="doLogin()"><i class="fas fa-right-to-bracket" aria-hidden="true"></i> <span data-aym-login-copy="adminLoginButton">Log in</span></button>
 <button class="btn-login" id="partyOtpLoginBtn" type="button" style="display:none" onclick="window.AYMPO&&window.AYMPO.loginWithPhone?window.AYMPO.loginWithPhone(document.getElementById('loginUsername').value):showToast('OTP login is unavailable.')"><i class="fas fa-right-to-bracket"></i> <span data-aym-login-copy="continueOtp">Continue with OTP</span></button>
-<p class="ns-party-otp-note" data-aym-login-copy="otpDeliveryNote">A code is sent to the registered mobile and email.</p>
+<p class="ns-party-otp-note" data-aym-login-copy="otpDeliveryNote">A verification email is sent to your registered email.</p>
 <p class="ns-mobile-party-note"><i class="fas fa-users" aria-hidden="true"></i> <span data-aym-login-copy="mobilePartyQrNote">The same public QR works for every Party. Never scan the Admin Cloud Join QR.</span></p>
 <div class="login-links">
 <a id="loginCreateAdminLink" onclick="showSignupForm()"><i class="fas fa-user-plus"></i> <span data-aym-login-copy="createAdmin">Create new Admin</span></a>
@@ -38612,15 +38612,16 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     try { license = JSON.parse(localStorage.getItem('aym_license_config_v1') || '{}') || {}; } catch (e) {}
     function migrateProjectValues(obj, urlField, keyField) {
       var changed = false;
-      if (obj && obj[urlField] === 'https://sgyhltlhnpalnxogshhm.supabase.co') { obj[urlField] = 'https://hdwzjmguxvdwukvyngfo.supabase.co'; changed = true; }
-      if (obj && obj[keyField] === 'sb_publishable_SeRkIoF1PDDBZaeYs-eFnQ_NkyFiP1e') { obj[keyField] = 'sb_publishable_hhpSVEOsdZHmXeWCRtkc9w_frk_wtwh'; changed = true; }
+      if (obj && obj[urlField] === 'https://hdwzjmguxvdwukvyngfo.supabase.co') { obj[urlField] = 'https://ixpigzyecddpzxkedlso.supabase.co'; obj[keyField] = 'sb_publishable_dsiepRZjyOJDzHiHRqip1A_FDEJqyfS'; changed = true; }
+      if (obj && obj[urlField] === 'https://sgyhltlhnpalnxogshhm.supabase.co') { obj[urlField] = 'https://ixpigzyecddpzxkedlso.supabase.co'; changed = true; }
+      if (obj && obj[keyField] === 'sb_publishable_SeRkIoF1PDDBZaeYs-eFnQ_NkyFiP1e') { obj[keyField] = 'sb_publishable_dsiepRZjyOJDzHiHRqip1A_FDEJqyfS'; changed = true; }
       return changed;
     }
     try { if (migrateProjectValues(saved, 'url', 'key')) localStorage.setItem(CFG_KEY, JSON.stringify(saved)); } catch (e) {}
     try { if (migrateProjectValues(cloud, 'supabaseUrl', 'supabaseAnonKey')) localStorage.setItem('fm_cloud_config_v1', JSON.stringify(cloud)); } catch (e) {}
     try { if (migrateProjectValues(license, 'supabaseUrl', 'publishableKey')) localStorage.setItem('aym_license_config_v1', JSON.stringify(license)); } catch (e) {}
-    var url = license.supabaseUrl || cloud.supabaseUrl || saved.url || 'https://hdwzjmguxvdwukvyngfo.supabase.co';
-    var key = license.publishableKey || cloud.supabaseAnonKey || saved.key || 'sb_publishable_hhpSVEOsdZHmXeWCRtkc9w_frk_wtwh';
+    var url = license.supabaseUrl || cloud.supabaseUrl || saved.url || 'https://ixpigzyecddpzxkedlso.supabase.co';
+    var key = license.publishableKey || cloud.supabaseAnonKey || saved.key || 'sb_publishable_dsiepRZjyOJDzHiHRqip1A_FDEJqyfS';
     return { url: String(url).trim().replace(/\/+$/, ''), key: String(key).trim() };
   }
   function live() { var c = cfg(); return !!(c.url && c.key); }
@@ -38647,8 +38648,8 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     try { var r = await fetch('./licensing-config.json', { cache: 'no-store' }); if (r.ok) bundled = await r.json(); } catch (e) {}
     var saved = {}, legacy = cfg();
     try { saved = JSON.parse(localStorage.getItem('aym_license_config_v1') || '{}') || {}; } catch (e) {}
-    var url = String(saved.supabaseUrl || bundled.supabaseUrl || legacy.url || 'https://hdwzjmguxvdwukvyngfo.supabase.co').trim().replace(/\/+$/, '');
-    var key = String(saved.publishableKey || bundled.publishableKey || legacy.key || legacy.supabaseAnonKey || 'sb_publishable_hhpSVEOsdZHmXeWCRtkc9w_frk_wtwh').trim();
+    var url = String(saved.supabaseUrl || bundled.supabaseUrl || legacy.url || 'https://ixpigzyecddpzxkedlso.supabase.co').trim().replace(/\/+$/, '');
+    var key = String(saved.publishableKey || bundled.publishableKey || legacy.key || legacy.supabaseAnonKey || 'sb_publishable_dsiepRZjyOJDzHiHRqip1A_FDEJqyfS').trim();
     if (!/^https:\/\//i.test(url) || !key) throw new Error(loginText('Supabase URL and publishable key are missing. Configure licensing-config.json first.', 'Supabase URL અને publishable key મળ્યાં નથી. પહેલાં licensing-config.json ગોઠવો.', 'Supabase URL और publishable key नहीं मिले। पहले licensing-config.json कॉन्फ़िगर करें।'));
     return { url: url, key: key };
   }
@@ -38961,7 +38962,8 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     btnBusy(btn, true, 'OTP મોકલી રહ્યું છે…');
     try {
       if (live()) {
-        await sbPost('/otp', { email: S.email, create_user: true, data: { full_name: S.name, phone: S.mobile } });
+        emailPendingSave();
+        await sbPost('/otp?redirect_to=' + encodeURIComponent(emailRedirect()), { email: S.email, create_user: true, data: { full_name: S.name, phone: S.mobile } });
         S.otp = '';
       } else {
         await new Promise(function (r) { setTimeout(r, 700); });
@@ -39127,7 +39129,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     var b = open('પાર્ટી ખાતું પૂરું કરો', 'ઇમેલ ચકાસાઈ ગયો — હવે ખાતું બનાવો');
     b.innerHTML =
       '<div class="aympo-tick"><i class="fas fa-circle-check"></i> ઇમેલ વેરિફાય થઈ ગયો: <b>' + esc(S.email) + '</b></div>' +
-      '<p class="aympo-lead">પાર્ટી લોગિનમાં પાસવર્ડ નહીં પૂછાય. દરેક વખતે તમારા નોંધાયેલા મોબાઇલ અને ઇમેલ પર આવેલા બંને OTP નાખવાના રહેશે.</p>' +
+      '<p class="aympo-lead">પાર્ટી લોગિનમાં તમારા નોંધાયેલા ઇમેલથી verification કરવાનું રહેશે. SMS જરૂરી નથી.</p>' +
       '<div class="aympo-err" id="aympoErr"></div>' +
       '<button type="button" class="aympo-btn" id="aympoCreate">પાર્ટી ખાતું બનાવો <i class="fas fa-flag-checkered"></i></button>';
     q('#aympoCreate').addEventListener('click', function () { createAccount(this, true); });
@@ -39423,15 +39425,15 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     user.email = S.email;
     user.emailVerified = true;
     user.emailVerifiedAt = new Date().toISOString();
-    user.authProvider = 'supabase-phone-email';
+    user.authProvider = 'supabase-email';
     user.authUserId = S.phoneAuth && S.phoneAuth.user && S.phoneAuth.user.id || '';
-    user.verifiedMobile = S.mobile;
+    // Email verification does not verify ownership of a mobile number.
     candidate.party.email = S.email;
     persist();
     S.userId = user.id;
     savePhoneAuthSession();
     close();
-    loginAs(user, 'SMS + Email OTP');
+    loginAs(user, 'Email OTP');
   }
 
   function stepLoginOtp(prefill) {
@@ -39471,7 +39473,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
   function loginAs(u, via) {
     var cs = {
       userId: u.id, username: u.username, name: u.name, role: u.role,
-      partyId: u.partyId, loggedAt: new Date().toISOString(), via: via || 'password', authProvider: via === 'SMS + Email OTP' ? 'supabase-phone-email' : (via === 'SMS OTP' ? 'supabase-phone' : undefined), authUserId: S.phoneAuth && S.phoneAuth.user ? S.phoneAuth.user.id : undefined, verifiedMobile: via === 'SMS + Email OTP' || via === 'SMS OTP' ? S.mobile : undefined, verifiedEmail: via === 'SMS + Email OTP' ? S.email : undefined
+      partyId: u.partyId, loggedAt: new Date().toISOString(), via: via || 'password', authProvider: via === 'Email OTP' ? 'supabase-email' : via === 'SMS + Email OTP' ? 'supabase-phone-email' : (via === 'SMS OTP' ? 'supabase-phone' : undefined), authUserId: S.phoneAuth && S.phoneAuth.user ? S.phoneAuth.user.id : undefined, verifiedMobile: via === 'SMS + Email OTP' || via === 'SMS OTP' ? S.mobile : undefined, verifiedEmail: via === 'Email OTP' || via === 'SMS + Email OTP' ? S.email : undefined
     };
     SET('currentSession', cs);
     call('persistSession');
@@ -40038,6 +40040,74 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     } catch (e) {}
   }
 
+  // Email-only Party verification. A mobile is an account lookup, never an SMS factor.
+  var EMAIL_PENDING_KEY = 'aym_party_email_pending_v1';
+  function emailPendingSave() {
+    localStorage.setItem(EMAIL_PENDING_KEY, JSON.stringify({email:S.email,mobile:S.mobile,userId:S.userId,mode:S.mode,partyId:S.partyId,name:S.name,father:S.father,address:S.address,occupation:S.occupation,at:Date.now()}));
+  }
+  function emailRedirect() { var u = new URL(location.href); u.hash=''; u.search=''; return u.href; }
+  function stepPhoneLogin(prefill, intent) {
+    S.mode='phoneLogin'; S.phoneIntent=intent==='signup'?'signup':'login'; S.phoneAuth=null; S.emailAuth=null; S.tries=0;
+    var b=open(loginText('Party email sign-in','ઇમેલથી Party લોગિન','ईमेल से Party लॉगिन'),loginText('Verify your registered email. No SMS is required.','તમારો નોંધાયેલ ઇમેલ ચકાસો. SMS જરૂરી નથી.','अपना दर्ज ईमेल सत्यापित करें। SMS आवश्यक नहीं है।'));
+    b.innerHTML=field(loginText('Registered mobile or email','નોંધાયેલ મોબાઇલ અથવા ઇમેલ','दर्ज मोबाइल या ईमेल'),'aympoPhoneLoginMobile','type="text" autocomplete="username" value="'+esc(prefill||'')+'"')+
+      '<div class="aympo-err" id="aympoErr"></div><button type="button" class="aympo-btn" id="aympoPhoneLoginSend">'+esc(loginText('Send verification email','વેરીફિકેશન ઇમેલ મોકલો','सत्यापन ईमेल भेजें'))+'</button><div class="aympo-foot"><a href="#" data-go="signup">'+esc(loginText('Create Party account','Party ખાતું બનાવો','Party खाता बनाएँ'))+'</a></div>';
+    q('#aympoPhoneLoginSend').onclick=function(){sendPhoneLoginOtp(this);};
+    q('#aympoPhoneLoginMobile').onkeydown=function(e){if(e.key==='Enter')sendPhoneLoginOtp(q('#aympoPhoneLoginSend'));};
+    q('[data-go="signup"]',b).onclick=function(e){e.preventDefault();stepMobile();};
+  }
+  async function sendPhoneLoginOtp(btn) {
+    err('');
+    var value=String(q('#aympoPhoneLoginMobile').value||'').trim(), email=nMail(value), mobile=normalizePhoneLoginMobile(value);
+    var candidates=isEmail(email)?U().filter(function(u){return u&&u.role==='party'&&nMail(u.email)===email&&partyById(u.partyId);}).map(function(u){return {user:u,party:partyById(u.partyId)};}):phoneCandidates(mobile).filter(function(c){return c&&c.user&&c.user.role==='party'&&c.party&&isEmail(partyCandidateEmail(c));});
+    if(!candidates.length)return err(loginText('No Party login with a registered email was found on this device. Ask the Admin to set it up.','આ ડિવાઇસમાં નોંધાયેલ ઇમેલવાળું Party લોગિન નથી. એડમિનને તૈયાર કરવા કહો.','इस डिवाइस पर दर्ज ईमेल वाला Party लॉगिन नहीं मिला। Admin से बनवाएँ।'));
+    S.phoneCandidates=candidates;
+    if(candidates.length>1)return stepPhoneAccountChoice();
+    return beginDualPartyOtp(candidates[0],btn);
+  }
+  async function beginDualPartyOtp(candidate,btn) {
+    if(!candidate||!candidate.user||candidate.user.role!=='party'||!candidate.party||!isEmail(partyCandidateEmail(candidate)))return err('Registered Party email required.');
+    S.mode='phoneLogin';S.phoneSelectedCandidate=candidate;S.email=partyCandidateEmail(candidate);S.userId=candidate.user.id;S.mobile=normalizePhoneLoginMobile(candidate.user.mobile||candidate.party.mobile);S.phoneAuth=null;S.emailAuth=null;S.tries=0;
+    btnBusy(btn,true);
+    try {S.phoneAuthConfig=await phoneAuthConfig();emailPendingSave();await phoneAuthRequest(S.phoneAuthConfig,'otp?redirect_to='+encodeURIComponent(emailRedirect()),{email:S.email,create_user:true});S.expireAt=Date.now()+3600000;S.resendAt=Date.now()+60000;btnBusy(btn,false);stepPhoneOtp();}
+    catch(e){btnBusy(btn,false);err(esc(phoneAuthMessage(e)));}
+  }
+  function stepPhoneOtp() {
+    var b=open(loginText('Check your email','તમારો ઇમેલ તપાસો','अपना ईमेल देखें'),maskEmail(S.email));
+    b.innerHTML='<p>'+esc(loginText('Open the newest confirmation/sign-in link in this browser. If the email contains a code, enter it below. Keep this tab open.','નવી ઇમેલની confirmation/login લિંક આ જ browserમાં ખોલો. કોડ હોય તો નીચે નાખો. આ tab ખુલ્લો રાખો.','नई ईमेल की confirmation/login लिंक इसी browser में खोलें। कोड मिले तो नीचे डालें। यह tab खुला रखें।'))+'</p><div class="aympo-otp" id="aympoEmailOtpBoxes">'+otpInputsHtml('Email')+'</div><div class="aympo-err" id="aympoErr"></div><button type="button" id="aympoVerify" class="aympo-btn">'+esc(loginText('Verify email code','ઇમેલ કોડ ચકાસો','ईमेल कोड जाँचें'))+'</button><div class="aympo-meta"><span id="aympoTimer"></span><button type="button" id="aympoResend">'+esc(loginText('Resend email','ઇમેલ ફરી મોકલો','ईमेल फिर भेजें'))+'</button></div>';
+    bindPhoneOtpInputs('#aympoEmailOtpBoxes');q('#aympoVerify').onclick=function(){verifyPhoneLoginOtp(this);};q('#aympoResend').onclick=function(){if(Date.now()>=S.resendAt)sendPhoneLoginOtpFromState(this);};startPhoneResendTimer();
+  }
+  async function sendPhoneLoginOtpFromState(btn){return beginDualPartyOtp(S.phoneSelectedCandidate,btn);}
+  function stepPhoneAccountChoice(){
+    var b=open(loginText('Choose Party account','Party ખાતું પસંદ કરો','Party खाता चुनें'),loginText('Verification goes to the registered email.','નોંધાયેલ ઇમેલ પર verification આવશે.','दर्ज ईमेल पर सत्यापन आएगा।'));
+    b.innerHTML=S.phoneCandidates.map(function(c,i){return '<label class="aympo-opt"><input type="radio" name="aympoPhoneAccount" value="'+i+'"'+(i===0?' checked':'')+'><span>'+esc(c.user.name||c.party.name)+' · '+esc(maskEmail(partyCandidateEmail(c)))+'</span></label>';}).join('')+'<div class="aympo-err" id="aympoErr"></div><button type="button" id="aympoPhoneAccountGo" class="aympo-btn">Send verification email</button>';
+    q('#aympoPhoneAccountGo').onclick=function(){var selected=q('input[name="aympoPhoneAccount"]:checked');beginDualPartyOtp(S.phoneCandidates[selected?Number(selected.value):0],this);};
+  }
+  function partyEmailIdentity(auth,email){return !!(auth&&auth.access_token&&auth.refresh_token&&auth.user&&auth.user.email_confirmed_at&&nMail(auth.user.email)===nMail(email));}
+  async function verifyPhoneLoginOtp(btn){
+    var code=qa('#aympoEmailOtpBoxes input').map(function(b){return b.value;}).join('');err('');
+    if(code.length!==6)return err('Enter the complete email code.');
+    if(S.tries>=5)return err('Request a new email before trying again.');
+    S.tries++;btnBusy(btn,true);
+    try{var auth=await phoneAuthRequest(S.phoneAuthConfig,'verify',{email:S.email,token:code,type:'email'});if(!partyEmailIdentity(auth,S.email))throw new Error('Verified email does not match the Party account.');S.emailAuth=auth;S.phoneAuth=auth;localStorage.removeItem(EMAIL_PENDING_KEY);loginWithPhoneCandidate(S.phoneSelectedCandidate);}
+    catch(e){err(esc(phoneAuthMessage(e)));}finally{btnBusy(btn,false);}
+  }
+  async function handlePartyEmailLink(){
+    var hash=new URLSearchParams(location.hash.slice(1)),access=hash.get('access_token'),refresh=hash.get('refresh_token');
+    if(!access||!refresh)return;
+    var pending;try{pending=JSON.parse(localStorage.getItem(EMAIL_PENDING_KEY)||'null');}catch(e){}
+    if(!pending||Date.now()-pending.at>3600000){history.replaceState(null,'',location.pathname+location.search);toast('Open the verification link in the browser where you requested it.');return;}
+    history.replaceState(null,'',location.pathname+location.search);
+    try{
+      var config=await phoneAuthConfig(),r=await fetch(config.url+'/auth/v1/user',{headers:{apikey:config.key,Authorization:'Bearer '+access},cache:'no-store'}),user=await r.json();
+      var auth={access_token:access,refresh_token:refresh,user:user,expires_in:Number(hash.get('expires_in')||3600)};
+      if(!r.ok||!partyEmailIdentity(auth,pending.email))throw new Error('Email verification could not be confirmed. Request a new email.');
+      Object.assign(S,pending);S.phoneAuthConfig=config;S.emailAuth=auth;S.phoneAuth=auth;
+      if(pending.mode==='register') {if(!partyById(pending.partyId))throw new Error('Party record missing on this device.');stepPassword();}
+      else {var candidate={user:U().filter(function(u){return u.id===pending.userId&&u.role==='party'&&nMail(u.email)===pending.email;})[0],party:null};candidate.party=candidate.user&&partyById(candidate.user.partyId);if(!candidate.party)throw new Error('Party login missing on this device.');loginWithPhoneCandidate(candidate);}
+      localStorage.removeItem(EMAIL_PENDING_KEY);
+    }catch(e){toast(e.message||'Email verification failed.');}
+  }
+
   window.AYMPO = {
     version: '1.1',
     start: function () { stepMobile(); },
@@ -40056,6 +40126,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     smsLive: smsLive
   };
 
+  setTimeout(handlePartyEmailLink, 1000);
   function boot() { injectLinks(); hookApp(); decoratePartyList(); ensureProfileBox(); }
   boot();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
@@ -44745,7 +44816,7 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   COPY.en.partyMobilePlaceholder='Enter your registered mobile'; COPY.gu.partyMobilePlaceholder='તમારો નોંધાયેલ મોબાઇલ દાખલ કરો'; COPY.hi.partyMobilePlaceholder='अपना पंजीकृत मोबाइल दर्ज करें';
   COPY.en.adminLoginButton='Log in'; COPY.gu.adminLoginButton='લોગિન કરો'; COPY.hi.adminLoginButton='लॉग इन';
   COPY.en.continueOtp='Continue with OTP'; COPY.gu.continueOtp='OTPથી આગળ વધો'; COPY.hi.continueOtp='OTP से आगे बढ़ें';
-  COPY.en.otpDeliveryNote='A code is sent to the registered mobile and email.'; COPY.gu.otpDeliveryNote='નોંધાયેલા મોબાઇલ અને ઇમેલ પર કોડ મોકલવામાં આવશે.'; COPY.hi.otpDeliveryNote='पंजीकृत मोबाइल और ईमेल पर कोड भेजा जाएगा।';
+  COPY.en.otpDeliveryNote='A verification email is sent to your registered email.'; COPY.gu.otpDeliveryNote='નોંધાયેલા ઇમેલ પર verification મોકલવામાં આવશે. SMS જરૂરી નથી.'; COPY.hi.otpDeliveryNote='दर्ज ईमेल पर सत्यापन भेजा जाएगा। SMS आवश्यक नहीं है।';
   COPY.en.mobilePartyQrNote='The same public QR works for every Party. Never scan the Admin Cloud Join QR.'; COPY.gu.mobilePartyQrNote='આ જ જાહેર QR દરેક પાર્ટી માટે છે. Adminનું Cloud Join QR સ્કેન ન કરો.'; COPY.hi.mobilePartyQrNote='यह सार्वजनिक QR हर पार्टी के लिए है। Admin का Cloud Join QR स्कैन न करें।';
   COPY.en.createPartyAccount='Create Party account'; COPY.gu.createPartyAccount='પાર્ટી ખાતું બનાવો'; COPY.hi.createPartyAccount='पार्टी खाता बनाएँ';
   COPY.en.needHelp='Need help?'; COPY.gu.needHelp='મદદ જોઈએ?'; COPY.hi.needHelp='मदद चाहिए?';

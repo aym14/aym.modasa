@@ -1,6 +1,6 @@
 /* AYM Smart Ledger v1.2.82 — Supabase primary sync with GitHub backup */
 const CACHE_PREFIX = 'aym-smart-ledger-pwa-';
-const CACHE_NAME = CACHE_PREFIX + 'v1.2.82-code84-syncfix1';
+const CACHE_NAME = CACHE_PREFIX + 'v1.2.82-code84-email1';
 const APP_SHELL = ['./index.html', './manifest.json', './icons/app-icon-192.png', './icons/app-icon-512.png', './icons/app-icon-maskable-512.png'];
 
 self.addEventListener('install', (event) => {
