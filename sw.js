@@ -1,7 +1,7 @@
 /* AYM Smart Ledger v1.2.82 — Supabase primary sync with GitHub backup */
 const CACHE_PREFIX = 'aym-smart-ledger-pwa-';
-const CACHE_NAME = CACHE_PREFIX + 'v1.2.82-code84-email1';
-const APP_SHELL = ['./index.html', './manifest.json', './icons/app-icon-192.png', './icons/app-icon-512.png', './icons/app-icon-maskable-512.png'];
+const CACHE_NAME = CACHE_PREFIX + 'v1.2.82-code84-party-cloud1';
+const APP_SHELL = ['./index.html', './party-cloud.js', './manifest.json', './icons/app-icon-192.png', './icons/app-icon-512.png', './icons/app-icon-maskable-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -34,7 +34,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   const scope = new URL(self.registration.scope);
   if (url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return;
-  if (url.pathname.endsWith('/sync-config.json') || url.pathname.endsWith('/licensing-config.json')) return;
+  if (url.pathname.endsWith('/sync-config.json') || url.pathname.endsWith('/licensing-config.json') || url.pathname.includes('/rest/v1/') || url.pathname.includes('/auth/v1/')) return;
 
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
