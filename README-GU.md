@@ -1,6 +1,6 @@
-# AYM Smart Ledger v1.2.82
+# AYM Smart Ledger v1.2.83
 
-Settings → Cloud Syncમાં Supabase મુખ્ય ledger provider છે. Sign in કરેલો Supabase user સક્રિય organization Admin હોવો જોઈએ. Party login/OTP તેની અલગ પ્રક્રિયા છે. અન્ય trusted Admin devices માટે દરેક device પર Supabase Auth sign-in જરૂરી છે.
+Settings → Cloud Syncમાં Supabase મુખ્ય ledger provider છે. Admin email પર OTP મંગાવી તે ચકાસ્યા પછી જ સક્રિય organization Adminને access મળે છે. Party login/OTP તેની અલગ પ્રક્રિયા છે. અન્ય trusted Admin devices માટે દરેક device પર Supabase Auth sign-in જરૂરી છે.
 
 Manual Pull cloud અને local records merge કરે છે. Network/permissionથી cloud read નિષ્ફળ જાય તો તેને ખાલી cloud માનાતો નથી; concurrent ફેરફારો ત્રણ પ્રયાસમાં સરખા ન થાય તો sync error બતાવે છે.
 

@@ -10758,18 +10758,19 @@ body.ns-viewer:not(.ns-can-add-entry) #wsDockAdd{display:none!important}
   <div id="supabaseConfigBlock" style="display:none;">
     <div class="form-group"><label>Supabase Project URL</label><input type="url" id="supabaseUrl" placeholder="https://your-project.supabase.co" autocomplete="url"></div>
     <div class="form-group"><label>Supabase Publishable Key</label><input type="password" id="supabaseAnonKey" placeholder="sb_publishable_..." autocomplete="off"><small>આ Publishable/anon key છે. Secret અથવા service-role key અહીં ક્યારેય ન નાખો.</small></div>
-    <div class="form-group"><label>Admin account email</label><input type="email" id="supabaseAdminEmail" placeholder="admin@example.com" autocomplete="username"></div>
-    <div class="form-group"><label>Admin account password</label><input type="password" id="supabaseAdminPassword" placeholder="Supabase Auth password" autocomplete="current-password"></div>
+    <div class="form-group"><label>Admin account email</label><input type="email" id="supabaseAdminEmail" placeholder="admin@example.com" autocomplete="username"><small>Supabaseમાં નોંધાયેલ Admin email પર 6 અંકનો OTP આવશે.</small></div>
+    <div class="form-group"><label>Email OTP</label><input type="text" id="supabaseAdminOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="6 અંકનો કોડ"></div>
     <div class="form-group"><label>Organization ID (વૈકલ્પિક)</label><input type="text" id="supabaseOrganizationId" placeholder="Sign in પછી એક સંસ્થા હોય તો આપમેળે મળશે" autocomplete="off"></div>
     <div class="form-group"><label>Sync name</label><input type="text" id="supabaseSyncKey" placeholder="main"></div>
     <div class="form-group" data-cloud-owner="supabase"><div class="auto-sync-toggle" style="margin:8px 0 12px"><input type="checkbox" id="githubBackupEnabled" aria-label="GitHub વધારાનો બેકઅપ"><span>Supabase sync પછી GitHubમાં private backup પણ સાચવો</span></div></div>
     <div class="action-row" data-cloud-owner="supabase" style="margin:8px 0">
-      <button type="button" class="btn btn-primary btn-sm" id="supabaseConnectBtn" onclick="connectSupabaseCloud()">Supabaseમાં Sign in કરો</button>
+      <button type="button" class="btn btn-primary btn-sm" id="supabaseConnectBtn" onclick="connectSupabaseCloud()">ઇમેલ OTP મોકલો</button>
+      <button type="button" class="btn btn-sm" id="supabaseVerifyOtpBtn" onclick="verifySupabaseCloudOtp()">OTP ચકાસો અને જોડો</button>
       <button type="button" class="btn btn-sm" id="supabaseTestBtn" onclick="testSupabaseCloud()">કનેક્શન તપાસો</button>
       <button type="button" class="btn btn-sm" id="supabaseDisconnectBtn" onclick="disconnectSupabaseCloud()">Sign out</button>
     </div>
     <div id="supabaseAuthStatus" data-cloud-owner="supabase" class="fc-hint" role="status">Supabase Sync માટે Admin accountથી સાઇન ઇન કરો.</div>
-    <div data-cloud-owner="supabase" class="fc-hint">આ કનેક્શન માત્ર સક્રિય Admin membership ધરાવતા વિશ્વાસપાત્ર Admin ડિવાઇસ માટે છે. Password સાચવાતો નથી; session આ browserમાં રહે છે.</div>
+    <div data-cloud-owner="supabase" class="fc-hint">આ કનેક્શન માત્ર સક્રિય Admin membership ધરાવતા વિશ્વાસપાત્ર Admin ડિવાઇસ માટે છે. OTP અથવા password સાચવાતો નથી; session આ browserમાં રહે છે.</div>
   </div>
   <div id="jsonbinConfigBlock">
     <div class="field-row"><label>API Key</label><input type="password" id="cloudApiKey" placeholder="Your JSONBin.io API Key"><span class="hint"><a href="https://jsonbin.io/" target="_blank" rel="noopener noreferrer">મફત API કી લો</a> → Sign up, create bin, copy API key.</span></div>
@@ -11704,43 +11705,77 @@ LedgerFeatures.cloud.supabaseEnsureAdmin = async function () {
   window.aymSupabaseCloudAuthorized = true;
   return { session, user, organizationId: cloudCfg.supabaseOrganizationId };
 };
-LedgerFeatures.cloud.supabaseConnectAdmin = async function () {
+LedgerFeatures.cloud.supabaseSendAdminOtp = async function () {
   const urlInput = document.getElementById('supabaseUrl');
   const keyInput = document.getElementById('supabaseAnonKey');
   const emailInput = document.getElementById('supabaseAdminEmail');
-  const passwordInput = document.getElementById('supabaseAdminPassword');
   cloudCfg.supabaseUrl = String(urlInput && urlInput.value || cloudCfg.supabaseUrl || '').trim().replace(/\/+$/, '');
   cloudCfg.supabaseAnonKey = String(keyInput && keyInput.value || cloudCfg.supabaseAnonKey || '').trim();
   cloudCfg.supabaseAdminEmail = String(emailInput && emailInput.value || '').trim().toLowerCase();
   cloudCfg.supabaseOrganizationId = String((document.getElementById('supabaseOrganizationId') || {}).value || cloudCfg.supabaseOrganizationId || '').trim();
-  const password = String(passwordInput && passwordInput.value || '');
-  if (!/^https:\/\//i.test(cloudCfg.supabaseUrl) || !cloudCfg.supabaseAnonKey || !cloudCfg.supabaseAdminEmail || !password) {
-    showToast('⚠️ Supabase URL, Publishable Key, Admin email અને password ભરો'); return false;
+  if (!/^https:\/\//i.test(cloudCfg.supabaseUrl) || !cloudCfg.supabaseAnonKey || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cloudCfg.supabaseAdminEmail)) {
+    showToast('⚠️ Supabase URL, Publishable Key અને સાચું Admin email ભરો'); return false;
   }
   cloudCfg.provider = 'supabase';
   cloudCfg.supabaseTable = 'aym_cloud_ledger_snapshots';
   saveCloudConfig(cloudCfg);
+  const status = document.getElementById('supabaseAuthStatus');
+  const sendButton = document.getElementById('supabaseConnectBtn');
+  const nextAllowed = Number(window.aymSupabaseAdminOtpResendAt || 0);
+  if (Date.now() < nextAllowed) {
+    const seconds = Math.ceil((nextAllowed - Date.now()) / 1000);
+    if (status) status.textContent = 'ફરી OTP મોકલવા ' + seconds + ' સેકન્ડ રાહ જુઓ.';
+    return false;
+  }
+  if (sendButton) sendButton.disabled = true;
   try {
-    const response = await fetch(supabaseBaseUrl() + '/auth/v1/token?grant_type=password', {
-      method: 'POST', headers: supabaseAuthHeaders(), body: JSON.stringify({ email: cloudCfg.supabaseAdminEmail, password })
+    const response = await fetch(supabaseBaseUrl() + '/auth/v1/otp', {
+      method: 'POST', headers: supabaseAuthHeaders(), body: JSON.stringify({ email: cloudCfg.supabaseAdminEmail, create_user: false })
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.access_token) throw new Error(data.msg || data.message || 'Supabase Sign in નિષ્ફળ (' + response.status + ').');
+    if (!response.ok) throw new Error(data.msg || data.message || 'ઇમેલ OTP મોકલવામાં નિષ્ફળ (' + response.status + ').');
+    window.aymSupabaseAdminOtpResendAt = Date.now() + 45000;
+    if (status) status.textContent = '✅ OTP મોકલ્યો. ઇમેલમાંથી 6 અંકનો કોડ દાખલ કરો.';
+    showToast('✅ Admin email પર OTP મોકલ્યો');
+    return true;
+  } catch (error) {
+    if (status) status.textContent = error.message || 'OTP મોકલી શકાયો નહીં.';
+    showToast('❌ ' + (error.message || 'OTP મોકલી શકાયો નહીં'));
+    return false;
+  } finally {
+    if (sendButton) setTimeout(function () { sendButton.disabled = false; }, Math.max(0, Number(window.aymSupabaseAdminOtpResendAt || 0) - Date.now()));
+  }
+};
+LedgerFeatures.cloud.supabaseConnectAdmin = async function () {
+  const otpInput = document.getElementById('supabaseAdminOtp');
+  const code = String(otpInput && otpInput.value || '').replace(/\D/g, '');
+  if (!/^[0-9]{6}$/.test(code)) { showToast('⚠️ ઇમેલમાં આવેલો 6 અંકનો OTP દાખલ કરો'); return false; }
+  const verifyButton = document.getElementById('supabaseVerifyOtpBtn');
+  const status = document.getElementById('supabaseAuthStatus');
+  let sessionSaved = false;
+  if (verifyButton) verifyButton.disabled = true;
+  try {
+    const response = await fetch(supabaseBaseUrl() + '/auth/v1/verify', {
+      method: 'POST', headers: supabaseAuthHeaders(), body: JSON.stringify({ email: cloudCfg.supabaseAdminEmail, token: code, type: 'email' })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.access_token) throw new Error(data.msg || data.message || 'OTP ચકાસણી નિષ્ફળ (' + response.status + ').');
     supabaseSaveSession(data);
-    if (passwordInput) passwordInput.value = '';
+    sessionSaved = true;
+    if (otpInput) otpInput.value = '';
     await supabaseEnsureAdmin();
-    const status = document.getElementById('supabaseAuthStatus');
-    if (status) status.textContent = '✅ Supabase Admin જોડાયું';
+    if (status) status.textContent = '✅ OTP ચકાસાયો અને Supabase Admin જોડાયું.';
     updateCloudUI();
     showToast('✅ Supabase Admin જોડાયું');
     return true;
   } catch (error) {
-    supabaseClearSession();
-    if (passwordInput) passwordInput.value = '';
-    const status = document.getElementById('supabaseAuthStatus');
+    if (sessionSaved) supabaseClearSession();
+    if (otpInput) otpInput.value = '';
     if (status) status.textContent = error.message || 'કનેક્શન નિષ્ફળ';
-    showToast('❌ ' + (error.message || 'Supabase કનેક્શન નિષ્ફળ'));
+    showToast('❌ ' + (error.message || 'OTP ચકાસણી નિષ્ફળ'));
     return false;
+  } finally {
+    if (verifyButton) verifyButton.disabled = false;
   }
 };
 LedgerFeatures.cloud.supabaseDisconnectAdmin = async function () {
@@ -25177,7 +25212,7 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
    3) સેટિંગ્સ → અપડેટ માં જાતે તપાસી શકાય + લિંક સેટ કરી શકાય
    બધું try/catch માં — એપના બીજા કામમાં દખલ નહીં. */
 (function () {
-  var APP = { version: '1.2.82', code: 84 };
+  var APP = { version: '1.2.83', code: 85 };
   window.AYM_APP = APP;
   /* Android એપમાં મૂળ લિંક મૂકવી હોય તો અહીં લખો (ખાલી = એપ જ્યાં છે ત્યાં version.json) */
   window.AYM_UPDATE_URL = '';
@@ -29570,7 +29605,7 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
 }
 </style>
 <script type="application/json" id="aymVersionJson">{
-  "version": "1.2.82",
+   "version": "1.2.83",
   "code": 84,
   "date": "2026-11-07",
   "notes": "Supabase primary ledger sync with optional GitHub private backup",
@@ -36732,7 +36767,7 @@ body #settingsModal #settingsNoResults[hidden]{
 
   /* કઈ પંક્તિ કયા પ્રોવાઇડરની છે — ખાનાના id પરથી ઓળખ */
   var ROW_OWNER = {
-    supabaseUrl: 'supabase', supabaseAnonKey: 'supabase', supabaseOrganizationId: 'supabase', supabaseAdminEmail: 'supabase', supabaseAdminPassword: 'supabase', supabaseSyncKey: 'supabase', githubBackupEnabled: 'supabase',
+    supabaseUrl: 'supabase', supabaseAnonKey: 'supabase', supabaseOrganizationId: 'supabase', supabaseAdminEmail: 'supabase', supabaseAdminOtp: 'supabase', supabaseSyncKey: 'supabase', githubBackupEnabled: 'supabase',
     cloudApiKey: 'jsonbin', cloudBinId: 'jsonbin',
     serverUrl: 'server', serverSyncKey: 'server', serverToken: 'server',
     ghToken: 'github', ghOwner: 'github', ghRepo: 'github', ghBranch: 'github', ghPath: 'github'
@@ -36813,7 +36848,7 @@ body #settingsModal #settingsNoResults[hidden]{
     if (!BLOCKS[p]) p = 'jsonbin';
     var grid = normalizeGrid();
     if (lastShown !== p) { try { refillFields(p); } catch (e) {} lastShown = p; }
-    if (p !== 'supabase') { var sbPw = document.getElementById('supabaseAdminPassword'); if (sbPw) sbPw.value = ''; }
+    if (p !== 'supabase') { var sbOtp = document.getElementById('supabaseAdminOtp'); if (sbOtp) sbOtp.value = ''; }
     if (grid) {
       [].slice.call(grid.children).forEach(function (row) {
         var own = ownerOf(row);
@@ -44997,8 +45032,16 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
     var c = collectSupabase();
     c.provider = 'supabase';
     store();
+    try { return await F.supabaseSendAdminOtp(); }
+    catch (e) { status(e.message || 'ઇમેલ OTP મોકલી શકાયો નહીં'); msg('❌ ' + (e.message || 'ઇમેલ OTP મોકલી શકાયો નહીં')); return false; }
+  };
+  window.verifySupabaseCloudOtp = async function () {
+    await hydrateSupabaseFields();
+    var c = collectSupabase();
+    c.provider = 'supabase';
+    store();
     try { return await F.supabaseConnectAdmin(); }
-    catch (e) { status(e.message || 'Supabase Sign in નિષ્ફળ'); msg('❌ ' + (e.message || 'Supabase Sign in નિષ્ફળ')); return false; }
+    catch (e) { status(e.message || 'OTP ચકાસણી નિષ્ફળ'); msg('❌ ' + (e.message || 'OTP ચકાસણી નિષ્ફળ')); return false; }
   };
   window.testSupabaseCloud = async function () {
     await hydrateSupabaseFields();

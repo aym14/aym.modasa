@@ -1,4 +1,4 @@
-# AYM Smart Ledger v1.2.82 — Supabase Sync અને GitHub Backup
+# AYM Smart Ledger v1.2.83 — Supabase Sync અને GitHub Backup
 
 આ buildમાં **Supabase મુખ્ય ledger sync** છે. સફળ Supabase sync પછી વૈકલ્પિક રીતે GitHubના અલગ Private Repositoryમાં વધારાનો backup રાખી શકાય છે. JSONBin અને My Server બીજા provider તરીકે ઉપલબ્ધ રહે છે; એક સમયે એક મુખ્ય provider પસંદ થાય છે.
 
@@ -12,11 +12,11 @@
 ## એપમાં Supabase જોડો
 
 1. `site/`ની ફાઇલો GitHub Pages publish rootમાં અપલોડ કરો. `index.html` સીધી rootમાં રહેવી જોઈએ અને `icons/` તેની બાજુમાં.
-2. Settings → Cloud Sync → **Supabase મુખ્ય**માં URL, Publishable key, Admin email/passwordથી Sign in કરો.
+2. Settings → Cloud Sync → **Supabase મુખ્ય**માં URL, Publishable key અને Admin email ભરો. **ઇમેલ OTP મોકલો** દબાવી inboxમાં આવેલ 6 અંકનો code નાખો અને **OTP ચકાસો અને જોડો** દબાવો.
 3. **કનેક્શન તપાસો** દબાવો. પછી **મોકલો** દબાવી હાલના Ledgerનો પ્રથમ cloud snapshot બનાવો.
 4. પ્રથમ snapshot પછી Auto Sync ચાલુ કરો. અન્ય trusted Admin devices પર દરેક deviceમાં Admin Supabase accountથી અલગ Sign in કરો.
 
-Sign in કરેલું Supabase account organizationનું active Admin હોવું જોઈએ. Supabase password સેવ થતો નથી; session આ browserમાં રહે છે. Join QRમાં GitHub backup ચાલુ હોય તો GitHub token પણ આવી શકે છે, તેથી QR ફક્ત trusted Admin devicesમાં વાપરો.
+Sign in કરેલું Supabase account organizationનું active Admin હોવું જોઈએ. OTP/password સેવ થતો નથી; session આ browserમાં રહે છે. Join QRમાં GitHub backup ચાલુ હોય તો GitHub token પણ આવી શકે છે, તેથી QR ફક્ત trusted Admin devicesમાં વાપરો.
 
 ## વૈકલ્પિક GitHub backup
 
@@ -46,4 +46,3 @@ Settings → Backup and restoreથી JSON backup download/restore કરી શ
 સ્થાનિક validation: Node.js 22+ સાથે package rootમાં `node tools/healthcheck.cjs` ચલાવો.
 
 આ તપાસમાં database migration/RLS execution, વાસ્તવિક OTP delivery અને authenticated cloud round-trip ચલાવ્યાં નથી. તેના માટે project/account access જરૂરી છે. Party/local login અને browserમાં બનતો SMS OTP server authorizationનું સ્થાન લેતા નથી; full cloud Ledger ફક્ત Supabaseના active Adminને RLSથી મળે છે. Public Party access માટે અલગ server-authorized, Party-scoped API જરૂરી છે.
-
