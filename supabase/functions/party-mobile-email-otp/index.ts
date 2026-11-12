@@ -72,11 +72,15 @@ Deno.serve(async (request) => {
     if (input.action === 'send') {
       // Keep the response identical for known and unknown numbers; never reveal Party email.
       if (email) {
-        await fetch(url + '/auth/v1/otp', {
+        const delivery = await fetch(url + '/auth/v1/otp', {
           method: 'POST',
           headers: { apikey: publishableKey, 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, create_user: true }),
         });
+        // Auth failures used to be silently reported as success. Log only the
+        // provider status (never the phone, email, response body, or OTP) so
+        // delivery failures can be diagnosed without exposing Party accounts.
+        if (!delivery.ok) console.error('Party email OTP provider rejected request', delivery.status);
       }
       return json({ ok: true });
     }
@@ -103,7 +107,13 @@ Deno.serve(async (request) => {
     });
   } catch (_) {
     // Avoid logging or returning Party identifiers, email addresses, or auth tokens.
-    return json({ error: input.action === 'send' ? 'otp_unavailable' : 'invalid_code' }, 400);
+    if (input.action === 'send') {
+      console.error('Party email OTP delivery request failed');
+      // Preserve the same response for unknown mobile numbers and transient
+      // lookup/provider failures so this endpoint cannot be used to enumerate Parties.
+      return json({ ok: true });
+    }
+    return json({ error: 'invalid_code' }, 400);
   }
 });
 
