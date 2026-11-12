@@ -4,7 +4,7 @@ Supabaseમાં organization-scoped ledger snapshot રાખવામાં �
 
 ## Supabase project તૈયાર કરો
 
-1. `migrations/`ની સાત SQL ફાઇલો નામના ક્રમમાં લાગુ કરો: access foundation, cloud ledger snapshots, snapshot write clock, Party portal, `202611120001_aym_party_requests.sql`, `202611120002_aym_party_request_projection_access.sql` અને `202611120003_aym_party_online_forms.sql`. Supabase CLIથી `supabase db push` અથવા Dashboard → SQL Editor વાપરો. છેલ્લી migration Party માટે લોન અરજી તથા જામીનદાર ફેરફારના સુરક્ષિત ફોર્મ બનાવે છે; Admin inboxમાં અરજીની સમીક્ષા અને સ્થિતિ/નોંધ સાચવી શકાય છે.
+1. `migrations/`ની આઠ SQL ફાઇલો નામના ક્રમમાં લાગુ કરો: access foundation, cloud ledger snapshots, snapshot write clock, Party portal, `202611120001_aym_party_requests.sql`, `202611120002_aym_party_request_projection_access.sql`, `202611120003_aym_party_online_forms.sql` અને `202611120004_aym_party_mobile_email_match.sql`. Supabase CLIથી `supabase db push` અથવા Dashboard → SQL Editor વાપરો. છેલ્લી migration OTP મોકલતાં પહેલાં મોબાઇલ-ઈમેલની જોડણી Party રેકોર્ડ સાથે ચકાસે છે.
 2. Dashboard → Authentication → Usersમાં Admin માટે email user બનાવો/પસંદ કરો. આ app password sign-in નથી કરતી; OTP મોકલવા પહેલાં Auth user હોવો જરૂરી છે. Project signup બંધ હોય તો Dashboardમાંથી user બનાવો, public signup ચાલુ ન કરો.
 3. Admin membership ગોઠવવા માટે `setup_admin_cloud_sync.sql` વાપરો. તેમાં screenshotના Admin email અને organization name આપેલા છે; તમારી ગોઠવણી અલગ હોય તો ચલાવતા પહેલાં બંને બદલો. Query confirmed Auth user ચકાસે છે, organization ન હોય તો બનાવે છે, Admin membership idempotently upsert કરે છે અને અંતે પરિણામ બતાવે છે. `seed.example.sql` ફક્ત placeholder template છે; placeholder values ચલાવશો નહીં. `role` `admin` અને `is_active` true હોવું જોઈએ. OTP email એ જ Auth userના email સાથે મેળ ખાતું હોવું જોઈએ.
 4. `site/licensing-config.json`માં project URL અને Publishable key જ રાખો. આ key browserમાં વાપરવા માટે છે; database policies સક્રિય રાખો.
@@ -17,7 +17,7 @@ Supabaseમાં organization-scoped ledger snapshot રાખવામાં �
 4. પહેલા **મોકલો** દબાવી હાલના Ledgerનો પ્રથમ snapshot બનાવો. ત્યાર પછી જ Auto Sync ચાલુ કરો.
 5. અન્ય વિશ્વાસપાત્ર Admin device પર પણ તેની પોતાની Supabase Auth sessionથી Sign in કરો. Join QR config આપી શકે છે, પરંતુ તેમાં Supabase password/session નથી.
 
-દરેક sync પહેલાં local અને cloud records merge થાય છે. Supabase policy full Ledger snapshotને Admin role સુધી મર્યાદિત રાખે છે; Party accountને આ table access મળતો નથી. Migration લાગુ થયા પછી Party portalમાં “ઓનલાઇન ફોર્મ”થી લોન અરજી અને જામીનદાર ફેરફાર મોકલી શકાય છે. Admin loginના “પાર્ટી અરજીઓ” inboxમાં ફોર્મ જોઈને નવી/તપાસમાં/મંજૂર/નામંજૂર સ્થિતિ તથા નોંધ સાચવી શકાય છે. સામાન્ય વિનંતીઓ માટેનું inbox પણ ઉપલબ્ધ છે.
+દરેક sync પહેલાં local અને cloud records merge થાય છે. Supabase policy full Ledger snapshotને Admin role સુધી મર્યાદિત રાખે છે; Party accountને આ table access મળતો નથી. Party લોગિન માટે નોંધાયેલ મોબાઇલ અને ઈમેલ દાખલ કરે છે; જોડણી મેળ ખાતાં ઈમેલ OTP મોકલાય છે અને OTP પછી બંને વિગતો Party રેકોર્ડ સાથે ફરી ચકાસાય છે. Party portalમાં “ઓનલાઇન ફોર્મ”થી લોન અરજી અને જામીનદાર ફેરફાર મોકલી શકાય છે. Admin loginના “પાર્ટી અરજીઓ” inboxમાં ફોર્મ જોઈને નવી/તપાસમાં/મંજૂર/નામંજૂર સ્થિતિ તથા નોંધ સાચવી શકાય છે. સામાન્ય વિનંતીઓ માટેનું inbox પણ ઉપલબ્ધ છે.
 
 ## વૈકલ્પિક GitHub backup
 
@@ -35,7 +35,7 @@ Supabaseમાં organization-scoped ledger snapshot રાખવામાં �
 - `Invalid login credentials`: જૂનું password-based app/PWA ખુલ્લું હોઈ શકે; નવી versionમાં email OTP વાપરો. Supabase Auth Usersમાં email account ચકાસો.
 - membership/403: organization ID અને `aym_org_members` rowમાં Auth UUID, `role='admin'`, `is_active=true` ચકાસો.
 - Organization ID validation error: અહીં Supabase project ref નહીં, UUID જોઈએ; field ખાલી રાખીને OTP ચકાસ્યા પછી auto-detect થવા દો.
-- table/404 અથવા permission error: સાત migrations યોગ્ય ક્રમમાં લાગુ થયા છે તેની ખાતરી કરો.
+- table/404 અથવા permission error: આઠ migrations યોગ્ય ક્રમમાં લાગુ થયા છે તેની ખાતરી કરો.
 - GitHub 401/403/404: PAT, private repo Owner/Name, branch અને Contents Read/Write તપાસો.
 
 `service_role`/Secret key, database password અથવા GitHub token જાહેર repositoryમાં commit ન કરો.
