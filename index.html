@@ -2,75 +2,24 @@
 <html lang="en" style="font-size: 16px;">
 <head>
 <script>
-/* Isolated public demo: sample-only state, volatile storage and no remote API access. */
+/* Remove old isolated demo state and strip its URL flag, preserving real app data. */
 (function () {
-  var params = new URLSearchParams(location.search);
-  var role = params.get('demo');
-  if (role !== 'admin' && role !== 'party') return;
-  window.__AYM_DEMO_MODE = true;
-  window.__AYM_DEMO_ROLE = role;
-  var proto = Storage.prototype;
-  var prefix = '__aym_demo_sandbox_v1__:';
-  var nativeGet = proto.getItem, nativeSet = proto.setItem, nativeRemove = proto.removeItem, nativeKey = proto.key;
-  var nativeLength = Object.getOwnPropertyDescriptor(proto, 'length').get;
-  proto.getItem = function (key) { return nativeGet.call(this, prefix + String(key)); };
-  proto.setItem = function (key, value) { nativeSet.call(this, prefix + String(key), String(value)); };
-  proto.removeItem = function (key) { nativeRemove.call(this, prefix + String(key)); };
-  Object.defineProperty(proto, 'length', { configurable: true, get: function () {
-    var count = 0;
-    for (var i = 0, n = nativeLength.call(this); i < n; i++) if (String(nativeKey.call(this, i) || '').indexOf(prefix) === 0) count++;
-    return count;
-  }});
-  proto.key = function (index) {
-    var seen = -1;
-    for (var i = 0, n = nativeLength.call(this); i < n; i++) {
-      var key = nativeKey.call(this, i);
-      if (String(key || '').indexOf(prefix) === 0 && ++seen === Number(index)) return String(key).slice(prefix.length);
+  try {
+    var prefix = '__aym_demo_sandbox_v1__:';
+    [localStorage, sessionStorage].forEach(function (storage) {
+      for (var i = storage.length - 1; i >= 0; i--) {
+        var key = storage.key(i);
+        if (key && key.indexOf(prefix) === 0) storage.removeItem(key);
+      }
+    });
+    var url = new URL(location.href);
+    if (url.searchParams.has('demo')) {
+      url.searchParams.delete('demo');
+      history.replaceState(history.state, '', url.pathname + url.search + url.hash);
     }
-    return null;
-  };
-  proto.clear = function () {
-    for (var i = nativeLength.call(this) - 1; i >= 0; i--) {
-      var key = nativeKey.call(this, i);
-      if (String(key || '').indexOf(prefix) === 0) nativeRemove.call(this, key);
-    }
-  };
-  var nativeFetch = window.fetch.bind(window);
-  window.fetch = function (input, init) {
-    var raw = input && input.url ? input.url : String(input || '');
-    var method = String(init && init.method || input && input.method || 'GET').toUpperCase();
-    var target;
-    try { target = new URL(raw, location.href); } catch (_) { return Promise.reject(new Error('Demo mode blocked a network request.')); }
-    if (target.origin !== location.origin || method !== 'GET' || /\/(api|rest\/v1|auth\/v1)\//i.test(target.pathname)) return Promise.reject(new Error('Demo mode is offline and cannot access live data.'));
-    return nativeFetch(input, init);
-  };
-  var xhrOpen = XMLHttpRequest.prototype.open;
-  var xhrSend = XMLHttpRequest.prototype.send;
-  XMLHttpRequest.prototype.open = function (method, url) {
-    var target;
-    try { target = new URL(String(url), location.href); } catch (_) { this.__aymDemoBlocked = true; return; }
-    this.__aymDemoBlocked = target.origin !== location.origin || String(method).toUpperCase() !== 'GET' || /\/(api|rest\/v1|auth\/v1)\//i.test(target.pathname);
-    if (this.__aymDemoBlocked) return;
-    return xhrOpen.apply(this, arguments);
-  };
-  XMLHttpRequest.prototype.send = function () {
-    if (this.__aymDemoBlocked) throw new Error('Demo mode is offline and cannot access live data.');
-    return xhrSend.apply(this, arguments);
-  };
-  window.aymDemoSwitch = function (nextRole) { var next = new URL(location.href); next.searchParams.set('demo', nextRole === 'party' ? 'party' : 'admin'); location.assign(next.href); };
-  window.aymDemoExit = function () { var next = new URL(location.href); next.searchParams.delete('demo'); location.assign(next.href); };
-  window.aymDemoReset = function () { localStorage.clear(); sessionStorage.clear(); location.reload(); };
-  window.addEventListener('DOMContentLoaded', function () {
-    var bar = document.createElement('aside');
-    bar.id = 'aymDemoSafetyBar';
-    bar.innerHTML = '<strong>DEMO · SAMPLE DATA · LOCAL ONLY</strong><button type="button" onclick="aymDemoSwitch(\'admin\')">Admin</button><button type="button" onclick="aymDemoSwitch(\'party\')">Party</button><button type="button" onclick="aymDemoReset()">Reset</button><button type="button" onclick="aymDemoExit()">Exit</button>';
-    document.body.appendChild(bar);
-  });
+  } catch (_) {}
 })();
 </script>
-<style>
-#aymDemoSafetyBar{position:fixed;z-index:2147483000;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:8px;max-width:calc(100vw - 20px);padding:8px 10px;border:1px solid #9fd7cf;border-radius:14px;background:#073f3a;color:#fff;box-shadow:0 8px 24px #0003;font:600 12px/1.3 system-ui,sans-serif}#aymDemoSafetyBar button{border:0;border-radius:9px;padding:7px 9px;background:#fff;color:#075e55;font:inherit;cursor:pointer;white-space:nowrap}@media(max-width:520px){#aymDemoSafetyBar{gap:5px;padding:7px 6px;font-size:10px}#aymDemoSafetyBar button{padding:6px 7px}}
-</style>
 <script>/* એપ પોતાનું વ્યૂ ખોલતાં hash ખાલી કરે છે — એટલે શરૂઆતનું hash અહીં સાચવીએ */window.__AYM_SINGLE_FILE_BUILD = true;
 window.__AYM_BOOT_HASH=(location.hash||'');</script>
 <script>/* બગ-ફિક્સ: સર્વર (SMS/લોગિન) API ફક્ત ત્યારે જ કૉલ કરો જ્યારે સેલ્ફ-હોસ્ટેડ સર્વર કોન્ફિગર થયેલું હોય.
@@ -9606,7 +9555,6 @@ body.ns-viewer:not(.ns-can-add-entry) #wsDockAdd{display:none!important}
 <button class="login-tab active" type="button" data-login-role="admin" onclick="showAdminLoginForm()"><span data-aym-login-copy="adminLogin">Admin login</span></button>
 <button class="login-tab" type="button" data-login-role="party" onclick="showPartyLoginForm()"><span data-aym-login-copy="partyLogin">Party login</span></button>
 </div>
-<a href="?demo=admin" style="display:block;margin:10px auto 14px;width:max-content;max-width:100%;padding:9px 13px;border:1px solid #b8d8d3;border-radius:10px;color:#075e55;background:#f1faf8;font-weight:700;text-align:center;text-decoration:none">ડેમો એડમીન અજમાવો · નમૂનાનો ડેટા</a>
 <div id="loginFormBlock" data-role="admin">
 <div class="form-group" id="loginUsernameGroup"><label><i class="fas fa-user"></i> <span id="loginUsernameLabelText" data-aym-login-copy="usernameMobile">USERNAME / MOBILE</span></label><input type="text" id="loginUsername" placeholder="Enter admin username" autocomplete="username"></div>
 <div class="form-group" id="loginPasswordGroup"><label><i class="fas fa-lock"></i> <span data-aym-login-copy="passwordLabel">PASSWORD</span></label><input type="password" id="loginPassword" placeholder="Enter Password" autocomplete="current-password"></div>
@@ -10414,7 +10362,7 @@ body.ns-viewer:not(.ns-can-add-entry) #wsDockAdd{display:none!important}
 <input id="auUrlInput" type="text" placeholder="https://tamaru-nam.github.io/ansar-yuva-mandal-ledger/version.json" style="margin-top:6px">
 <div style="font-size:12px;color:#5b6b68;margin-top:6px">ખાલી રાખો તો એપ જ્યાં ચાલે છે ત્યાં જ `version.json` શોધશે. Android એપમાં અપડેટ માટે આમાં પૂરી લિંક નાખવી પડે.</div>
 <div style="margin-top:8px"><button type="button" class="btn btn-sm" onclick="aymUpdateSaveUrl()"><i class="fas fa-floppy-disk"></i> લિંક સેવ કરો</button>
-<button type="button" class="btn btn-sm" onclick="aymUpdateShowBar()"><i class="fas fa-eye"></i> પટ્ટી કેવી દેખાશે</button></div>
+</div>
 </div>
 <div class="au-note" id="auNotes"><b>કેવી રીતે કામ કરે:</b> એપ શરૂ થાય ત્યારે અને પછી દર 30 મિનિટે `version.json` તપાસે છે. ત્યાં નવો <code>code</code> મળે તો નીચે પટ્ટી આવે —
 <ul style="margin:6px 0 0;padding-left:18px">
@@ -20328,21 +20276,11 @@ const D = {
 function isLocalFileMode() {
   try { return location.protocol === 'file:'; } catch (e) { return false; }
 }
-const AYM_DEMO_FIXTURE = (function () {
-  const today = new Date().toISOString().slice(0, 10);
-  return {
-    fm_parties_v19: [{ id: 'demo-party-1', name: 'Demo Party One', mobile: '9999900001', fatherName: 'Demo Guardian', guardianName: 'Demo Guardian', address: 'Demo Street, Modasa', occupation: 'Demo', guardianMobile: '9999900002', personId: 'DEMO-001', email: 'party.demo@example.test', village: 'Modasa', kind: 'party', registeredAt: today }],
-    fm_categories_v19: [{ id: 'demo-cat-income', name: 'Demo Deposit', type: 'income' }, { id: 'demo-cat-expense', name: 'Demo Expense', type: 'expense' }],
-    fm_entries_v20: [{ id: 'demo-entry-1', date: today, partyId: 'demo-party-1', type: 'income', categoryId: 'demo-cat-income', amount: 5000, accountType: 'cash', paymentMode: 'Cash', voucherNo: 'DEMO-001', remarks: 'Sample entry only' }, { id: 'demo-entry-2', date: today, partyId: 'demo-party-1', type: 'expense', categoryId: 'demo-cat-expense', amount: 1200, accountType: 'cash', paymentMode: 'Cash', voucherNo: 'DEMO-002', remarks: 'Sample expense only' }],
-    fm_users_v3: [{ id: 'demo-admin', username: 'demo-admin', name: 'Demo Admin', role: 'admin' }, { id: 'demo-party-user', username: '9999900001', name: 'Demo Party One', role: 'party', partyId: 'demo-party-1' }],
-    fm_messages_v1: [], fm_login_history_v1: [], fm_module_records_v1: [], fm_custom_modules_v2: [], fm_accounts_v1: [], fm_loan_forms_v1: [], fm_loan_terms_v1: [], fm_guarantor_change_forms_v1: [], fm_guarantor_terms_v1: []
-  };
-})();
 const load = (k, d) => {
   const fallback = () => JSON.parse(JSON.stringify(d));
   try {
     const raw = localStorage.getItem(k);
-    if (!raw) return window.__AYM_DEMO_MODE && Object.prototype.hasOwnProperty.call(AYM_DEMO_FIXTURE, k) ? JSON.parse(JSON.stringify(AYM_DEMO_FIXTURE[k])) : fallback();
+    if (!raw) return fallback();
     const value = JSON.parse(raw);
     const defaultValue = fallback();
     if (Array.isArray(defaultValue)) return Array.isArray(value) ? value : defaultValue;
@@ -20406,9 +20344,7 @@ let entries = load(S.entries, []),
   })(load(S.logo, D.logo)),
   reportColSettings = load(S.reportCols, D.reportCols),
   users = load(S.users, D.users),
-  currentSession = window.__AYM_DEMO_MODE
-    ? { userId: window.__AYM_DEMO_ROLE === 'party' ? 'demo-party-user' : 'demo-admin', username: window.__AYM_DEMO_ROLE === 'party' ? '9999900001' : 'demo-admin', name: window.__AYM_DEMO_ROLE === 'party' ? 'Demo Party One' : 'Demo Admin', role: window.__AYM_DEMO_ROLE, partyId: window.__AYM_DEMO_ROLE === 'party' ? 'demo-party-1' : null, loggedAt: new Date().toISOString(), demo: true }
-    : load(S.session, null),
+  currentSession = load(S.session, null),
   messages = load(S.messages, []),
   loginHistory = load(S.loginHistory, []),
   moduleRecords = load(S.moduleRecords, []),
@@ -25344,7 +25280,7 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
    3) સેટિંગ્સ → અપડેટ માં જાતે તપાસી શકાય + લિંક સેટ કરી શકાય
    બધું try/catch માં — એપના બીજા કામમાં દખલ નહીં. */
 (function () {
-  var APP = { version: '1.2.85', code: 88 };
+var APP = { version: '1.2.86', code: 89 };
   window.AYM_APP = APP;
   /* Android એપમાં મૂળ લિંક મૂકવી હોય તો અહીં લખો (ખાલી = એપ જ્યાં છે ત્યાં version.json) */
   window.AYM_UPDATE_URL = '';
@@ -25688,16 +25624,6 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
     lsSet(K_URL, inp ? inp.value.trim() : '');
     toast('✅ અપડેટ લિંક સેવ થઈ');
     check(true);
-  };
-  window.aymUpdateShowBar = function () {
-    showBar({
-      version: 'demo',
-      title: 'નવું વર્ઝન ઉપલબ્ધ છે — v' + (remote && remote.version ? remote.version : '1.0.3'),
-      text: 'આ ફક્ત નમૂનો છે — સાચી પટ્ટી અપડેટ મળે ત્યારે આપમેળે આવશે.',
-      notes: 'ડેમો',
-      remember: false,
-      action: 'અપડેટ કરો'
-    });
   };
   window.aymUpdateInfo = function () { return { current: currentName(), code: currentCode(), remote: remote, url: updateUrl() }; };
 
@@ -29737,11 +29663,11 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
 }
 </style>
 <script type="application/json" id="aymVersionJson">{
-   "version": "1.2.85",
-  "code": 88,
-  "date": "2026-11-12",
-  "notes": "Isolated read-only Admin and Party demo with sample data",
-  "versionCode": 88
+  "version": "1.2.86",
+  "code": 89,
+  "date": "2026-11-13",
+  "notes": "Production build: public demo access and simulated OTP fallbacks removed",
+  "versionCode": 89
 }</script>
 <script type="application/json" id="aymSyncConfig">{
   "_readme": "Disabled clean deployment template. Do not place credentials in a public repository. Configure cloud sync through the app or a private server.",
@@ -38505,11 +38431,6 @@ body #settingsModal #settingsNoResults[hidden]{
 .aympo-mailto{display:flex;align-items:center;gap:8px;background:#EEF3FA;border:1px solid #D3E2F3;color:#1A4A7A;
   font-size:.78rem;font-weight:800;padding:9px 11px;border-radius:10px;margin-bottom:10px;word-break:break-all}
 .aympo-mailto a{margin-left:auto;color:#1A4A7A;font-size:.66rem;text-decoration:underline;cursor:pointer;white-space:nowrap}
-.aympo-demo{background:#FFF9EA;border:1px dashed #EBD9A6;border-radius:10px;padding:8px 11px;margin-bottom:11px;
-  font-size:.7rem;color:#7A5C12;font-weight:700;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.aympo-demo b{background:#C9A84C;color:#0B1A2E;font-size:.58rem;padding:1px 6px;border-radius:999px}
-.aympo-demo span{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.95rem;font-weight:900;letter-spacing:.16em;
-  background:#fff;border:1px solid #EBD9A6;border-radius:6px;padding:1px 8px}
 
 .aympo-otp{display:flex;gap:7px;justify-content:space-between;margin:4px 0 9px}
 .aympo-otp input{width:100%;min-width:0;aspect-ratio:1/1.15;text-align:center;font-family:'JetBrains Mono',ui-monospace,monospace;
@@ -38808,7 +38729,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
      4) પાર્ટી પોતાનો પાસવર્ડ સેટ કરે → એકાઉન્ટ બને
      5) લોગિન: પાસવર્ડ થી કે ઇમેલ-OTP થી
      6) પાસવર્ડ ભૂલી જાય → મોબાઇલ/ઇમેલ + ઇમેલ OTP → નવો પાસવર્ડ
-   ઇમેલ મોકલવા: Supabase Auth (કોન્ફિગ હોય તો) અથવા ડેમો કોડ સ્ક્રીન પર.
+ઇમેલ વેરિફિકેશન માટે Supabase Auth જરૂરી છે; ગોઠવણી ન હોય તો કોડ મોકલાશે નહીં.
    ===================================================================== */
 (function () {
   'use strict';
@@ -38965,8 +38886,8 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
   async function sendSmsTo(mobile, code) {
     var c = smsCfg();
     var num = String(mobile || '').replace(/\D/g, '').slice(-10);
-    if (!num) return { ok: false, demo: true, msg: 'મોબાઇલ નંબર નથી' };
-    if (!smsLive()) return { ok: true, demo: true };
+    if (!num) return { ok: false, msg: 'મોબાઇલ નંબર નથી' };
+    if (!smsLive()) return { ok: false, msg: 'SMS ગેટવે સેટ નથી. પહેલાં કાર્યરત ગેટવે ગોઠવો.' };
     var msg = 'AYM Smart Ledger — તમારો વેરિફિકેશન કોડ: ' + code + ' (10 મિનિટ માન્ય). કોઈને ન કહો.';
     try {
       if (c.provider === 'custom') {
@@ -38975,7 +38896,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
           body: JSON.stringify({ mobile: num, code: code, message: msg, sender: c.sender || '' })
         });
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        return { ok: true, demo: false };
+        return { ok: true };
       }
       if (c.provider === 'msg91') {
         var r2 = await fetch('https://control.msg91.com/api/v5/flow/', {
@@ -38984,7 +38905,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
           body: JSON.stringify({ template_id: c.template || '', sender: c.sender || '', recipients: [{ mobiles: '91' + num, CODE: code }] })
         });
         if (!r2.ok) throw new Error('HTTP ' + r2.status);
-        return { ok: true, demo: false };
+        return { ok: true };
       }
       /* ડિફોલ્ટ: Fast2SMS */
       var r3 = await fetch('https://www.fast2sms.com/dev/bulkV2', {
@@ -38994,9 +38915,9 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
       });
       var d = null; try { d = await r3.json(); } catch (e) {}
       if (!r3.ok || (d && d.return === false)) throw new Error((d && d.message) || ('HTTP ' + r3.status));
-      return { ok: true, demo: false };
+      return { ok: true };
     } catch (e) {
-      return { ok: false, demo: true, msg: String(e && e.message || e) };
+      return { ok: false, msg: String(e && e.message || e) };
     }
   }
 
@@ -39197,19 +39118,12 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
 
   async function sendOtp(btn) {
     err('');
-    if (!live() && (S.mode === 'login' || S.mode === 'reset')) {
-      return err('ઇમેલ OTP ગેટવે હજી સેટ નથી — પાસવર્ડથી લોગિન કરો અથવા એડમિનનો સંપર્ક કરો.');
-    }
+    if (!live()) return err('Supabase ઇમેલ OTP ગોઠવાયેલું નથી. કોડ મોકલી શકાયો નથી — એડમિનનો સંપર્ક કરો.');
     btnBusy(btn, true, 'OTP મોકલી રહ્યું છે…');
     try {
-      if (live()) {
-        emailPendingSave();
-        await sbPost('/otp?redirect_to=' + encodeURIComponent(emailRedirect()), { email: S.email, create_user: true, data: { full_name: S.name, phone: S.mobile } });
-        S.otp = '';
-      } else {
-        await new Promise(function (r) { setTimeout(r, 700); });
-        S.otp = randomCode();
-      }
+      emailPendingSave();
+      await sbPost('/otp?redirect_to=' + encodeURIComponent(emailRedirect()), { email: S.email, create_user: true, data: { full_name: S.name, phone: S.mobile } });
+      S.otp = '';
       S.expireAt = Date.now() + 10 * 60 * 1000;
       S.resendAt = Date.now() + 45 * 1000;
       S.tries = 0;
@@ -39231,10 +39145,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
       '<div class="aympo-mailto"><i class="fas fa-' + (S.channel === 'sms' ? 'comment-sms' : 'envelope-open-text') + '"></i>' +
         '<span>' + esc(S.channel === 'sms' ? (S.mobile || '') : S.email) + '</span>' +
         '<a data-go="chg" href="#">બદલો</a></div>' +
-      (S.channel === 'sms'
-        ? '<div class="aympo-demo" id="aympoSmsDemo"><b>' + (smsLive() ? 'SMS મોકલાયો' : 'SMS ડેમો') + '</b> — ' +
-          (smsLive() ? 'SMS ગેટવે થી કોડ મોકલાયો છે.' : 'SMS ગેટવે સેટ નથી. કોડ: <span>' + esc(S.otp) + '</span>') + '</div>'
-        : (live() ? '' : '<div class="aympo-demo" id="aympoEmailDemo"><b>ડેમો મોડ</b> — ખરેખર મેઇલ નથી ગયો. તમારો કોડ: <span>' + esc(S.otp) + '</span></div>')) +
+      '<p class="aympo-note">વેરિફિકેશન કોડ મોકલાયો છે. ઇમેલ અથવા SMS તપાસો.</p>' +
       '<div class="aympo-chan"><span class="aympo-chan-l">કોડ ન મળ્યો?</span>' +
         '<button type="button" class="aympo-chan-b" id="aympoChEmail"><i class="fas fa-envelope"></i> ઇમેલ પર ફરી</button>' +
         '<button type="button" class="aympo-chan-b" id="aympoChSms"><i class="fas fa-comment-sms"></i> SMS પર મોકલો</button></div>' +
@@ -39325,11 +39236,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
           await sbPost('/verify', { type: 'signup', email: S.email, token: code });
         }
       } else {
-        await new Promise(function (r) { setTimeout(r, 650); });
-        if (Date.now() > S.expireAt) throw new Error('expired');
-        if (code !== S.otp) {
-          var e3 = new Error('invalid'); throw e3;
-        }
+        throw new Error('Supabase email OTP is not configured');
       }
       clearInterval(S.timer);
       btnBusy(btn, false);
@@ -39831,9 +39738,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
   function resendEmail(btn) {
     err('');
     S.channel = 'email';
-    if (!live()) {
-      S.otp = randomCode(); newCodeWindow(); stepOtp(); toast('કોડ ફરી બન્યો (ડેમો)'); return;
-    }
+    if (!live()) return err('Supabase ઇમેલ OTP ગોઠવાયેલું નથી. કોડ ફરી મોકલી શકાયો નથી.');
     sendOtp(btn);
   }
 
@@ -39847,20 +39752,16 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
 
   async function sendViaSms(btn) {
     err('');
-    if (!smsLive() && (S.mode === 'login' || S.mode === 'reset')) {
-      return err('SMS ગેટવે હજી સેટ નથી — પાસવર્ડથી લોગિન કરો અથવા એડમિનનો સંપર્ક કરો.');
-    }
+    if (!smsLive()) return err('SMS ગેટવે ગોઠવાયેલું નથી અથવા અધૂરું છે. ઇમેલથી કોડ લો.');
     var mob = mobileForFlow();
     if (!mob) return err('આ એકાઉન્ટમાં મોબાઇલ નંબર નથી — ઇમેલ પર જ કોડ લો.');
     S.mobile = mob;
     S.channel = 'sms';
     S.otp = randomCode();
     newCodeWindow();
-    stepOtp();
     var r = await sendSmsTo(mob, S.otp);
-    if (r && r.demo && r.ok) toast('SMS ગેટવે સેટ નથી — કોડ સ્ક્રીન પર દેખાય છે');
-    else if (r && r.ok) toast('📩 SMS મોકલાયો ' + maskMob(mob) + ' પર');
-    else toast('⚠️ SMS ન ગયો' + (r && r.msg ? ': ' + r.msg : '') + ' — ઇમેલ વાપરો');
+    if (r && r.ok) { stepOtp(); toast('📩 SMS મોકલાયો ' + maskMob(mob) + ' પર'); }
+    else { S.otp = ''; S.channel = 'email'; err('SMS મોકલાયો નથી' + (r && r.msg ? ': ' + r.msg : '') + ' — ઇમેલથી કોડ લો.'); }
   }
 
   function stepSmsSettings() {
@@ -39870,7 +39771,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     setSteps(['SMS ગેટવે'], 0);
     var b = open('SMS ગેટવે સેટિંગ', 'OTP SMS થી પણ મોકલવા માટે (એડમિન)');
     b.innerHTML =
-      '<p class="aympo-lead">SMS મોકલવા એક ગેટવે જોઈએ. <b>Fast2SMS</b> (ભારત, મફત ક્રેડિટ), <b>MSG91</b> કે તમારો પોતાનો વેબહૂક વાપરી શકો. કંઈ નાખ્યા વગર પણ એપ ચાલશે — ત્યારે <b>SMS ડેમો</b> માં કોડ સ્ક્રીન પર દેખાશે.</p>' +
+      '<p class="aympo-lead">SMS મોકલવા માન્ય ગેટવેની API કી અને જરૂરી વિગતો ફરજિયાત છે. ગેટવે વગર OTP મોકલાશે નહીં.</p>' +
       '<div class="aympo-field"><label for="aymSmsProvider">ગેટવે</label><select id="aymSmsProvider" class="aympo-sel">' +
         ['fast2sms', 'msg91', 'custom'].map(function (v) {
           var t = v === 'fast2sms' ? 'Fast2SMS (ડિફોલ્ટ)' : (v === 'msg91' ? 'MSG91' : 'કસ્ટમ વેબહૂક');
@@ -39890,7 +39791,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
         sender: (q('#aymSmsSender').value || '').trim(),
         url: (q('#aymSmsUrl').value || '').trim()
       });
-      toast(smsLive() ? '✅ SMS ગેટવે સેવ થયો' : 'સેવ થયું — હાલ SMS ડેમો મોડમાં');
+      toast(smsLive() ? '✅ SMS ગેટવે સેવ થયો' : 'સેટિંગ સેવ થયું; SMS માટે માન્ય ગેટવે જરૂરી છે.');
       err(''); ok('સેવ થયું.');
     });
     q('[data-go="test"]', b).addEventListener('click', async function () {
@@ -39898,8 +39799,8 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
       if (!mob) return err('પહેલા મોબાઇલ નંબર જોઈએ (લોગિન કરો).');
       var code = randomCode();
       var r = await sendSmsTo(mob, code);
-      if (r.ok && !r.demo) ok('ટેસ્ટ SMS મોકલાયો ' + maskMob(mob) + ' પર.');
-      else ok('ગેટવે સેટ નથી — ડેમો કોડ: <b>' + code + '</b>');
+      if (r && r.ok) ok('ટેસ્ટ SMS મોકલાયો ' + maskMob(mob) + ' પર.');
+      else err('ટેસ્ટ SMS મોકલાયો નથી' + (r && r.msg ? ': ' + esc(r.msg) : '') + '.');
     });
     q('[data-go="clr"]', b).addEventListener('click', function () { saveSmsCfg({}); toast('SMS સેટિંગ ખાલી કરી'); stepSmsSettings(); });
   }
