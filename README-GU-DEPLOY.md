@@ -1,18 +1,19 @@
-# AYM Smart Ledger v1.2.83 — Supabase Sync અને GitHub Backup
+# AYM Smart Ledger v1.2.84 — Supabase Sync અને GitHub Backup
 
 આ buildમાં **Supabase મુખ્ય ledger sync** છે. સફળ Supabase sync પછી વૈકલ્પિક રીતે GitHubના અલગ Private Repositoryમાં વધારાનો backup રાખી શકાય છે. JSONBin અને My Server બીજા provider તરીકે ઉપલબ્ધ રહે છે; એક સમયે એક મુખ્ય provider પસંદ થાય છે.
 
 ## પહેલાં Supabase તૈયાર કરો
 
 1. `supabase/README-GU.md` વાંચો.
-2. `supabase/migrations/`ની ચારેય migration SQL ફાઇલો નામના ક્રમમાં Supabase projectમાં લાગુ કરો. છેલ્લી `202611090002_aym_party_portal.sql` verified emailથી પોતાના Party records વાંચવા માટે જરૂરી છે.
-3. Admin માટે Supabase Auth user બનાવો અને `aym_org_members`માં તેની active `admin` membership ઉમેરો.
+2. `supabase/migrations/`ની દસેય SQL migrations નામના ક્રમમાં Supabase projectમાં લાગુ કરો. છેલ્લી `202611120006_aym_party_workflow_hardening.sql` Party membership, form validation અને Admin update fieldsની authorization મજબૂત કરે છે.
+3. Admin માટે Supabase Auth email user બનાવો અને એ જ user UUIDને `aym_org_members`ની active `admin` membership સાથે જોડો. OTP sign-in પહેલાં user અસ્તિત્વમાં હોવો જરૂરી છે; public signup ચાલુ ન કરો.
 4. Publishable key વાપરો. Supabase Secret/service-role key બ્રાઉઝર કે packageમાં ન મૂકો.
+5. Supabase Auth SMTP ગોઠવો અને `party-mobile-email-otp` Edge Function deploy કરો; `supabase/config.toml`માં તેનો public pre-login endpoint (`verify_jwt = false`) નિર્ધારિત છે. OTP delivery સમસ્યા માટે Supabase Function logs જુઓ.
 
 ## એપમાં Supabase જોડો
 
 1. `site/`ની ફાઇલો GitHub Pages publish rootમાં અપલોડ કરો. `index.html` સીધી rootમાં રહેવી જોઈએ અને `icons/` તેની બાજુમાં.
-2. Settings → Cloud Sync → **Supabase મુખ્ય**માં URL, Publishable key અને Admin email ભરો. **ઇમેલ OTP મોકલો** દબાવી inboxમાં આવેલ 6 અંકનો code નાખો અને **OTP ચકાસો અને જોડો** દબાવો.
+2. Settings → Cloud Sync → **Supabase મુખ્ય**માં URL, Publishable key અને Admin email ભરો. Organization UUID field ખાલી રાખો; Project URLમાંનો project ref Organization UUID નથી. **ઇમેલ OTP મોકલો** દબાવી inboxમાં આવેલ 6 અંકનો code નાખો અને **OTP ચકાસો અને જોડો** દબાવો.
 3. **કનેક્શન તપાસો** દબાવો. પછી **મોકલો** દબાવી હાલના Ledgerનો પ્રથમ cloud snapshot બનાવો.
 4. પ્રથમ snapshot પછી Auto Sync ચાલુ કરો. અન્ય trusted Admin devices પર દરેક deviceમાં Admin Supabase accountથી અલગ Sign in કરો.
 
@@ -45,4 +46,5 @@ Settings → Backup and restoreથી JSON backup download/restore કરી શ
 
 સ્થાનિક validation: Node.js 22+ સાથે package rootમાં `node tools/healthcheck.cjs` ચલાવો.
 
-આ તપાસમાં database migration/RLS execution, વાસ્તવિક OTP delivery અને authenticated cloud round-trip ચલાવ્યાં નથી. તેના માટે project/account access જરૂરી છે. Party/local login અને browserમાં બનતો SMS OTP server authorizationનું સ્થાન લેતા નથી; full cloud Ledger ફક્ત Supabaseના active Adminને RLSથી મળે છે. Public Party access માટે અલગ server-authorized, Party-scoped API જરૂરી છે.
+આ સ્થાનિક build validationમાં database migration/RLS execution, વાસ્તવિક OTP delivery અને authenticated cloud round-trip ચલાવ્યાં નથી. તેના માટે project/account access જરૂરી છે. Local Party login server identity નથી; Cloud Party access verified-email OTP, active membership અને Party-scoped RLS/API પર આધારિત છે. Full ledger snapshot ફક્ત સક્રિય Supabase Adminને મળે છે.
+
