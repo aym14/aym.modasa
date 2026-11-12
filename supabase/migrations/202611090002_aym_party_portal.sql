@@ -31,7 +31,17 @@ revoke all on function public.aym_verified_email() from public, anon;
 grant execute on function public.aym_verified_email() to authenticated;
 drop policy if exists aym_party_own_projection on public.aym_party_portal;
 create policy aym_party_own_projection on public.aym_party_portal
-for select to authenticated using (email = (select public.aym_verified_email()));
+for select to authenticated using (
+  email = (select public.aym_verified_email())
+  and exists (
+    select 1 from public.aym_org_members m
+    where m.organization_id = aym_party_portal.organization_id
+      and m.auth_user_id = (select auth.uid())
+      and m.role = 'party'
+      and m.party_ref = aym_party_portal.party_ref
+      and m.is_active
+  )
+);
 
 -- Strict field allowlists prevent future snapshot fields leaking automatically.
 create or replace function public.aym_pick_fields(record jsonb, fields text[])
