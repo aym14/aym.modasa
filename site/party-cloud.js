@@ -22,7 +22,14 @@
     return result;
   }
   window.AYMPartyCloud = { rows };
-  function session(){try{return window.currentSession||null;}catch(e){return null;}}
+  function session(){
+    try {
+      // currentSession is a global lexical binding in the legacy app, not a
+      // window property. Use the bridge shared with its inline auth module.
+      if (typeof window.CS === 'function') return window.CS() || null;
+      return window.currentSession || null;
+    } catch (e) { return null; }
+  }
   function config(){
     var saved={};try{saved=JSON.parse(localStorage.getItem('aym_phone_auth_v1')||'{}')||{};}catch(e){}
     var url='';try{url=typeof window.supabaseBaseUrl==='function'?window.supabaseBaseUrl():'';}catch(e){}
