@@ -86,7 +86,7 @@ Deno.serve(async (request) => {
     }
 
     const token = String(input.token || '').replace(/\D/g, '');
-    if (!email || token.length !== 6) return json({ error: 'invalid_code' }, 400);
+    if (!email || token.length !== 8) return json({ error: 'invalid_code' }, 400);
     const response = await fetch(url + '/auth/v1/verify', {
       method: 'POST',
       headers: { apikey: publishableKey, 'Content-Type': 'application/json' },

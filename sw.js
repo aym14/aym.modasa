@@ -1,6 +1,6 @@
-/* AYM Smart Ledger v1.2.86 — production build */
+/* AYM Smart Ledger v1.2.87 — production build */
 const CACHE_PREFIX = 'aym-smart-ledger-pwa-';
-const CACHE_NAME = CACHE_PREFIX + 'v1.2.86-code89-production';
+const CACHE_NAME = CACHE_PREFIX + 'v1.2.87-code90-production';
 const APP_SHELL = ['./index.html', './party-cloud.js', './party-requests.js', './party-mobile-email-login.js', './manifest.json', './icons/app-icon-192.png', './icons/app-icon-512.png', './icons/app-icon-maskable-512.png'];
 
 self.addEventListener('install', (event) => {

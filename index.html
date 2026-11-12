@@ -25280,7 +25280,7 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
    3) સેટિંગ્સ → અપડેટ માં જાતે તપાસી શકાય + લિંક સેટ કરી શકાય
    બધું try/catch માં — એપના બીજા કામમાં દખલ નહીં. */
 (function () {
-var APP = { version: '1.2.86', code: 89 };
+var APP = { version: '1.2.87', code: 90 };
   window.AYM_APP = APP;
   /* Android એપમાં મૂળ લિંક મૂકવી હોય તો અહીં લખો (ખાલી = એપ જ્યાં છે ત્યાં version.json) */
   window.AYM_UPDATE_URL = '';
@@ -29663,11 +29663,11 @@ var APP = { version: '1.2.86', code: 89 };
 }
 </style>
 <script type="application/json" id="aymVersionJson">{
-  "version": "1.2.86",
-  "code": 89,
+  "version": "1.2.87",
+  "code": 90,
   "date": "2026-11-13",
-  "notes": "Production build: public demo access and simulated OTP fallbacks removed",
-  "versionCode": 89
+  "notes": "Party sign-in accepts 8-digit Supabase email OTP codes",
+  "versionCode": 90
 }</script>
 <script type="application/json" id="aymSyncConfig">{
   "_readme": "Disabled clean deployment template. Do not place credentials in a public repository. Configure cloud sync through the app or a private server.",
@@ -39052,7 +39052,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
       field('વ્યવસાય', 'aympoOcc', 'type="text" value="' + esc(party.occupation || '') + '"') +
       '<div class="aympo-field aympo-hi"><label for="aympoEmail">ઇમેલ આઇડી <em>*</em> <span class="aympo-req">ફરજિયાત</span></label>' +
         '<input id="aympoEmail" type="email" inputmode="email" autocomplete="email" placeholder="name@gmail.com" spellcheck="false">' +
-        '<span class="aympo-hint"><i class="fas fa-envelope"></i> 6 અંકનો કોડ આ જ ઇમેલ પર જશે. સાચો ઇમેલ લખો — પાસવર્ડ ભૂલાય તો આ જ ઇમેલ કામ આવશે.</span></div>' +
+        '<span class="aympo-hint"><i class="fas fa-envelope"></i> 8 અંકનો કોડ આ જ ઇમેલ પર જશે. સાચો ઇમેલ લખો — પાસવર્ડ ભૂલાય તો આ જ ઇમેલ કામ આવશે.</span></div>' +
       '<div class="aympo-err" id="aympoErr"></div>' +
       '<button type="button" class="aympo-btn" id="aympoSend">ઇમેલ પર OTP મોકલો <i class="fas fa-paper-plane"></i></button>' +
       '<div class="aympo-foot"><a data-go="back">← મોબાઇલ બદલો</a></div>';
@@ -39140,7 +39140,10 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     var isLogin = S.mode === 'login';
     setSteps(isReset ? ['ઓળખ', 'OTP', 'નવો પાસવર્ડ'] : (isLogin ? ['ઇમેલ', 'OTP'] : ['મોબાઇલ', 'વિગત + ઇમેલ', 'OTP', 'પાસવર્ડ']),
       isReset || isLogin ? 1 : 2);
-    var b = open(isReset ? 'પાસવર્ડ રીસેટ — OTP' : (isLogin ? 'OTP થી લોગિન' : 'ઇમેલ ચકાસો'), '6 અંકનો કોડ મોકલ્યો છે');
+    var digitCount = S.channel === 'sms' ? 6 : 8;
+    var digitInputs = '';
+    for (var digit = 0; digit < digitCount; digit++) digitInputs += '<input inputmode="numeric" maxlength="1" aria-label="' + (digit + 1) + '">';
+    var b = open(isReset ? 'પાસવર્ડ રીસેટ — OTP' : (isLogin ? 'OTP થી લોગિન' : 'ઇમેલ ચકાસો'), digitCount + ' અંકનો કોડ મોકલ્યો છે');
     b.innerHTML =
       '<div class="aympo-mailto"><i class="fas fa-' + (S.channel === 'sms' ? 'comment-sms' : 'envelope-open-text') + '"></i>' +
         '<span>' + esc(S.channel === 'sms' ? (S.mobile || '') : S.email) + '</span>' +
@@ -39149,11 +39152,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
       '<div class="aympo-chan"><span class="aympo-chan-l">કોડ ન મળ્યો?</span>' +
         '<button type="button" class="aympo-chan-b" id="aympoChEmail"><i class="fas fa-envelope"></i> ઇમેલ પર ફરી</button>' +
         '<button type="button" class="aympo-chan-b" id="aympoChSms"><i class="fas fa-comment-sms"></i> SMS પર મોકલો</button></div>' +
-      '<div class="aympo-otp" id="aympoOtpBoxes">' +
-        '<input inputmode="numeric" maxlength="1" aria-label="1"><input inputmode="numeric" maxlength="1" aria-label="2">' +
-        '<input inputmode="numeric" maxlength="1" aria-label="3"><input inputmode="numeric" maxlength="1" aria-label="4">' +
-        '<input inputmode="numeric" maxlength="1" aria-label="5"><input inputmode="numeric" maxlength="1" aria-label="6">' +
-      '</div>' +
+      '<div class="aympo-otp" id="aympoOtpBoxes">' + digitInputs + '</div>' +
       '<div class="aympo-meta"><span id="aympoTimer"><i class="fas fa-clock"></i> 10:00</span><span id="aympoResend" class="off">ફરી મોકલો (45s)</span></div>' +
       '<div class="aympo-err" id="aympoErr"></div>' +
       '<button type="button" class="aympo-btn" id="aympoVerify">વેરિફાય કરો <i class="fas fa-circle-check"></i></button>' +
@@ -39162,7 +39161,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     boxes.forEach(function (box, i) {
       box.addEventListener('input', function () {
         box.value = box.value.replace(/\D/g, '').slice(-1);
-        if (box.value && i < 5) boxes[i + 1].focus();
+        if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
         if (boxes.every(function (x) { return x.value; })) setTimeout(function () { verify(null); }, 90);
       });
       box.addEventListener('keydown', function (e) {
@@ -39171,7 +39170,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
       });
       box.addEventListener('paste', function (e) {
         e.preventDefault();
-        var t = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+        var t = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, boxes.length);
         t.split('').forEach(function (ch, k) { if (boxes[k]) boxes[k].value = ch; });
         if (t.length === 6) setTimeout(function () { verify(null); }, 120);
       });
@@ -39218,7 +39217,8 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     var boxes = qa('#aympoOtpBoxes input');
     var code = boxes.map(function (b) { return b.value; }).join('');
     err('');
-    if (code.length !== 6) return err('પૂરા 6 અંક ભરો.');
+    var expectedDigits = S.channel === 'sms' ? 6 : 8;
+    if (code.length !== expectedDigits) return err('પૂરા ' + expectedDigits + ' અંક ભરો.');
     if (S.tries >= 5) { S.otp = ''; return err('બહુ વાર ખોટો કોડ — “ફરી મોકલો” દબાવો.'); }
     S.tries++;
     btnBusy(btn, true, 'ચેક કરી રહ્યું છે…');
@@ -39435,7 +39435,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
 
   function stepPhoneOtp() {
     setSteps([loginText('Mobile', 'મોબાઇલ', 'मोबाइल'), 'OTP'], 1);
-    var b = open(loginText('Verify both channels', 'બંને માધ્યમ ચકાસો', 'दोनों माध्यम सत्यापित करें'), loginText('Enter the separate 6-digit codes sent to your mobile and email.', 'મોબાઇલ અને ઇમેલ પર આવેલા અલગ 6 અંકના બંને કોડ નાખો.', 'मोबाइल और ईमेल पर आए अलग-अलग 6 अंकों के दोनों कोड डालें।'));
+    var b = open(loginText('Verify both channels', 'બંને માધ્યમ ચકાસો', 'दोनों माध्यम सत्यापित करें'), loginText('Enter the separate 8-digit codes sent to your mobile and email.', 'મોબાઇલ અને ઇમેલ પર આવેલા અલગ 8 અંકના બંને કોડ નાખો.', 'मोबाइल और ईमेल पर आए अलग-अलग 8 अंकों के दोनों कोड डालें।'));
     b.innerHTML =
       '<div class="aympo-dual-target"><span><i class="fas fa-comment-sms"></i> ' + esc(maskMob(S.mobile)) + '</span><span><i class="fas fa-envelope"></i> ' + esc(maskEmail(S.email)) + '</span><a data-go="chg" href="#">' + esc(loginText('Change mobile', 'મોબાઇલ બદલો', 'मोबाइल बदलें')) + '</a></div>' +
       '<div class="aympo-dual-code"><b><i class="fas fa-comment-sms"></i> ' + esc(loginText('SMS code', 'SMS કોડ', 'SMS कोड')) + '</b><div class="aympo-otp" id="aympoPhoneOtpBoxes">' + otpInputsHtml('SMS') + '</div></div>' +
@@ -39458,10 +39458,10 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     setTimeout(function () { var first = q('#aympoPhoneOtpBoxes input'); if (first) first.focus(); }, 120);
   }
 
-  function otpInputsHtml(label) {
-    return '<input inputmode="numeric" maxlength="1" aria-label="' + label + ' code digit 1"><input inputmode="numeric" maxlength="1" aria-label="' + label + ' code digit 2">' +
-      '<input inputmode="numeric" maxlength="1" aria-label="' + label + ' code digit 3"><input inputmode="numeric" maxlength="1" aria-label="' + label + ' code digit 4">' +
-      '<input inputmode="numeric" maxlength="1" aria-label="' + label + ' code digit 5"><input inputmode="numeric" maxlength="1" aria-label="' + label + ' code digit 6">';
+  function otpInputsHtml(label, count) {
+    var html = '';
+    for (var i = 0; i < (count || 8); i++) html += '<input inputmode="numeric" maxlength="1" aria-label="' + label + ' code digit ' + (i + 1) + '">';
+    return html;
   }
 
   function bindPhoneOtpInputs(selector) {
@@ -39469,7 +39469,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     boxes.forEach(function (box, i) {
       box.addEventListener('input', function () {
         box.value = box.value.replace(/\D/g, '').slice(-1);
-        if (box.value && i < 5) boxes[i + 1].focus();
+        if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
       });
       box.addEventListener('keydown', function (e) {
         if (e.key === 'Backspace' && !box.value && i > 0) { boxes[i - 1].focus(); boxes[i - 1].value = ''; }
@@ -39477,7 +39477,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
       });
       box.addEventListener('paste', function (e) {
         e.preventDefault();
-        var pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+        var pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, boxes.length);
         pasted.split('').forEach(function (digit, k) { if (boxes[k]) boxes[k].value = digit; });
       });
     });
@@ -39521,7 +39521,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     var phoneCode = qa('#aympoPhoneOtpBoxes input').map(function (box) { return box.value; }).join('');
     var emailCode = qa('#aympoEmailOtpBoxes input').map(function (box) { return box.value; }).join('');
     err('');
-    if (phoneCode.length !== 6 || emailCode.length !== 6) return err(loginText('Enter both 6-digit codes.', 'બંને 6 અંકના કોડ નાખો.', 'दोनों 6 अंकों के कोड डालें।'));
+    if (phoneCode.length !== 8 || emailCode.length !== 8) return err(loginText('Enter both 8-digit codes.', 'બંને 8 અંકના કોડ નાખો.', 'दोनों 8 अंकों के कोड डालें।'));
     if (Date.now() > S.expireAt) return err(loginText('The codes expired. Request both again.', 'કોડનો સમય પૂરો થયો. બંને કોડ ફરી મંગાવો.', 'कोड का समय पूरा हुआ। दोनों फिर मँगाएँ।'));
     
     if (S.tries >= 5) return err(loginText('Too many incorrect codes. Request a new one.', 'ખોટા કોડના ઘણા પ્રયાસ થયા. નવો કોડ મંગાવો.', 'गलत कोड के बहुत प्रयास हुए। नया कोड मँगाएँ।'));
