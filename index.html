@@ -12369,7 +12369,14 @@ LedgerFeatures.cloud.setupAutoBackup = function () {
     autoBackupTimer = null;
   }
   if (!cloudCfg.autoBackup) return;
-  const isReady = cloudCfg.provider !== 'supabase' && !!(cloudCfg.apiKey && cloudCfg.binId);
+  const provider = cloudCfg.provider || 'jsonbin';
+  const isReady = provider === 'supabase'
+    ? !!(cloudCfg.supabaseUrl && cloudCfg.supabaseAnonKey && cloudCfg.supabaseOrganizationId && supabaseLoadSession())
+    : provider === 'github'
+      ? !!(cloudCfg.ghToken && cloudCfg.ghOwner && cloudCfg.ghRepo)
+      : provider === 'server'
+        ? !!String(cloudCfg.serverUrl || '').trim()
+        : !!(cloudCfg.apiKey && cloudCfg.binId);
   if (!isReady) return;
   autoBackupTimer = setInterval(() => {
     const now = new Date();
@@ -30450,7 +30457,7 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
       } catch (e) {}
     });
 
-    /* guarantor change actually updates the loan */
+    /* A party's guarantor-change request must remain pending until an admin approves it. */
     if (GF) wrap(GF, 'saveGuarantorChangeForm', function () {
       /* async re-renders can blank the auto-filled applicant block — restore it */
       try {
@@ -30473,31 +30480,102 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
         set('gcApplicantAddress', p ? (p.address || '') : '');
       } catch (e) {}
     }, function () {
-      var gf = (typeof editingGcForm !== 'undefined') ? editingGcForm : null;
-      if (!gf || !gf.loanRecordId) return;
-      var saved = false;
-      try { saved = (typeof guarantorChangeForms !== 'undefined') && guarantorChangeForms.some(function (x) { return x.id === gf.id; }); } catch (e) {}
+      var current = (typeof editingGcForm !== 'undefined') ? editingGcForm : null;
+      if (!current) return;
+      var saved = null;
+      try { saved = (typeof guarantorChangeForms !== 'undefined') && guarantorChangeForms.find(function (x) { return x.id === current.id; }); } catch (e) {}
       if (!saved) return;
+      if (!isAdmin()) {
+        saved.status = 'pending';
+        saved.submittedAt = nowISO();
+        saved.updatedAt = nowISO();
+        delete saved.approvedAt; delete saved.approvedBy; delete saved.rejectedAt; delete saved.rejectedBy; delete saved.rejectionNote;
+        persist();
+      }
+      try { renderGcFormList(); } catch (e) {}
+      if (!isAdmin()) toast('✅ અરજી એડમીનની મંજૂરી માટે મોકલાઈ');
+    });
+
+    /* Admin-only approval is the sole path that applies a requested guarantor change. */
+    window.approveGcById = function (id) {
+      if (!isAdmin()) return toast('🔒 ફક્ત એડમીન મંજૂરી આપી શકે');
+      var gf = (typeof guarantorChangeForms !== 'undefined' ? guarantorChangeForms : []).find(function (x) { return x.id === id; });
+      if (!gf || gf.status === 'approved' || gf.status === 'rejected') return toast('⚠️ ફક્ત બાકી અરજી મંજૂર કરી શકાય');
       var lf = (forms() || []).find(function (x) { return x.moduleRecordId === gf.loanRecordId; });
-      if (!lf || !Array.isArray(lf.guarantors)) return;
-      var ri = 0, news = gf.newGuarantors || [];
+      var rec = (recs() || []).find(function (x) { return x.id === gf.loanRecordId; });
+      if (!lf || !rec || !Array.isArray(lf.guarantors)) return toast('⚠️ જોડાયેલ લોન/જામીન રેકોર્ડ મળ્યો નથી');
+      var replacements = gf.newGuarantors || [];
+      var replaceCount = (gf.oldGuarantors || []).filter(function (g) { return g && g.replace; }).length;
+      if (!replaceCount || replacements.length !== replaceCount || replacements.some(function (g) { return !g || !String(g.name || '').trim(); })) return toast('⚠️ અરજીમાં જામીનની વિગતો અધૂરી છે');
+      for (var vi = 0; vi < replacements.length; vi++) {
+        var candidate = null;
+        try { candidate = findParty(replacements[vi].name); } catch (e) {}
+        if (!candidate) continue;
+        var availability = isPartyAvailableAsGuarantor(candidate.id, gf.loanRecordId, vi, rec.partyId);
+        if (!availability.available) return toast('⚠️ જામીન નં.' + (vi + 1) + ': ' + availability.reason);
+      }
+      if (!confirm('આ જામીન બદલવાની અરજી મંજૂર કરીને લોનમાં લાગુ કરવી?')) return;
+      var ri = 0;
       lf.guarantors = lf.guarantors.map(function (g, i) {
         var old = (gf.oldGuarantors || [])[i];
         if (old && old.replace) {
-          var ng = news[ri++];
-          if (ng) return { name: ng.name || '', mobile: ng.mobile || '', address: ng.address || '', partyId: partyIdOf(ng.name) };
+          var ng = replacements[ri++];
+          return { name: String(ng.name || '').trim(), mobile: ng.mobile || '', address: ng.address || '', partyId: partyIdOf(ng.name) };
         }
         return g;
       });
       lf.updatedAt = nowISO();
       pushHistory(lf, 'guarantor-change', gf.comNo || '');
-      var rec = (recs() || []).find(function (r) { return r.id === gf.loanRecordId; });
-      if (rec) { rec.guarantors = lf.guarantors.map(function (g) { return Object.assign({}, g); }); rec.updatedAt = nowISO(); }
-      gf.status = 'approved'; gf.approvedAt = nowISO(); gf.updatedAt = nowISO();
+      rec.guarantors = lf.guarantors.map(function (g) { return Object.assign({}, g); });
+      rec.updatedAt = nowISO();
+      gf.status = 'approved'; gf.approvedAt = nowISO(); gf.approvedBy = currentSession && currentSession.userId || ''; gf.updatedAt = nowISO();
       persist();
+      try { renderGcFormList(); } catch (e) {}
       try { if (typeof renderAvailableGuarantorsView === 'function') renderAvailableGuarantorsView(); } catch (e) {}
-      toast('✅ જામીન બદલાવ લોન પર લાગુ થયો');
-    });
+      toast('✅ જામીન બદલાવ મંજૂર કરીને લોનમાં લાગુ કર્યો');
+    };
+    window.rejectGcById = function (id) {
+      if (!isAdmin()) return toast('🔒 ફક્ત એડમીન નામંજૂર કરી શકે');
+      var gf = (typeof guarantorChangeForms !== 'undefined' ? guarantorChangeForms : []).find(function (x) { return x.id === id; });
+      if (!gf || gf.status === 'approved' || gf.status === 'rejected') return toast('⚠️ ફક્ત બાકી અરજી નામંજૂર કરી શકાય');
+      var reason = prompt('નામંજૂરીનું કારણ (વૈકલ્પિક):', '');
+      if (reason === null) return;
+      gf.status = 'rejected'; gf.rejectionNote = String(reason).trim(); gf.rejectedAt = nowISO(); gf.rejectedBy = currentSession && currentSession.userId || ''; gf.updatedAt = nowISO();
+      persist();
+      try { renderGcFormList(); } catch (e) {}
+      toast('❌ જામીન બદલવાની અરજી નામંજૂર થઈ');
+    };
+    if (GF && typeof GF.renderGcFormList === 'function' && !GF.renderGcFormList.__aymReview) {
+      var originalGcList = GF.renderGcFormList;
+      var reviewedGcList = function () {
+        var result = originalGcList.apply(this, arguments);
+        var body = document.getElementById('gcTbody');
+        if (!body) return result;
+        body.querySelectorAll('tr').forEach(function (row) {
+          var no = row.cells && row.cells[0] ? row.cells[0].innerText.trim() : '';
+          var f = (typeof guarantorChangeForms !== 'undefined' ? guarantorChangeForms : []).find(function (x) { return String(x.comNo || '') === no; });
+          if (!f || !row.cells || !row.cells.length) return;
+          var cell = row.cells[row.cells.length - 1];
+          var status = document.createElement('span');
+          status.className = 'gc-review-status';
+          status.textContent = f.status === 'approved' ? 'મંજૂર' : f.status === 'rejected' ? 'નામંજૂર' : 'મંજૂરી બાકી';
+          status.style.cssText = 'display:inline-block;margin:2px 4px;padding:3px 6px;border-radius:10px;background:' + (f.status === 'approved' ? '#e5f4ec' : f.status === 'rejected' ? '#fdebea' : '#fff4d6') + ';font-size:11px;font-weight:700;';
+          cell.appendChild(status);
+          if (isAdmin() && f.status !== 'approved' && f.status !== 'rejected') {
+            [['મંજૂર', 'approveGcById', '#08796b'], ['નામંજૂર', 'rejectGcById', '#b33d36']].forEach(function (item) {
+              var b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-xs'; b.textContent = item[0];
+              b.style.cssText = 'margin:2px;background:' + item[2] + ';color:#fff;border:0;';
+              b.onclick = function () { window[item[1]](f.id); };
+              cell.appendChild(b);
+            });
+          }
+        });
+        return result;
+      };
+      reviewedGcList.__aymReview = true;
+      GF.renderGcFormList = reviewedGcList;
+      window.renderGcFormList = reviewedGcList;
+    }
 
     /* module record edit: honour penalty % field */
     if (AC) {
