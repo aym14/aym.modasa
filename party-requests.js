@@ -30,23 +30,25 @@
       catch (e) { error.textContent = e.message || 'વિનંતી મોકલી શકાઈ નથી.'; send.disabled = false; send.textContent = 'મોકલો'; }
     };
   }
-  function field(id,label,placeholder,type){return '<label for="'+id+'">'+label+'</label><input id="'+id+'" type="'+(type||'text')+'" maxlength="240" required placeholder="'+esc(placeholder||'')+'">';}
+  function field(id,label,placeholder,type,optional){return '<label for="'+id+'">'+label+'</label><input id="'+id+'" type="'+(type||'text')+'" maxlength="240" '+(optional?'':'required ')+'placeholder="'+esc(placeholder||'')+'">';}
   async function showApplicationForm(type) {
     var isLoan=type==='loan_application', title=isLoan?'ઓનલાઇન લોન અરજી':'જામીનદાર ફેરફારની અરજી';
     var wrap=shell(title),content=wrap.querySelector('.aympr-content'), fields=isLoan
-      ? field('aymfAmount','લોનની માંગેલી રકમ (₹)','ઉદાહરણ: 50000','number')+field('aymfPurpose','લોનનો હેતુ','લોન શા માટે જોઈએ છે?')+field('aymfAddress','સરનામું','તમારું હાલનું સરનામું')+field('aymfMobile','મોબાઇલ નંબર','10 અંકનો નંબર','tel')+field('aymfGuarantor1','જામીનદાર 1નું નામ','પૂર્ણ નામ')+field('aymfGuarantor2','જામીનદાર 2નું નામ (વૈકલ્પિક)','પૂર્ણ નામ')
+      ? field('aymfAmount','લોનની માંગેલી રકમ (₹)','ઉદાહરણ: 50000','number')+field('aymfPurpose','લોનનો હેતુ','લોન શા માટે જોઈએ છે?')+field('aymfAddress','સરનામું','તમારું હાલનું સરનામું')+field('aymfMobile','મોબાઇલ નંબર','10 અંકનો નંબર','tel')+field('aymfGuarantor1','જામીનદાર 1નું નામ','પૂર્ણ નામ')+field('aymfGuarantor2','જામીનદાર 2નું નામ (વૈકલ્પિક)','પૂર્ણ નામ','text',true)
       : field('aymfLoanRef','લોન/ખાતા નંબર અથવા ઓળખ','ઉદાહરણ: લોન નંબર')+field('aymfOldGuarantor','હાલના જામીનદારનું નામ','પૂર્ણ નામ')+field('aymfNewGuarantor','નવા જામીનદારનું નામ','પૂર્ણ નામ')+field('aymfNewMobile','નવા જામીનદારનો મોબાઇલ','10 અંકનો નંબર','tel')+field('aymfNewAddress','નવા જામીનદારનું સરનામું','હાલનું સરનામું')+field('aymfReason','બદલવાનું કારણ','કારણ લખો');
     content.innerHTML='<p>આ અરજી સુરક્ષિત રીતે એડમિનને મોકલાશે. એડમિનની મંજૂરી પછી જ ફેરફાર અમલમાં આવશે.</p>'+fields+'<label for="aymfNote">વધારાની નોંધ (વૈકલ્પિક)</label><textarea id="aymfNote" maxlength="2000" placeholder="જરૂરી વધારાની માહિતી"></textarea><div class="aympr-error" aria-live="polite"></div>';
     wrap.querySelector('.aympr-actions').insertAdjacentHTML('afterbegin','<button type="button" id="aymfSend">અરજી મોકલો</button>');
     wrap.querySelector('#aymfSend').onclick=async function(){
       var send=this,error=wrap.querySelector('.aympr-error');error.textContent='';
       var val=function(id){var el=wrap.querySelector('#'+id);return el?el.value.trim():'';};
+      var missing=Array.from(wrap.querySelectorAll('[required]')).find(function(el){return !el.value.trim();});
+      if(missing){error.textContent='કૃપા કરીને “'+(missing.previousElementSibling.textContent||'')+'” ભરો.';missing.focus();return;}
       var payload=isLoan?{amount:Number(val('aymfAmount')),purpose:val('aymfPurpose'),address:val('aymfAddress'),mobile:val('aymfMobile'),guarantors:[val('aymfGuarantor1'),val('aymfGuarantor2')].filter(Boolean),note:val('aymfNote')}
         :{loan_reference:val('aymfLoanRef'),old_guarantor:val('aymfOldGuarantor'),new_guarantor:val('aymfNewGuarantor'),new_guarantor_mobile:val('aymfNewMobile'),new_guarantor_address:val('aymfNewAddress'),reason:val('aymfReason'),note:val('aymfNote')};
       if(isLoan&&(!payload.amount||payload.amount<1||payload.amount>100000000)){error.textContent='માન્ય લોન રકમ લખો.';return;}
       if(!isLoan&&payload.old_guarantor.toLowerCase()===payload.new_guarantor.toLowerCase()){error.textContent='નવા જામીનદારનું નામ અલગ લખો.';return;}
       send.disabled=true;send.textContent='મોકલાઈ રહ્યું છે…';
-      try{await window.AYMPO.submitPartyForm(type,payload);closeModal();if(typeof window.showToast==='function')window.showToast('✅ અરજી એડમિનને મોકલાઈ. મંજૂરીની સ્થિતિ અહીંથી તપાસો.');}
+      try{await window.AYMPO.submitPartyForm(type,payload);closeModal();if(typeof window.showToast==='function')window.showToast('✅ અરજી એડમિનને મોકલાઈ.');}
       catch(e){error.textContent=e.message||'અરજી મોકલી શકાઈ નથી.';send.disabled=false;send.textContent='અરજી મોકલો';}
     };
   }
