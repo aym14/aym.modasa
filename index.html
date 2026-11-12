@@ -40196,22 +40196,33 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     b.innerHTML=records.map(function(r,i){var p=r.data&&r.data.parties&&r.data.parties[0]||{};return '<button type="button" class="aympo-btn" data-cloud-party="'+i+'">'+esc(p.name||r.party_ref)+' · '+esc(r.sync_key)+'</button>';}).join('');
     qa('[data-cloud-party]',b).forEach(function(button){button.onclick=function(){adoptPartyCloud(records[Number(this.dataset.cloudParty)],auth);};});
   }
-  function adoptPartyCloud(row,auth){
+  function applyPartyCloudRow(row,auth,initial){
     var data=row&&row.data,p=data&&data.parties&&data.parties[0];
     if(!partyEmailIdentity(auth,S.email)||!p||String(p.id)!==row.party_ref||nMail(row.email)!==S.email)throw new Error('Party identity mismatch.');
+    var rowKey='cloud:'+row.organization_id+':'+row.sync_key+':'+row.party_ref;
     // Replace every data collection; never merge an Admin cache into a Party view.
     ['entries','parties','categories','loanForms','moduleRecords','customModules'].forEach(function(k){SET(k,Array.isArray(data[k])?data[k]:[]);});
+    S.phoneAuth=auth;S.emailAuth=auth;S.mobile=p.mobile||S.mobile||'';
+    S.partyCloudUpdatedAt=String(row.updated_at||'');S.partyCloudRowKey=rowKey;
+    window.aymPartyReadOnlyCloud=true;
+    if(!initial){
+      persist();
+      ['populatePartyList','refreshAllSelects','refreshEntryViews','renderPartyCategoryReport','updatePartyDashboard','updateDashboard','updateTotalEntriesCount','updateLoanFormBadge','renderSidebarModules'].forEach(function(name){call(name);});
+      return true;
+    }
     ['messages','guarantorChangeForms','LOAN_PLANS','LOAN_TERMS','GC_TERMS'].forEach(function(k){SET(k,[]);});
     window.aymAccounts=[];window.aymSectionKinds=[];
-    var user={id:'cloud:'+row.organization_id+':'+row.sync_key+':'+row.party_ref,role:'party',partyId:p.id,name:p.name||'Party',username:S.email,email:S.email,authProvider:'supabase-party-cloud',emailVerified:true};
-    SET('users',[user]);S.phoneAuth=auth;S.emailAuth=auth;S.mobile=p.mobile||'';
-    window.aymPartyReadOnlyCloud=true;
+    var user={id:rowKey,role:'party',partyId:p.id,name:p.name||'Party',username:S.email,email:S.email,authProvider:'supabase-party-cloud',emailVerified:true};
+    SET('users',[user]);
     var storageKeys=G('S',{});if(storageKeys.session)localStorage.removeItem(storageKeys.session);
     savePhoneAuthSession();
     close();loginAs(user,'Email Cloud');
     ['navMessages','navGuarantorChange','navAvailableGuarantors','btnNewLoanForm','fabAddEntry'].forEach(function(id){var el=q('#'+id);if(el)el.style.display='none';});
     toast('તમારો પોતાનો cloud હિસાબ મળ્યો. આ view ફક્ત વાંચવા માટે છે.');
+    return true;
   }
+  function adoptPartyCloud(row,auth){return applyPartyCloudRow(row,auth,true);}
+  var partyCloudRefreshBusy=false;
   window.AYMPO = {
     restorePartyCloud: async function(){
       if(G('currentSession'))return;
@@ -40226,6 +40237,38 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
         if(!partyEmailIdentity(auth,user.email))throw new Error('Verified email required.');
         S.email=nMail(user.email);S.phoneAuthConfig=config;S.phoneAuth=auth;S.emailAuth=auth;await finishPartyCloudLogin(auth);
       }catch(e){localStorage.removeItem(PHONE_AUTH_KEY);toast(e.message||'Party cloud sign-in failed.');}
+    },
+    refreshPartyCloud: async function(){
+      var current=CS();
+      if(partyCloudRefreshBusy||document.hidden||!current||current.role!=='party'||current.authProvider!=='supabase-party-cloud'||!window.aymPartyReadOnlyCloud)return false;
+      var saved;try{saved=JSON.parse(localStorage.getItem(PHONE_AUTH_KEY)||'null');}catch(e){}
+      if(!saved||!saved.portal||!saved.refresh_token)return false;
+      partyCloudRefreshBusy=true;
+      try{
+        var config=await phoneAuthConfig();
+        if(saved.supabaseUrl!==config.url||saved.publishableKey!==config.key)return false;
+        var auth={access_token:saved.access_token,refresh_token:saved.refresh_token,expires_in:Math.max(1,Math.floor(((saved.expires_at||0)-Date.now())/1000))};
+        if(!saved.expires_at||saved.expires_at<Date.now()+60000)auth=await phoneAuthRequest(config,'token?grant_type=refresh_token',{refresh_token:saved.refresh_token});
+        var response=await fetch(config.url+'/auth/v1/user',{headers:{apikey:config.key,Authorization:'Bearer '+auth.access_token},cache:'no-store'});
+        var user=await response.json().catch(function(){return null;});
+        if(!response.ok||!user)throw new Error('Party cloud session expired.');
+        auth.user=user;
+        if(!partyEmailIdentity(auth,user.email))throw new Error('Verified email required.');
+        S.email=nMail(user.email);S.phoneAuthConfig=config;S.phoneAuth=auth;S.emailAuth=auth;
+        var records=await window.AYMPartyCloud.rows(config,auth);
+        var row=null;
+        for(var i=0;i<records.length;i++){
+          var candidate=records[i];
+          if('cloud:'+candidate.organization_id+':'+candidate.sync_key+':'+candidate.party_ref===String(current.userId)&&nMail(candidate.email)===S.email){row=candidate;break;}
+        }
+        if(!row||CS()!==current)return false;
+        if(String(row.updated_at||'')===String(S.partyCloudUpdatedAt||''))return true;
+        if(applyPartyCloudRow(row,auth,false)){savePhoneAuthSession();return true;}
+        return false;
+      }catch(e){
+        try{if(typeof aymLog==='function')aymLog('party-cloud-refresh',e.message||'refresh failed');}catch(_){}
+        return false;
+      }finally{partyCloudRefreshBusy=false;}
     },
     version: '1.1',
     start: function () { stepMobile(); },
@@ -40244,6 +40287,9 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     smsLive: smsLive
   };
 
+  setInterval(function(){try{if(window.AYMPO&&window.AYMPO.refreshPartyCloud)window.AYMPO.refreshPartyCloud();}catch(e){}},15000);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(function(){try{window.AYMPO.refreshPartyCloud();}catch(e){}},500);});
+  window.addEventListener('focus',function(){setTimeout(function(){try{window.AYMPO.refreshPartyCloud();}catch(e){}},500);});
   setTimeout(handlePartyEmailLink, 1000);
   function boot() { injectLinks(); hookApp(); decoratePartyList(); ensureProfileBox(); }
   boot();
