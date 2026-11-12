@@ -81,7 +81,12 @@
     if(document.querySelector('script[data-aym-party-requests]'))return;
     var script=document.createElement('script');script.src='./party-requests.js';script.async=true;script.dataset.aymPartyRequests='1';document.head.appendChild(script);
   }
+  function loadMobileEmailLogin(){
+    if(document.querySelector('script[data-aym-mobile-email-login]'))return;
+    var script=document.createElement('script');script.src='./party-mobile-email-login.js';script.async=true;script.dataset.aymMobileEmailLogin='1';document.head.appendChild(script);
+  }
   loadRequestUi();
+  loadMobileEmailLogin();
   setTimeout(function(){
     if(!location.hash.includes('access_token=')&&window.AYMPO&&window.AYMPO.restorePartyCloud)window.AYMPO.restorePartyCloud();
   },1500);
