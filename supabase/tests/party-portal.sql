@@ -11,6 +11,8 @@ begin
  perform set_config('request.jwt.claims',jsonb_build_object('sub',subject,'role','authenticated')::text,true);
  insert into public.aym_cloud_ledger_snapshots(organization_id,sync_key,data) values(org,'isolation-test',
  replace('{"parties":[{"id":"own-party","name":"Own sample","email":"__AYM_VERIFIED_TEST_EMAIL__","password":"must-not-leak"},{"id":"other-party","name":"Other sample","email":"other@example.invalid"}],"entries":[{"id":"own-entry","partyId":"own-party","amount":100,"privateNote":"must-not-leak"},{"id":"other-entry","partyId":"other-party","amount":900}],"users":[{"password":"must-not-leak"}]}'::text,'__AYM_VERIFIED_TEST_EMAIL__',subject_email)::jsonb);
+ insert into public.aym_org_members(organization_id,auth_user_id,role,party_ref,is_active)
+ values(org,subject,'party','own-party',true);
 end $$;
 set local role authenticated;
 do $$
@@ -24,8 +26,19 @@ begin
  if exists(select 1 from public.aym_cloud_ledger_snapshots where organization_id=current_setting('aym.test_org')::uuid) then raise exception 'Full Admin snapshot leaked'; end if;
  if has_table_privilege(current_user,'public.aym_party_portal','INSERT,UPDATE,DELETE') then raise exception 'Party has write privileges'; end if;
  if has_function_privilege('anon','public.aym_my_party_data()','EXECUTE') then raise exception 'Anonymous RPC allowed'; end if;
+ if has_table_privilege(current_user,'public.aym_party_forms','UPDATE') then raise exception 'Admin has unrestricted form update privilege'; end if;
+ if has_column_privilege(current_user,'public.aym_party_forms','payload','UPDATE') then raise exception 'Admin can alter submitted form payload'; end if;
 end $$;
 reset role;
+update public.aym_org_members set is_active=false
+where organization_id=current_setting('aym.test_org')::uuid and auth_user_id=current_setting('request.jwt.claim.sub')::uuid;
+set local role authenticated;
+do $$ begin
+ if exists(select 1 from public.aym_my_party_data() where organization_id=current_setting('aym.test_org')::uuid) then raise exception 'Inactive Party membership still has access'; end if;
+end $$;
+reset role;
+update public.aym_org_members set is_active=true
+where organization_id=current_setting('aym.test_org')::uuid and auth_user_id=current_setting('request.jwt.claim.sub')::uuid;
 -- Removing a Party email from an approved snapshot revokes the projection.
 update public.aym_cloud_ledger_snapshots set data=jsonb_set(data,'{parties,0,email}','"revoked@example.invalid"')
 where organization_id=current_setting('aym.test_org')::uuid;
