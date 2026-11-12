@@ -17636,10 +17636,10 @@ LedgerFeatures.qr = {
   _scanTimer: null,
   _scanStream: null,
   _scanMode: 'passbook',
-  makeQrDataUrl(text, cellSize) {
+  makeQrDataUrl(text, cellSize, errorCorrection) {
     if (typeof window.qrcode !== 'function') return '';
     try {
-      const qr = window.qrcode(0, 'M');
+      const qr = window.qrcode(0, errorCorrection || 'M');
       qr.addData(text);
       qr.make();
       return qr.createDataURL(cellSize || 6, 4);
@@ -17650,22 +17650,29 @@ LedgerFeatures.qr = {
   openJoinQr() {
     if (typeof nsConfigComplete !== 'function' || !nsConfigComplete(cloudCfg)) { showToast('⚠️ પહેલા Cloud સેટ કરી Save કરો'); return; }
     if (typeof window.qrcode !== 'function') { showToast('⚠️ QR લાઇબ્રેરી ઉપલબ્ધ નથી (ઇન્ટરનેટ તપાસો)'); return; }
+    const modal = document.getElementById('joinQrModal');
+    if (!modal) { showToast('❌ Join QR બારી મળી નથી. પેજ ફરી ખોલો.'); return; }
     const t = document.getElementById('joinQrLiveToggle');
     if (t) t.checked = false;
+    modal.style.display = 'flex';
     this.renderJoinQr();
-    document.getElementById('joinQrModal').style.display = 'flex';
   },
   renderJoinQr() {
     const live = !!document.getElementById('joinQrLiveToggle')?.checked;
     const link = nsMakeJoinLink(live);
-    const url = this.makeQrDataUrl(link, 5);
+    let url = link ? this.makeQrDataUrl(link, 5, 'M') : '';
+    if (!url && link) url = this.makeQrDataUrl(link, 4, 'L');
     const img = document.getElementById('joinQrImage');
     if (img) {
       if (url) { img.src = url; img.style.display = ''; }
       else { img.removeAttribute('src'); img.style.display = 'none'; }
     }
     const txt = document.getElementById('joinQrLinkText');
-    if (txt) txt.textContent = link;
+    if (txt) {
+      txt.textContent = link || 'QR લિંક બનાવી શકાઈ નથી. Cloud settings સાચવી પેજ ફરી ખોલો.';
+      txt.style.display = '';
+    }
+    if (!url) showToast(link ? '❌ આ Sync linkનો QR બની શક્યો નથી. નીચેની link કૉપી કરો.' : '❌ Join link ખાલી છે. Cloud settings સાચવી ફરી પ્રયાસ કરો.');
   },
   closeJoinQr() { const m = document.getElementById('joinQrModal'); if (m) m.style.display = 'none'; },
   /* ---- Member passbook + card ---- */
