@@ -36,7 +36,7 @@
   var api=window.AYMPO;
   if(api){
     if(!api.submitPartyRequest)api.submitPartyRequest=async function(subject,message){
-      var current=session();if(!current||current.role!=='party'||current.authProvider!=='supabase-party-cloud'||!window.aymPartyReadOnlyCloud)throw new Error('Party cloud sign-in required.');
+      var current=session();if(!current||current.role!=='party'||!window.aymPartyReadOnlyCloud)throw new Error('Party cloud sign-in required.');
       var state=await partyToken(),parts=String(current.userId||current.id||'').split(':');
       if(parts.length<4||parts[0]!=='cloud')throw new Error('Party ledger identity is invalid.');
       var response=await fetch(state.cfg.url+'/rest/v1/rpc/aym_submit_party_request',{method:'POST',headers:{apikey:state.cfg.key,Authorization:'Bearer '+state.auth.access_token,'Content-Type':'application/json'},body:JSON.stringify({p_organization_id:parts[1],p_sync_key:parts.slice(2,-1).join(':'),p_party_ref:parts[parts.length-1],p_subject:String(subject||''),p_message:String(message||'')})});
