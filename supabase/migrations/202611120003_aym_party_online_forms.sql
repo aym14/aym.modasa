@@ -54,7 +54,7 @@ begin
     if amount is null or amount <= 0 or amount > 100000000
       or length(btrim(coalesce(p_payload->>'purpose',''))) not between 2 and 500
       or length(btrim(coalesce(p_payload->>'mobile',''))) not between 7 and 20
-      or jsonb_typeof(p_payload->'guarantors') <> 'array' then
+      or jsonb_typeof(p_payload->'guarantors') is distinct from 'array' then
       raise exception 'Loan application has missing or invalid details.' using errcode='22023';
     end if;
   else
