@@ -8641,6 +8641,8 @@ body.ns2026 #wsDock button{position:relative}
   body.ledger-print-mode>[data-lp-hidden="1"]{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
   body.ledger-print-mode>#ledgerPrintRoot,body.ledger-print-mode>.ledger-print-page{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important}
   body.ledger-print-mode #ledgerPrintRoot,body.ledger-print-mode .ledger-print-page{display:block!important;position:static!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important;color:#000!important;font-family:Arial,'Noto Sans Gujarati',sans-serif!important;font-size:10pt!important;line-height:1.4!important;box-shadow:none!important}
+  /* Keep the loan form's Gujarati typeface consistent on screen and on paper. */
+  #ledgerPrintRoot .loan-form-wrap,#ledgerPrintRoot .loan-form-paper,#ledgerPrintRoot .loan-form-paper *{font-family:'Noto Sans Gujarati','Noto Sans Devanagari','Inter','Nirmala UI',sans-serif!important}
   /* BUG FIX: પહેલાં stripPrintIds() પ્રિન્ટ રૂટનો id કાઢી નાખતું હતું → પ્રિન્ટમાં ખાલી પાનું આવતું હતું.
      id/ક્લાસ બંને પર આધાર રાખીએ છીએ, અને lp-modal-print ક્યારેય રૂટને છુપાવી ન શકે. */
   html.lp-modal-print body.ledger-print-mode>#ledgerPrintRoot,
