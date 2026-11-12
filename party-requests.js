@@ -30,6 +30,27 @@
       catch (e) { error.textContent = e.message || 'વિનંતી મોકલી શકાઈ નથી.'; send.disabled = false; send.textContent = 'મોકલો'; }
     };
   }
+  function field(id,label,placeholder,type){return '<label for="'+id+'">'+label+'</label><input id="'+id+'" type="'+(type||'text')+'" maxlength="240" required placeholder="'+esc(placeholder||'')+'">';}
+  async function showApplicationForm(type) {
+    var isLoan=type==='loan_application', title=isLoan?'ઓનલાઇન લોન અરજી':'જામીનદાર ફેરફારની અરજી';
+    var wrap=shell(title),content=wrap.querySelector('.aympr-content'), fields=isLoan
+      ? field('aymfAmount','લોનની માંગેલી રકમ (₹)','ઉદાહરણ: 50000','number')+field('aymfPurpose','લોનનો હેતુ','લોન શા માટે જોઈએ છે?')+field('aymfAddress','સરનામું','તમારું હાલનું સરનામું')+field('aymfMobile','મોબાઇલ નંબર','10 અંકનો નંબર','tel')+field('aymfGuarantor1','જામીનદાર 1નું નામ','પૂર્ણ નામ')+field('aymfGuarantor2','જામીનદાર 2નું નામ (વૈકલ્પિક)','પૂર્ણ નામ')
+      : field('aymfLoanRef','લોન/ખાતા નંબર અથવા ઓળખ','ઉદાહરણ: લોન નંબર')+field('aymfOldGuarantor','હાલના જામીનદારનું નામ','પૂર્ણ નામ')+field('aymfNewGuarantor','નવા જામીનદારનું નામ','પૂર્ણ નામ')+field('aymfNewMobile','નવા જામીનદારનો મોબાઇલ','10 અંકનો નંબર','tel')+field('aymfNewAddress','નવા જામીનદારનું સરનામું','હાલનું સરનામું')+field('aymfReason','બદલવાનું કારણ','કારણ લખો');
+    content.innerHTML='<p>આ અરજી સુરક્ષિત રીતે એડમિનને મોકલાશે. એડમિનની મંજૂરી પછી જ ફેરફાર અમલમાં આવશે.</p>'+fields+'<label for="aymfNote">વધારાની નોંધ (વૈકલ્પિક)</label><textarea id="aymfNote" maxlength="2000" placeholder="જરૂરી વધારાની માહિતી"></textarea><div class="aympr-error" aria-live="polite"></div>';
+    wrap.querySelector('.aympr-actions').insertAdjacentHTML('afterbegin','<button type="button" id="aymfSend">અરજી મોકલો</button>');
+    wrap.querySelector('#aymfSend').onclick=async function(){
+      var send=this,error=wrap.querySelector('.aympr-error');error.textContent='';
+      var val=function(id){var el=wrap.querySelector('#'+id);return el?el.value.trim():'';};
+      var payload=isLoan?{amount:Number(val('aymfAmount')),purpose:val('aymfPurpose'),address:val('aymfAddress'),mobile:val('aymfMobile'),guarantors:[val('aymfGuarantor1'),val('aymfGuarantor2')].filter(Boolean),note:val('aymfNote')}
+        :{loan_reference:val('aymfLoanRef'),old_guarantor:val('aymfOldGuarantor'),new_guarantor:val('aymfNewGuarantor'),new_guarantor_mobile:val('aymfNewMobile'),new_guarantor_address:val('aymfNewAddress'),reason:val('aymfReason'),note:val('aymfNote')};
+      if(isLoan&&(!payload.amount||payload.amount<1||payload.amount>100000000)){error.textContent='માન્ય લોન રકમ લખો.';return;}
+      if(!isLoan&&payload.old_guarantor.toLowerCase()===payload.new_guarantor.toLowerCase()){error.textContent='નવા જામીનદારનું નામ અલગ લખો.';return;}
+      send.disabled=true;send.textContent='મોકલાઈ રહ્યું છે…';
+      try{await window.AYMPO.submitPartyForm(type,payload);closeModal();if(typeof window.showToast==='function')window.showToast('✅ અરજી એડમિનને મોકલાઈ. મંજૂરીની સ્થિતિ અહીંથી તપાસો.');}
+      catch(e){error.textContent=e.message||'અરજી મોકલી શકાઈ નથી.';send.disabled=false;send.textContent='અરજી મોકલો';}
+    };
+  }
+  function showPartyFormMenu(){var wrap=shell('ઓનલાઇન ફોર્મ પસંદ કરો'),content=wrap.querySelector('.aympr-content');content.innerHTML='<p>તમારી અરજી એડમિનની સમીક્ષા માટે મોકલાશે.</p><div class="aympr-actions" style="justify-content:flex-start"><button type="button" data-form="loan_application">💰 લોન અરજી</button><button type="button" data-form="guarantor_change">🔁 જામીનદાર ફેરફાર</button></div><div class="aympr-error" aria-live="polite"></div>';content.querySelectorAll('[data-form]').forEach(function(b){b.onclick=function(){showApplicationForm(b.dataset.form);};});}
   async function showAdminInbox() {
     var wrap = shell('પાર્ટીની ઓનલાઇન વિનંતીઓ'), content = wrap.querySelector('.aympr-content'); content.textContent = 'લોડ થાય છે…';
     try {
@@ -44,6 +65,18 @@
       });
     } catch (e) { content.textContent = e.message || 'વિનંતીઓ લાવી શકાઈ નથી. Supabaseમાં migration લાગુ છે અને Admin જોડાયેલ છે તે તપાસો.'; }
   }
+  var formLabels={loan_application:'લોન અરજી',guarantor_change:'જામીનદાર ફેરફાર'},statusLabels={pending:'નવી',reviewing:'તપાસમાં',approved:'મંજૂર',rejected:'નામંજૂર'};
+  async function showAdminForms(){
+    var wrap=shell('પાર્ટીની લોન અને જામીનદાર અરજીઓ'),content=wrap.querySelector('.aympr-content');content.textContent='લોડ થાય છે…';
+    try{var rows=await window.AYMPO.listAdminPartyForms();content.replaceChildren();if(!rows.length){content.textContent='હજુ કોઈ અરજી આવી નથી.';return;}
+      rows.forEach(function(r){var details=r.payload||{},loan=r.form_type==='loan_application';var lines=loan?[
+        ['માંગેલી રકમ','₹ '+Number(details.amount||0).toLocaleString('en-IN')],['હેતુ',details.purpose],['સરનામું',details.address],['મોબાઇલ',details.mobile],['જામીનદાર',Array.isArray(details.guarantors)?details.guarantors.join(', '):''],['નોંધ',details.note]
+      ]:[['લોન/ખાતા',details.loan_reference],['હાલના જામીનદાર',details.old_guarantor],['નવા જામીનદાર',details.new_guarantor],['મોબાઇલ',details.new_guarantor_mobile],['સરનામું',details.new_guarantor_address],['કારણ',details.reason],['નોંધ',details.note]];
+      var card=document.createElement('article');card.className='aympr-card-item';card.innerHTML='<strong>'+esc(formLabels[r.form_type]||r.form_type)+'</strong><div class="aympr-meta">'+esc(r.party_name)+' · '+esc(r.party_email)+' · '+esc(new Date(r.created_at).toLocaleString('gu-IN'))+'</div>'+lines.filter(function(x){return x[1]!==undefined&&x[1]!=='';}).map(function(x){return '<div class="aympr-message"><b>'+esc(x[0])+':</b> '+esc(x[1])+'</div>';}).join('')+'<label>અરજીની સ્થિતિ</label><select aria-label="અરજીની સ્થિતિ"><option value="pending">નવી</option><option value="reviewing">તપાસમાં</option><option value="approved">મંજૂર</option><option value="rejected">નામંજૂર</option></select><label>એડમિનની નોંધ</label><textarea maxlength="2000" placeholder="પાર્ટી માટે નોંધ">'+esc(r.admin_note||'')+'</textarea><div class="aympr-error" aria-live="polite"></div><div class="aympr-actions"><button type="button">સ્થિતિ સાચવો</button></div>';
+      var select=card.querySelector('select'),note=card.querySelector('textarea'),error=card.querySelector('.aympr-error'),save=card.querySelector('button');select.value=r.status;
+      save.onclick=async function(){save.disabled=true;error.textContent='';try{await window.AYMPO.updateAdminPartyForm(r.id,select.value,note.value);error.style.color='#087f70';error.textContent='સાચવ્યું';}catch(e){error.style.color='';error.textContent=e.message||'સાચવી શકાયું નથી.';}finally{save.disabled=false;}};content.appendChild(card);});
+    }catch(e){content.textContent=e.message||'અરજીઓ લાવી શકાઈ નથી. Supabase migration અને Admin જોડાણ તપાસો.';}
+  }
   function mount() {
     if (!window.AYMPO) return;
     var isParty = !!window.aymPartyReadOnlyCloud;
@@ -51,8 +84,8 @@
     var button = document.getElementById(buttonId);
     if (!isParty && !isAdmin) { if (button) button.remove(); return; }
     if (!button) { button = document.createElement('button'); button.id = buttonId; button.type = 'button'; document.body.appendChild(button); }
-    button.textContent = isParty ? '✉️ વિનંતી મોકલો' : '📥 પાર્ટી વિનંતીઓ';
-    button.onclick = isParty ? showPartyForm : showAdminInbox;
+    button.textContent = isParty ? '📝 ઓનલાઇન ફોર્મ' : '📥 પાર્ટી અરજીઓ';
+    button.onclick = isParty ? showPartyFormMenu : async function(){var wrap=shell('પાર્ટી અરજીઓ'),content=wrap.querySelector('.aympr-content');content.innerHTML='<p>પાર્ટી તરફથી આવેલ અરજીઓ અને સામાન્ય વિનંતીઓ જુઓ.</p><div class="aympr-actions" style="justify-content:flex-start"><button type="button" data-open-forms>લોન / જામીન ફોર્મ</button><button type="button" class="aympr-secondary" data-open-requests>સામાન્ય વિનંતીઓ</button></div>';wrap.querySelector('[data-open-forms]').onclick=showAdminForms;wrap.querySelector('[data-open-requests]').onclick=showAdminInbox;};
   }
   setInterval(mount, 1000); document.addEventListener('DOMContentLoaded', mount);
 })();
