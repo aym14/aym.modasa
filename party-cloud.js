@@ -42,6 +42,27 @@
       var response=await fetch(state.cfg.url+'/rest/v1/rpc/aym_submit_party_request',{method:'POST',headers:{apikey:state.cfg.key,Authorization:'Bearer '+state.auth.access_token,'Content-Type':'application/json'},body:JSON.stringify({p_organization_id:parts[1],p_sync_key:parts.slice(2,-1).join(':'),p_party_ref:parts[parts.length-1],p_subject:String(subject||''),p_message:String(message||'')})});
       var result=await response.json().catch(function(){return null;});if(!response.ok)throw new Error(result&&result.message||'Request submit failed ('+response.status+').');return result;
     };
+    if(!api.submitPartyForm)api.submitPartyForm=async function(formType,payload){
+      var current=session();if(!current||current.role!=='party'||!window.aymPartyReadOnlyCloud)throw new Error('Party cloud sign-in required.');
+      if(['loan_application','guarantor_change'].indexOf(formType)<0)throw new Error('Invalid form type.');
+      var state=await partyToken(),parts=String(current.userId||current.id||'').split(':');
+      if(parts.length<4||parts[0]!=='cloud')throw new Error('Party ledger identity is invalid.');
+      var response=await fetch(state.cfg.url+'/rest/v1/rpc/aym_submit_party_form',{method:'POST',headers:{apikey:state.cfg.key,Authorization:'Bearer '+state.auth.access_token,'Content-Type':'application/json'},body:JSON.stringify({p_organization_id:parts[1],p_sync_key:parts.slice(2,-1).join(':'),p_party_ref:parts[parts.length-1],p_form_type:formType,p_payload:payload})});
+      var result=await response.json().catch(function(){return null;});if(!response.ok)throw new Error(result&&result.message||'Form submit failed ('+response.status+').');return result;
+    };
+    if(!api.listAdminPartyForms)api.listAdminPartyForms=async function(){
+      if(typeof window.isAdmin!=='function'||!window.isAdmin())throw new Error('Admin sign-in required.');
+      var auth=await window.supabaseEnsureAdmin(),cfg=config();
+      var response=await fetch(cfg.url+'/rest/v1/aym_party_forms?select=id,organization_id,party_ref,party_name,party_email,form_type,payload,status,admin_note,created_at,updated_at&organization_id=eq.'+encodeURIComponent(auth.organizationId)+'&order=created_at.desc&limit=100',{headers:window.supabaseHeaders(),cache:'no-store'});
+      var result=await response.json().catch(function(){return null;});if(!response.ok||!Array.isArray(result))throw new Error(result&&result.message||'Could not load Party forms ('+response.status+').');return result;
+    };
+    if(!api.updateAdminPartyForm)api.updateAdminPartyForm=async function(id,status,note){
+      if(typeof window.isAdmin!=='function'||!window.isAdmin())throw new Error('Admin sign-in required.');
+      if(['pending','reviewing','approved','rejected'].indexOf(status)<0)throw new Error('Invalid form status.');
+      var auth=await window.supabaseEnsureAdmin(),cfg=config();
+      var response=await fetch(cfg.url+'/rest/v1/aym_party_forms?id=eq.'+encodeURIComponent(id)+'&organization_id=eq.'+encodeURIComponent(auth.organizationId),{method:'PATCH',headers:Object.assign({},window.supabaseHeaders(),{Prefer:'return=minimal'}),body:JSON.stringify({status:status,admin_note:String(note||'').slice(0,2000)})});
+      if(!response.ok){var result=await response.json().catch(function(){return null;});throw new Error(result&&result.message||'Could not update form ('+response.status+').');}return true;
+    };
     if(!api.listAdminPartyRequests)api.listAdminPartyRequests=async function(){
       if(typeof window.isAdmin!=='function'||!window.isAdmin())throw new Error('Admin sign-in required.');
       var auth=await window.supabaseEnsureAdmin(),cfg=config();
