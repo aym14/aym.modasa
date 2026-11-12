@@ -22617,9 +22617,19 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
   }
   function nsFingerprint(d){
     if (!d || typeof d !== 'object') return '';
-    var c = {};
-    Object.keys(d).forEach(function(k){ if (k !== '_meta') c[k] = d[k]; });
-    return JSON.stringify(c);
+    function canonical(value, root){
+      if (Array.isArray(value)) return value.map(function(item){ return canonical(item, false); });
+      if (value && typeof value === 'object') {
+        var out = {};
+        Object.keys(value).sort().forEach(function(key){
+          if (root && key === '_meta') return;
+          out[key] = canonical(value[key], false);
+        });
+        return out;
+      }
+      return value;
+    }
+    return JSON.stringify(canonical(d, true));
   }
   var NS_MERGE_ARRAY_KEYS = ['entries', 'parties', 'categories', 'users', 'messages', 'moduleRecords', 'customModules', 'loanForms', 'guarantorChangeForms'];
   function nsRecKey(r){ return (r && r.id != null && r.id !== '') ? 'id:' + r.id : 'json:' + JSON.stringify(r); }
