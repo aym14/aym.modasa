@@ -1,7 +1,7 @@
 /* AYM Smart Ledger v1.2.84 — Admin OTP setup validation and clearer provisioning errors */
 const CACHE_PREFIX = 'aym-smart-ledger-pwa-';
-const CACHE_NAME = CACHE_PREFIX + 'v1.2.84-code86-admin-otp-provisioning1';
-const APP_SHELL = ['./index.html', './party-cloud.js', './manifest.json', './icons/app-icon-192.png', './icons/app-icon-512.png', './icons/app-icon-maskable-512.png'];
+const CACHE_NAME = CACHE_PREFIX + 'v1.2.84-code87-party-requests1';
+const APP_SHELL = ['./index.html', './party-cloud.js', './party-requests.js', './manifest.json', './icons/app-icon-192.png', './icons/app-icon-512.png', './icons/app-icon-maskable-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -62,3 +62,4 @@ self.addEventListener('fetch', (event) => {
     return response;
   })().catch(() => new Response('Resource unavailable.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } })));
 });
+
