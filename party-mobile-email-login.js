@@ -20,7 +20,7 @@
     if(mobile.length!==10){err.textContent='યોગ્ય 10 અંકનો મોબાઇલ નંબર નાખો.';return;}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent='પાર્ટી રેકોર્ડમાં નોંધાયેલ ઈમેલ નાખો.';return;}
     state.mobile=mobile;state.email=email;button.disabled=true;button.textContent='મોકલાઈ રહ્યું છે…';
-    try{state.config=await cfg();await request(state.config,'otp',{email:email,create_user:true});state.resendAt=Date.now()+60000;showCode(root);}
+    try{state.config=await cfg();var check=await fetch(state.config.url+'/rest/v1/rpc/aym_party_mobile_email_matches',{method:'POST',headers:{apikey:state.config.key,'Content-Type':'application/json'},body:JSON.stringify({p_mobile:mobile,p_email:email})});var linked=await check.json().catch(function(){return false;});if(!check.ok||linked!==true)throw new Error('આ મોબાઇલ અને ઈમેલ Party રેકોર્ડ સાથે મેળ ખાતાં નથી. Admin પાસે વિગતો તપાસાવો.');await request(state.config,'otp',{email:email,create_user:true});state.resendAt=Date.now()+60000;showCode(root);}
     catch(e){err.textContent=e.message||'ઈમેલ OTP મોકલી શકાયો નથી.';button.disabled=false;button.textContent='ઈમેલ OTP મોકલો';}
   }
   function showCode(root){
