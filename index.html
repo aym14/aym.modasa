@@ -17652,6 +17652,9 @@ LedgerFeatures.qr = {
     if (typeof window.qrcode !== 'function') { showToast('⚠️ QR લાઇબ્રેરી ઉપલબ્ધ નથી (ઇન્ટરનેટ તપાસો)'); return; }
     const modal = document.getElementById('joinQrModal');
     if (!modal) { showToast('❌ Join QR બારી મળી નથી. પેજ ફરી ખોલો.'); return; }
+    /* Settings/home modals share a stacking layer. Put QR last and above them. */
+    document.body.appendChild(modal);
+    modal.style.zIndex = '100001';
     const t = document.getElementById('joinQrLiveToggle');
     if (t) t.checked = false;
     modal.style.display = 'flex';
