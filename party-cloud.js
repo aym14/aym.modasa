@@ -1,6 +1,15 @@
 /* Authenticated read-only Party portal. Supabase RLS chooses rows by verified email. */
 (function () {
   'use strict';
+  // The inline Party auth module calls CS() from its refresh callback, but CS
+  // was declared inside a different closure. Bridge it to the app's global
+  // lexical currentSession so background refresh cannot throw ReferenceError.
+  if (typeof window.CS !== 'function') {
+    window.CS = function () {
+      try { return typeof currentSession === 'undefined' ? null : currentSession; }
+      catch (e) { return null; }
+    };
+  }
   async function rows(config, auth) {
     const response = await fetch(config.url + '/rest/v1/rpc/aym_my_party_data', {
       method: 'POST', cache: 'no-store',
