@@ -27,4 +27,3 @@ revoke all on function public.aym_submit_party_request(uuid,text,text,text,text)
 grant execute on function public.aym_submit_party_request(uuid,text,text,text,text) to authenticated;
 
 commit;
-

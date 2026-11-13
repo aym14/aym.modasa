@@ -8590,7 +8590,7 @@ body.ns2026 #wsDock button{position:relative}
   body.ledger-print-mode>[data-lp-hidden="1"]{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}
   body.ledger-print-mode>#ledgerPrintRoot,body.ledger-print-mode>.ledger-print-page{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important}
   body.ledger-print-mode #ledgerPrintRoot,body.ledger-print-mode .ledger-print-page{display:block!important;position:static!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important;color:#000!important;font-family:Arial,'Noto Sans Gujarati',sans-serif!important;font-size:10pt!important;line-height:1.4!important;box-shadow:none!important}
-  /* Keep the loan form's Gujarati typeface consistent on screen and on paper. */
+  /* Use the embedded Gujarati family consistently for the loan form on screen and on paper. */
   #ledgerPrintRoot .loan-form-wrap,#ledgerPrintRoot .loan-form-paper,#ledgerPrintRoot .loan-form-paper *{font-family:'Noto Sans Gujarati','Noto Sans Devanagari','Inter','Nirmala UI',sans-serif!important}
   /* BUG FIX: પહેલાં stripPrintIds() પ્રિન્ટ રૂટનો id કાઢી નાખતું હતું → પ્રિન્ટમાં ખાલી પાનું આવતું હતું.
      id/ક્લાસ બંને પર આધાર રાખીએ છીએ, અને lp-modal-print ક્યારેય રૂટને છુપાવી ન શકે. */
@@ -10779,8 +10779,8 @@ body.ns-viewer:not(.ns-can-add-entry) #wsDockAdd{display:none!important}
   <div id="supabaseConfigBlock" style="display:none;">
     <div class="form-group"><label>Supabase Project URL</label><input type="url" id="supabaseUrl" placeholder="https://your-project.supabase.co" autocomplete="url"></div>
     <div class="form-group"><label>Supabase Publishable Key</label><input type="password" id="supabaseAnonKey" placeholder="sb_publishable_..." autocomplete="off"><small>આ Publishable/anon key છે. Secret અથવા service-role key અહીં ક્યારેય ન નાખો.</small></div>
-    <div class="form-group"><label>Admin account email</label><input type="email" id="supabaseAdminEmail" placeholder="admin@example.com" autocomplete="username"><small>Supabaseમાં નોંધાયેલ Admin email પર 8 અંકનો OTP આવશે.</small></div>
-    <div class="form-group"><label>Email OTP</label><input type="text" id="supabaseAdminOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{8}" placeholder="8 અંકનો કોડ"></div>
+<div class="form-group"><label>Admin account email</label><input type="email" id="supabaseAdminEmail" placeholder="admin@example.com" autocomplete="username"><small>Supabaseમાં નોંધાયેલ Admin email પર 8 અંકનો OTP આવશે.</small></div>
+<div class="form-group"><label>Email OTP</label><input type="text" id="supabaseAdminOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{8}" placeholder="8 અંકનો કોડ"></div>
     <div class="form-group"><label>Organization UUID (વૈકલ્પિક)</label><input type="text" id="supabaseOrganizationId" placeholder="ખાલી રાખો — Admin sign-in પછી આપમેળે મળશે" autocomplete="off"><small>Project URLમાંનો project ref અહીં ન નાખો; Organization ID એક UUID છે.</small></div>
     <div class="form-group"><label>Sync name</label><input type="text" id="supabaseSyncKey" placeholder="main"></div>
     <div class="form-group" data-cloud-owner="supabase"><div class="auto-sync-toggle" style="margin:8px 0 12px"><input type="checkbox" id="githubBackupEnabled" aria-label="GitHub વધારાનો બેકઅપ"><span>Supabase sync પછી GitHubમાં private backup પણ સાચવો</span></div></div>
@@ -17664,10 +17664,10 @@ LedgerFeatures.qr = {
   _scanTimer: null,
   _scanStream: null,
   _scanMode: 'passbook',
-  makeQrDataUrl(text, cellSize, errorCorrection) {
+  makeQrDataUrl(text, cellSize) {
     if (typeof window.qrcode !== 'function') return '';
     try {
-      const qr = window.qrcode(0, errorCorrection || 'M');
+      const qr = window.qrcode(0, 'M');
       qr.addData(text);
       qr.make();
       return qr.createDataURL(cellSize || 6, 4);
@@ -17678,32 +17678,22 @@ LedgerFeatures.qr = {
   openJoinQr() {
     if (typeof nsConfigComplete !== 'function' || !nsConfigComplete(cloudCfg)) { showToast('⚠️ પહેલા Cloud સેટ કરી Save કરો'); return; }
     if (typeof window.qrcode !== 'function') { showToast('⚠️ QR લાઇબ્રેરી ઉપલબ્ધ નથી (ઇન્ટરનેટ તપાસો)'); return; }
-    const modal = document.getElementById('joinQrModal');
-    if (!modal) { showToast('❌ Join QR બારી મળી નથી. પેજ ફરી ખોલો.'); return; }
-    /* Settings/home modals share a stacking layer. Put QR last and above them. */
-    document.body.appendChild(modal);
-    modal.style.zIndex = '100001';
     const t = document.getElementById('joinQrLiveToggle');
     if (t) t.checked = false;
-    modal.style.display = 'flex';
     this.renderJoinQr();
+    document.getElementById('joinQrModal').style.display = 'flex';
   },
   renderJoinQr() {
     const live = !!document.getElementById('joinQrLiveToggle')?.checked;
     const link = nsMakeJoinLink(live);
-    let url = link ? this.makeQrDataUrl(link, 5, 'M') : '';
-    if (!url && link) url = this.makeQrDataUrl(link, 4, 'L');
+    const url = this.makeQrDataUrl(link, 5);
     const img = document.getElementById('joinQrImage');
     if (img) {
       if (url) { img.src = url; img.style.display = ''; }
       else { img.removeAttribute('src'); img.style.display = 'none'; }
     }
     const txt = document.getElementById('joinQrLinkText');
-    if (txt) {
-      txt.textContent = link || 'QR લિંક બનાવી શકાઈ નથી. Cloud settings સાચવી પેજ ફરી ખોલો.';
-      txt.style.display = '';
-    }
-    if (!url) showToast(link ? '❌ આ Sync linkનો QR બની શક્યો નથી. નીચેની link કૉપી કરો.' : '❌ Join link ખાલી છે. Cloud settings સાચવી ફરી પ્રયાસ કરો.');
+    if (txt) txt.textContent = link;
   },
   closeJoinQr() { const m = document.getElementById('joinQrModal'); if (m) m.style.display = 'none'; },
   /* ---- Member passbook + card ---- */
@@ -25280,7 +25270,7 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
    3) સેટિંગ્સ → અપડેટ માં જાતે તપાસી શકાય + લિંક સેટ કરી શકાય
    બધું try/catch માં — એપના બીજા કામમાં દખલ નહીં. */
 (function () {
-var APP = { version: '1.2.87', code: 90 };
+var APP = { version: '1.2.89', code: 92 };
   window.AYM_APP = APP;
   /* Android એપમાં મૂળ લિંક મૂકવી હોય તો અહીં લખો (ખાલી = એપ જ્યાં છે ત્યાં version.json) */
   window.AYM_UPDATE_URL = '';
@@ -29663,11 +29653,11 @@ var APP = { version: '1.2.87', code: 90 };
 }
 </style>
 <script type="application/json" id="aymVersionJson">{
-  "version": "1.2.87",
-  "code": 90,
+"version": "1.2.89",
+  "code": 92,
   "date": "2026-11-13",
-  "notes": "Party sign-in accepts 8-digit Supabase email OTP codes",
-  "versionCode": 90
+  "notes": "Party OTP resend interval reduced to 10 seconds",
+  "versionCode": 92
 }</script>
 <script type="application/json" id="aymSyncConfig">{
   "_readme": "Disabled clean deployment template. Do not place credentials in a public repository. Configure cloud sync through the app or a private server.",
@@ -38725,7 +38715,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
    ફ્લો:
      1) એડમિને ઉમેરેલો મોબાઇલ નાખો → પાર્ટી મળે
      2) વિગત ફોર્મ — ઇમેલ આઇડી ફરજિયાત
-     3) એ ઇમેલ પર 6 અંકનો OTP → વેરિફાય
+      3) એ ઇમેલ પર 8 અંકનો OTP → વેરિફાય
      4) પાર્ટી પોતાનો પાસવર્ડ સેટ કરે → એકાઉન્ટ બને
      5) લોગિન: પાસવર્ડ થી કે ઇમેલ-OTP થી
      6) પાસવર્ડ ભૂલી જાય → મોબાઇલ/ઇમેલ + ઇમેલ OTP → નવો પાસવર્ડ
@@ -39591,7 +39581,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     setSteps(['ઇમેલ', 'OTP'], 0);
     var b = open('OTP થી લોગિન', 'પાસવર્ડ યાદ ન હોય તો આ રસ્તો');
     b.innerHTML =
-      '<p class="aympo-lead">તમારું રજિસ્ટર્ડ ઇમેલ નાખો — 6 અંકનો કોડ મોકલશું. કોડ નાખો એટલે લોગિન થઈ જશે, પાસવર્ડની જરૂર નહીં.</p>' +
+    '<p class="aympo-lead">તમારું રજિસ્ટર્ડ ઇમેલ નાખો — 8 અંકનો કોડ મોકલશું. કોડ નાખો એટલે લોગિન થઈ જશે, પાસવર્ડની જરૂર નહીં.</p>' +
       field('ઇમેલ આઇડી', 'aympoEmail', 'type="email" inputmode="email" placeholder="name@gmail.com" value="' + esc(prefill || '') + '"') +
       '<div class="aympo-err" id="aympoErr"></div>' +
       '<button type="button" class="aympo-btn" id="aympoGo">કોડ મોકલો <i class="fas fa-paper-plane"></i></button>' +
@@ -39820,7 +39810,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     b.innerHTML =
       '<div class="aympo-mailto"><i class="fas fa-at"></i><span>' + (cur ? esc(cur) : 'હાલ ઇમેલ નથી') + '</span>' +
         (cur ? '<em class="aympa-badge ' + (u.emailVerified ? 'ok' : 'pend') + '">' + (u.emailVerified ? 'વેરિફાઇડ' : 'બાકી') + '</em>' : '') + '</div>' +
-      '<p class="aympo-lead">નવી ઇમેલ આઇડી નાખો — એના પર 6 અંકનો કોડ જશે. કોડ નાખ્યા પછી જ ઇમેલ બદલાશે, એટલે ખોટી ઇમેલ નાખવાથી ખાતું બગડે નહીં.</p>' +
+      '<p class="aympo-lead">નવી ઇમેલ આઇડી નાખો — એના પર 8 અંકનો કોડ જશે. કોડ નાખ્યા પછી જ ઇમેલ બદલાશે, એટલે ખોટી ઇમેલ નાખવાથી ખાતું બગડે નહીં.</p>' +
       field('નવી ઇમેલ આઇડી <em>*</em>', 'aympoNewEmail', 'type="email" inputmode="email" placeholder="name@gmail.com" spellcheck="false"') +
       '<div class="aympo-err" id="aympoErr"></div>' +
       '<button type="button" class="aympo-btn" id="aympoSend">નવી ઇમેલ પર OTP મોકલો <i class="fas fa-paper-plane"></i></button>' +
@@ -40228,7 +40218,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
   function partyEmailIdentity(auth,email){return !!(auth&&auth.access_token&&auth.refresh_token&&auth.user&&auth.user.email_confirmed_at&&nMail(auth.user.email)===nMail(email));}
   async function verifyPhoneLoginOtp(btn){
     var code=qa('#aympoEmailOtpBoxes input').map(function(b){return b.value;}).join('');err('');
-    if(code.length!==6)return err('Enter the complete email code.');
+    if(code.length!==8)return err('Enter the complete 8-digit email code.');
     if(S.tries>=5)return err('Request a new email before trying again.');
     S.tries++;btnBusy(btn,true);
     try{var auth=await phoneAuthRequest(S.phoneAuthConfig,'verify',{email:S.email,token:code,type:'email'});if(!partyEmailIdentity(auth,S.email))throw new Error('Verified email does not match the Party account.');S.emailAuth=auth;S.phoneAuth=auth;await finishPartyCloudLogin(auth);localStorage.removeItem(EMAIL_PENDING_KEY);}
@@ -40260,34 +40250,61 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     b.innerHTML=records.map(function(r,i){var p=r.data&&r.data.parties&&r.data.parties[0]||{};return '<button type="button" class="aympo-btn" data-cloud-party="'+i+'">'+esc(p.name||r.party_ref)+' · '+esc(r.sync_key)+'</button>';}).join('');
     qa('[data-cloud-party]',b).forEach(function(button){button.onclick=function(){adoptPartyCloud(records[Number(this.dataset.cloudParty)],auth);};});
   }
-  function applyPartyCloudRow(row,auth,initial){
+  function adoptPartyCloud(row,auth){
     var data=row&&row.data,p=data&&data.parties&&data.parties[0];
     if(!partyEmailIdentity(auth,S.email)||!p||String(p.id)!==row.party_ref||nMail(row.email)!==S.email)throw new Error('Party identity mismatch.');
-    var rowKey='cloud:'+row.organization_id+':'+row.sync_key+':'+row.party_ref;
     // Replace every data collection; never merge an Admin cache into a Party view.
     ['entries','parties','categories','loanForms','moduleRecords','customModules'].forEach(function(k){SET(k,Array.isArray(data[k])?data[k]:[]);});
-    S.phoneAuth=auth;S.emailAuth=auth;S.mobile=p.mobile||S.mobile||'';
-    S.partyCloudUpdatedAt=String(row.updated_at||'');S.partyCloudRowKey=rowKey;
-    window.aymPartyReadOnlyCloud=true;
-    if(!initial){
-      persist();
-      ['populatePartyList','refreshAllSelects','refreshEntryViews','renderPartyCategoryReport','updatePartyDashboard','updateDashboard','updateTotalEntriesCount','updateLoanFormBadge','renderSidebarModules'].forEach(function(name){call(name);});
-      return true;
-    }
     ['messages','guarantorChangeForms','LOAN_PLANS','LOAN_TERMS','GC_TERMS'].forEach(function(k){SET(k,[]);});
     window.aymAccounts=[];window.aymSectionKinds=[];
-    var user={id:rowKey,role:'party',partyId:p.id,name:p.name||'Party',username:S.email,email:S.email,authProvider:'supabase-party-cloud',emailVerified:true};
-    SET('users',[user]);
+    var user={id:'cloud:'+row.organization_id+':'+row.sync_key+':'+row.party_ref,role:'party',partyId:p.id,name:p.name||'Party',username:S.email,email:S.email,authProvider:'supabase-party-cloud',emailVerified:true};
+    SET('users',[user]);S.phoneAuth=auth;S.emailAuth=auth;S.mobile=p.mobile||'';
+    window.aymPartyReadOnlyCloud=true;
     var storageKeys=G('S',{});if(storageKeys.session)localStorage.removeItem(storageKeys.session);
     savePhoneAuthSession();
     close();loginAs(user,'Email Cloud');
     ['navMessages','navGuarantorChange','navAvailableGuarantors','btnNewLoanForm','fabAddEntry'].forEach(function(id){var el=q('#'+id);if(el)el.style.display='none';});
     toast('તમારો પોતાનો cloud હિસાબ મળ્યો. આ view ફક્ત વાંચવા માટે છે.');
-    return true;
   }
-  function adoptPartyCloud(row,auth){return applyPartyCloudRow(row,auth,true);}
-  var partyCloudRefreshBusy=false;
   window.AYMPO = {
+    submitPartyRequest: async function(subject,message){
+      var current=CS();
+      if(!current||current.role!=='party'||!window.aymPartyReadOnlyCloud)throw new Error('Party cloud sign-in required.');
+      var saved;try{saved=JSON.parse(localStorage.getItem(PHONE_AUTH_KEY)||'null');}catch(e){}
+      if(!saved||!saved.refresh_token)throw new Error('Please sign in again to submit a request.');
+      var config=await phoneAuthConfig();
+      if(saved.supabaseUrl!==config.url||saved.publishableKey!==config.key)throw new Error('Cloud configuration changed. Please sign in again.');
+      var auth=S.phoneAuth||{access_token:saved.access_token,refresh_token:saved.refresh_token,expires_in:Math.max(1,Math.floor(((saved.expires_at||0)-Date.now())/1000))};
+      var refreshed=!saved.expires_at||saved.expires_at<Date.now()+60000;
+      if(refreshed)auth=await phoneAuthRequest(config,'token?grant_type=refresh_token',{refresh_token:saved.refresh_token});
+      var authResponse=await fetch(config.url+'/auth/v1/user',{headers:{apikey:config.key,Authorization:'Bearer '+auth.access_token},cache:'no-store'});
+      var authUser=await authResponse.json().catch(function(){return null;});
+      if(!authResponse.ok||!partyEmailIdentity(Object.assign({},auth,{user:authUser}),authUser&&authUser.email))throw new Error('Verified session expired. Sign in again.');
+      auth.user=authUser;S.phoneAuth=auth;S.emailAuth=auth;S.phoneAuthConfig=config;S.email=nMail(authUser.email);if(refreshed)savePhoneAuthSession();
+      var identity=String(current.userId||'').split(':');
+      if(identity.length<4||identity[0]!=='cloud')throw new Error('Party ledger identity is invalid.');
+      var org=identity[1],partyRef=identity[identity.length-1],syncKey=identity.slice(2,-1).join(':');
+      var response=await fetch(config.url+'/rest/v1/rpc/aym_submit_party_request',{method:'POST',headers:{apikey:config.key,Authorization:'Bearer '+auth.access_token,'Content-Type':'application/json'},body:JSON.stringify({p_organization_id:org,p_sync_key:syncKey,p_party_ref:partyRef,p_subject:String(subject||''),p_message:String(message||'')})});
+      var result=await response.json().catch(function(){return null;});
+      if(!response.ok)throw new Error(result&&result.message||'Request submit failed ('+response.status+').');
+      return result;
+    },
+    listAdminPartyRequests: async function(){
+      if(typeof isAdmin!=='function'||!isAdmin())throw new Error('Admin sign-in required.');
+      var auth=await supabaseEnsureAdmin();
+      var response=await fetch(supabaseBaseUrl()+'/rest/v1/aym_party_requests?select=id,organization_id,sync_key,party_ref,party_name,party_email,subject,message,status,created_at,updated_at&organization_id=eq.'+encodeURIComponent(auth.organizationId)+'&order=created_at.desc&limit=100',{headers:supabaseHeaders(),cache:'no-store'});
+      var result=await response.json().catch(function(){return null;});
+      if(!response.ok||!Array.isArray(result))throw new Error(result&&result.message||'Could not load Party requests ('+response.status+').');
+      return result;
+    },
+    updateAdminPartyRequest: async function(id,status){
+      if(typeof isAdmin!=='function'||!isAdmin())throw new Error('Admin sign-in required.');
+      if(['new','reviewing','resolved'].indexOf(status)<0)throw new Error('Invalid request status.');
+      var auth=await supabaseEnsureAdmin();
+      var response=await fetch(supabaseBaseUrl()+'/rest/v1/aym_party_requests?id=eq.'+encodeURIComponent(id)+'&organization_id=eq.'+encodeURIComponent(auth.organizationId),{method:'PATCH',headers:Object.assign({},supabaseHeaders(),{Prefer:'return=minimal'}),body:JSON.stringify({status:status})});
+      if(!response.ok){var result=await response.json().catch(function(){return null;});throw new Error(result&&result.message||'Could not update request ('+response.status+').');}
+      return true;
+    },
     restorePartyCloud: async function(){
       if(G('currentSession'))return;
       var saved;try{saved=JSON.parse(localStorage.getItem(PHONE_AUTH_KEY)||'null');}catch(e){}
@@ -40301,38 +40318,6 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
         if(!partyEmailIdentity(auth,user.email))throw new Error('Verified email required.');
         S.email=nMail(user.email);S.phoneAuthConfig=config;S.phoneAuth=auth;S.emailAuth=auth;await finishPartyCloudLogin(auth);
       }catch(e){localStorage.removeItem(PHONE_AUTH_KEY);toast(e.message||'Party cloud sign-in failed.');}
-    },
-    refreshPartyCloud: async function(){
-      var current=CS();
-      if(partyCloudRefreshBusy||document.hidden||!current||current.role!=='party'||current.authProvider!=='supabase-party-cloud'||!window.aymPartyReadOnlyCloud)return false;
-      var saved;try{saved=JSON.parse(localStorage.getItem(PHONE_AUTH_KEY)||'null');}catch(e){}
-      if(!saved||!saved.portal||!saved.refresh_token)return false;
-      partyCloudRefreshBusy=true;
-      try{
-        var config=await phoneAuthConfig();
-        if(saved.supabaseUrl!==config.url||saved.publishableKey!==config.key)return false;
-        var auth={access_token:saved.access_token,refresh_token:saved.refresh_token,expires_in:Math.max(1,Math.floor(((saved.expires_at||0)-Date.now())/1000))};
-        if(!saved.expires_at||saved.expires_at<Date.now()+60000)auth=await phoneAuthRequest(config,'token?grant_type=refresh_token',{refresh_token:saved.refresh_token});
-        var response=await fetch(config.url+'/auth/v1/user',{headers:{apikey:config.key,Authorization:'Bearer '+auth.access_token},cache:'no-store'});
-        var user=await response.json().catch(function(){return null;});
-        if(!response.ok||!user)throw new Error('Party cloud session expired.');
-        auth.user=user;
-        if(!partyEmailIdentity(auth,user.email))throw new Error('Verified email required.');
-        S.email=nMail(user.email);S.phoneAuthConfig=config;S.phoneAuth=auth;S.emailAuth=auth;
-        var records=await window.AYMPartyCloud.rows(config,auth);
-        var row=null;
-        for(var i=0;i<records.length;i++){
-          var candidate=records[i];
-          if('cloud:'+candidate.organization_id+':'+candidate.sync_key+':'+candidate.party_ref===String(current.userId)&&nMail(candidate.email)===S.email){row=candidate;break;}
-        }
-        if(!row||CS()!==current)return false;
-        if(String(row.updated_at||'')===String(S.partyCloudUpdatedAt||''))return true;
-        if(applyPartyCloudRow(row,auth,false)){savePhoneAuthSession();return true;}
-        return false;
-      }catch(e){
-        try{if(typeof aymLog==='function')aymLog('party-cloud-refresh',e.message||'refresh failed');}catch(_){}
-        return false;
-      }finally{partyCloudRefreshBusy=false;}
     },
     version: '1.1',
     start: function () { stepMobile(); },
@@ -40351,9 +40336,6 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     smsLive: smsLive
   };
 
-  setInterval(function(){try{if(window.AYMPO&&window.AYMPO.refreshPartyCloud)window.AYMPO.refreshPartyCloud();}catch(e){}},15000);
-  document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(function(){try{window.AYMPO.refreshPartyCloud();}catch(e){}},500);});
-  window.addEventListener('focus',function(){setTimeout(function(){try{window.AYMPO.refreshPartyCloud();}catch(e){}},500);});
   setTimeout(handlePartyEmailLink, 1000);
   function boot() { injectLinks(); hookApp(); decoratePartyList(); ensureProfileBox(); }
   boot();
@@ -45302,5 +45284,139 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
 })();
 </script>
 <script src="./party-cloud.js"></script>
+<style id="aym-loan-form-print-layout-v1">
+/* Loan form print layout: consistent A4 hierarchy, readable fields and rules. */
+@page aymA4Portrait { size: A4 portrait; margin: 9mm 9mm 10mm; }
+@media print {
+  #ledgerPrintRoot.lp-loan-continuous-flow { page: aymA4Portrait !important; }
+  #ledgerPrintRoot .lp-loan-form-print {
+    width: 100% !important; max-width: none !important; overflow: visible !important;
+    color: #172c28 !important; font-family: Arial, 'Noto Sans Gujarati', sans-serif !important;
+    font-size: 9pt !important; line-height: 1.42 !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-header {
+    margin: 0 0 4mm !important; padding: 3mm 4mm 2.5mm !important;
+    border: 1px solid #9eb8ae !important; border-top: 2mm solid #17695b !important;
+    border-bottom: 1px solid #b89445 !important; border-radius: 2mm !important;
+    background: #f5f8f6 !important; text-align: left !important;
+    break-after: avoid-page !important; page-break-after: avoid !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-logo-wrap { justify-content: flex-start !important; gap: 3mm !important; }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-logo {
+    width: 14mm !important; height: 14mm !important; min-width: 14mm !important;
+    max-width: 14mm !important; max-height: 14mm !important; border: 1px solid #b89445 !important;
+    border-radius: 50% !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-logo-title { font-size: 14pt !important; letter-spacing: 0 !important; }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-header-sub { margin-top: 1mm !important; font-size: 7pt !important; letter-spacing: .06em !important; }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-form-title {
+    margin-top: 2mm !important; padding-top: 1.5mm !important; border-top: 1px solid #d3ded8 !important;
+    color: #244d43 !important; font-size: 11pt !important; letter-spacing: 0 !important; text-align: center !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-body { padding: 0 1mm !important; background: #fff !important; }
+  #ledgerPrintRoot .lp-loan-form-print .loan-note-special {
+    margin: 0 0 3mm !important; padding: 2.5mm 3mm !important; border: 1px solid #d7bd78 !important;
+    border-left: 1.3mm solid #b89445 !important; border-radius: 1.5mm !important;
+    background: #fbf7e9 !important; color: #342c19 !important; font-size: 8.7pt !important; line-height: 1.45 !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-sec {
+    margin: 0 0 3mm !important; padding: 3mm !important; border: 1px solid #cbd8d2 !important;
+    border-radius: 2mm !important; background: #fff !important; box-shadow: none !important;
+    break-inside: auto !important; page-break-inside: auto !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-sec-title {
+    margin: -3mm -3mm 2.5mm !important; padding: 2mm 3mm !important;
+    border: 0 !important; border-bottom: 1px solid #c4d3cb !important; border-left: 1.2mm solid #17695b !important;
+    border-radius: 1.5mm 1.5mm 0 0 !important; background: #edf3ef !important; color: #20473e !important;
+    font-size: 9.5pt !important; line-height: 1.3 !important; letter-spacing: 0 !important;
+    break-after: avoid-page !important; page-break-after: avoid !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-sec-title i { display: none !important; }
+  #ledgerPrintRoot .lp-loan-form-print .loan-compact-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 2.5mm 3mm !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .lf-applicant-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 29mm !important; gap: 2.5mm 3.5mm !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .lf-applicant-grid > div[style*="grid-column:3"] {
+    grid-row: 1 / 6 !important; grid-column: 3 !important; width: 29mm !important; margin: 0 !important; gap: 1mm !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-photo-box {
+    width: 25mm !important; min-height: 29mm !important; max-width: 25mm !important;
+    border: 1px solid #89968f !important; border-radius: 1mm !important; background: #fff !important; font-size: 7pt !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-photo-box i { display: none !important; }
+  #ledgerPrintRoot .lp-loan-form-print .loan-sign-below-photo {
+    width: 27mm !important; margin-top: 3.5mm !important; padding-top: 1mm !important;
+    border-top: 1px solid #66756d !important; font-size: 7pt !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .form-group { margin: 0 !important; break-inside: avoid-page !important; page-break-inside: avoid !important; }
+  #ledgerPrintRoot .lp-loan-form-print .form-group label,
+  #ledgerPrintRoot .lp-loan-form-print .lf-applicant-grid label {
+    margin-bottom: .8mm !important; color: #53655d !important; font-size: 7.8pt !important; line-height: 1.25 !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .print-field-value {
+    min-height: 1.5em !important; padding: 0 1mm 1mm !important; border-bottom: 1px solid #87968f !important;
+    color: #17231e !important; font-size: 9.5pt !important; line-height: 1.35 !important; overflow-wrap: anywhere !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .lf-applicant-grid textarea { min-height: 1.5em !important; height: auto !important; }
+  #ledgerPrintRoot .lp-loan-form-print #lfGuarantorSlots > div {
+    margin: 0 0 2mm !important; padding: 2.5mm 3mm !important; border: 1px solid #d4ddd7 !important;
+    border-radius: 1.5mm !important; break-inside: avoid-page !important; page-break-inside: avoid !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print #lfGuarantorSlots > div > div:first-child {
+    margin-bottom: 1.5mm !important; padding-bottom: 1.2mm !important; border-bottom: 1px solid #d4ddd7 !important;
+    color: #244d43 !important; font-size: 8.5pt !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-plan-selector { margin: 0 0 3mm !important; padding: 0 !important; }
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-plan-selector > .loan-form-sec-title,
+  #ledgerPrintRoot .lp-loan-form-print .loan-form-plan-selector .loan-plans-table { display: none !important; }
+  #ledgerPrintRoot .lp-loan-form-print .loan-selected-summary.show {
+    display: block !important; margin: 0 !important; padding: 2.5mm 3mm !important;
+    border: 1px solid #d2bd7c !important; border-left: 1.2mm solid #b89445 !important; border-radius: 1.5mm !important;
+    background: #fbf7e9 !important; color: #302916 !important; font-size: 9pt !important; line-height: 1.45 !important;
+    white-space: normal !important; overflow: visible !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-terms-body,
+  #ledgerPrintRoot .lp-loan-form-print .loan-terms-body.show { display: block !important; height: auto !important; overflow: visible !important; }
+  #ledgerPrintRoot .lp-loan-form-print .loan-terms-list {
+    display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; grid-auto-flow: row !important;
+    align-content: start !important; gap: 1.5mm 3mm !important; margin: 0 !important; padding: 0 !important;
+    counter-reset: term !important; font-size: 8pt !important; line-height: 1.38 !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-terms-list li {
+    min-width: 0 !important; margin: 0 !important; padding: 1.5mm 1mm 1.5mm 8mm !important;
+    border: 1px solid #dce4df !important; border-radius: 1.5mm !important; color: #17231e !important;
+    text-align: left !important; line-height: 1.38 !important; break-inside: avoid-page !important; page-break-inside: avoid !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-terms-list li::before {
+    top: 1.5mm !important; left: 1mm !important; width: 5mm !important; height: 5mm !important;
+    border: 0 !important; border-radius: 1.2mm !important; background: #e8f1ed !important; color: #17695b !important;
+    font-size: 7pt !important; font-weight: 700 !important; box-shadow: none !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-note-center {
+    margin-top: 2mm !important; padding: 2.5mm 3mm !important; border: 1px solid #d7bd78 !important;
+    border-left: 1.2mm solid #b89445 !important; border-radius: 1.5mm !important; background: #fbf7e9 !important;
+    color: #302916 !important; font-size: 8pt !important; line-height: 1.4 !important; text-align: left !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-declaration {
+    padding: 3mm 3.5mm !important; border: 1px solid #d2bd7c !important; border-left: 1.2mm solid #b89445 !important;
+    border-radius: 1.5mm !important; background: #fffdf7 !important; color: #17231e !important;
+    font-size: 9pt !important; line-height: 1.55 !important; break-inside: avoid-page !important; page-break-inside: avoid !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-declaration::before { display: none !important; }
+  #ledgerPrintRoot .lp-loan-form-print .loan-signatures {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 3mm 6mm !important; margin-top: 3mm !important;
+    break-inside: avoid-page !important; page-break-inside: avoid !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .loan-sign-box {
+    min-height: 16mm !important; margin-top: 6mm !important; padding-top: 1.2mm !important;
+    border-top: 1px solid #687970 !important; color: #34463d !important; font-size: 8pt !important; line-height: 1.3 !important;
+  }
+  #ledgerPrintRoot .lp-loan-form-print .ledger-print-footer {
+    margin-top: 3mm !important; padding-top: 1.5mm !important; border-top: 1px solid #cbd5cf !important; font-size: 7pt !important;
+  }
+}
+</style>
 </body>
 </html>

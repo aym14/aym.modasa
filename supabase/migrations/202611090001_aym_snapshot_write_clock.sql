@@ -16,4 +16,3 @@ drop trigger if exists aym_snapshot_write_clock on public.aym_cloud_ledger_snaps
 create trigger aym_snapshot_write_clock
 before insert or update on public.aym_cloud_ledger_snapshots
 for each row execute function public.aym_snapshot_write_clock();
-

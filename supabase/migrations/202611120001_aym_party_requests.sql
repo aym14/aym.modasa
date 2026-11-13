@@ -81,4 +81,3 @@ create trigger aym_party_requests_touch before update on public.aym_party_reques
 for each row execute function public.aym_touch_party_request();
 
 commit;
-

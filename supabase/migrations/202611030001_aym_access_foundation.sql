@@ -46,4 +46,3 @@ drop policy if exists aym_org_members_self_read on public.aym_org_members;
 create policy aym_org_members_self_read
   on public.aym_org_members for select to authenticated
   using (auth_user_id = (select auth.uid()) and is_active = true);
-

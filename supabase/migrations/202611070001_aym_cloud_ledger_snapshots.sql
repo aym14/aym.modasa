@@ -63,4 +63,3 @@ create policy aym_cloud_ledger_admin_update
         and m.is_active = true
     )
   );
-

@@ -100,4 +100,3 @@
     if(!location.hash.includes('access_token=')&&window.AYMPO&&window.AYMPO.restorePartyCloud)window.AYMPO.restorePartyCloud();
   },1500);
 })();
-

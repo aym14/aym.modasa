@@ -27,4 +27,3 @@ revoke all on function public.aym_party_mobile_email_matches(text,text) from pub
 grant execute on function public.aym_party_mobile_email_matches(text,text) to anon, authenticated;
 
 commit;
-

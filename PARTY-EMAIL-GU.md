@@ -49,6 +49,8 @@ Cloud portal માટે `202611090002_aym_party_portal.sql` લાગુ ક�
 
 Cloud Party portal હાલમાં read-only છે: પોતાનો હિસાબ, profile, સંબંધિત loan summary અને print/PDF. Loan application, message sending, guarantor directory અને data edits માટે અલગ સુરક્ષિત write APIs બનાવ્યા વગર ઉપયોગ કરવો નહીં. Portal સ્થાનિક Admin ledger સાથે merge થતું નથી અને Party modeમાં base persist બંધ છે. Sign-out પછી in-memory data દૂર કરવા પેજ reload થાય છે. Server પર revoke કર્યા પછી પહેલેથી screen પર દેખાયેલ માહિતી પાછી ખેંચી શકાતી નથી; આગળનું authenticated fetch નવી policy લાગુ કરે છે.
 
+`202611120001_aym_party_requests.sql` લાગુ થયા પછી અલગ Party request form ચાલુ થાય છે. Party વિષય અને વિગતો મોકલી શકે છે; verified email, active Party membership અને પોતાના projection સાથે મેળ ખાતી ઓળખ Supabase server ચકાસે છે. Admin inbox request જોઈને નવી/ચાલુ/પૂર્ણ સ્થિતિ રાખી શકે છે. આ request form ledger, loan application અથવા guarantor recordsમાં ફેરફાર કરતું નથી.
+
 લાઇવ databaseમાં transaction-only isolation checks પાસ: પોતાના records, cross-Party denial, secret filtering, Admin snapshot denial, write denial, anonymous denial અને email revoke. Sample records rollback કર્યાં છે.
 
 Email sendingની Supabase મર્યાદા અને custom SMTP configuration લાગુ રહે છે. Actual Party login માટે Admin ledger snapshot અને ઇમેલની લિંક ખોલીને user verification જરૂરી છે; આ પૂર્ણ થયા વગર real Party end-to-end test પાસ ગણવો નહીં.

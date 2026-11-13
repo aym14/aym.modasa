@@ -9,4 +9,3 @@ GitHub Pages `main` branchના root પરથી publish થાય છે. આ
 Update કરતી વખતે `site/`ની સુધારેલી ફાઇલો repository rootમાં મૂકો. દરેક commit પછી GitHubનો pages-build-deployment workflow ફરી ચાલે છે. સ્થાનિક `.github/workflows/pages.yml` આખા packageને repositoryમાં રાખવા માટેનું વૈકલ્પિક layout છે; તે હાલના root deploymentમાં upload કરેલું નથી.
 
 Supabase migrations, organization Admin membership અને OTP/SMS gateway configuration અલગથી કરવાના રહે છે. Hosting deployment database configuration કરતું નથી.
-

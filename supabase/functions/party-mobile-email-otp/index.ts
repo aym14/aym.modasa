@@ -72,15 +72,15 @@ Deno.serve(async (request) => {
     if (input.action === 'send') {
       // Keep the response identical for known and unknown numbers; never reveal Party email.
       if (email) {
-        const delivery = await fetch(url + '/auth/v1/otp', {
+        const response = await fetch(url + '/auth/v1/otp', {
           method: 'POST',
           headers: { apikey: publishableKey, 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, create_user: true }),
         });
-        // Auth failures used to be silently reported as success. Log only the
-        // provider status (never the phone, email, response body, or OTP) so
-        // delivery failures can be diagnosed without exposing Party accounts.
-        if (!delivery.ok) console.error('Party email OTP provider rejected request', delivery.status);
+        if (!response.ok) {
+          // Never tell the client the OTP was sent when Supabase rejected the request.
+          return json({ error: response.status === 429 ? 'otp_rate_limited' : 'otp_unavailable' }, response.status === 429 ? 429 : 502);
+        }
       }
       return json({ ok: true });
     }
@@ -107,13 +107,6 @@ Deno.serve(async (request) => {
     });
   } catch (_) {
     // Avoid logging or returning Party identifiers, email addresses, or auth tokens.
-    if (input.action === 'send') {
-      console.error('Party email OTP delivery request failed');
-      // Preserve the same response for unknown mobile numbers and transient
-      // lookup/provider failures so this endpoint cannot be used to enumerate Parties.
-      return json({ ok: true });
-    }
-    return json({ error: 'invalid_code' }, 400);
+    return json({ error: input.action === 'send' ? 'otp_unavailable' : 'invalid_code' }, 400);
   }
 });
-

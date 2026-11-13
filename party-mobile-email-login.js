@@ -11,5 +11,22 @@
   async function verify(root,button){var err=root.querySelector('.error'),token=String(root.querySelector('#aymEmailOtp').value||'').replace(/\D/g,'');err.textContent='';if(token.length!==8){err.textContent='8 અંકનો OTP નાખો.';return;}button.disabled=true;button.textContent='ચકાસાઈ રહ્યું છે…';try{var result=await api({action:'verify',mobile:state.mobile,token:token}),auth=result.session||{},user=result.user;if(!auth.access_token||!auth.refresh_token||!user)throw new Error('કોડ ખોટો છે અથવા તેની સમયમર્યાદા પૂરી થઈ છે.');var c=state.config,records=await window.AYMPartyCloud.rows(c,auth),matched=records.some(function(r){var p=r&&r.data&&r.data.parties&&r.data.parties[0];return p&&norm(p.mobile)===state.mobile;});if(!matched){try{await fetch(c.url+'/auth/v1/logout',{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+auth.access_token}});}catch(_){}throw new Error('આ મોબાઇલ Party રેકોર્ડ સાથે મેળ ખાતો નથી. Admin પાસે વિગતો સુધરાવો.');}localStorage.setItem('aym_phone_auth_v1',JSON.stringify({access_token:auth.access_token,refresh_token:auth.refresh_token,expires_at:Date.now()+Number(auth.expires_in||3600)*1000,user_id:user.id,phone:'+91'+state.mobile,email:user.email,portal:true,supabaseUrl:c.url,publishableKey:c.key}));err.style.color='#087f70';err.textContent='ચકાસણી સફળ. Party ખાતું ખોલી રહ્યા છીએ…';if(window.AYMPO&&typeof window.AYMPO.restorePartyCloud==='function')await window.AYMPO.restorePartyCloud();if(window.aymPartyReadOnlyCloud){remove();return;}location.reload();}catch(e){err.style.color='';err.textContent=e.message||'લોગિન થઈ શક્યું નથી.';button.disabled=false;button.textContent='OTP ચકાસો';}}
   function install(){var api=window.AYMPO;if(!api||api.loginWithPhone&&api.loginWithPhone.__aymMobileEmail)return;var login=function(mobile){var root=shell();if(mobile)root.querySelector('#aymMobile').value=String(mobile).replace(/\D/g,'').slice(-10);root.querySelector('[data-main]').onclick=function(){send(root,this);};setTimeout(function(){root.querySelector('#aymMobile').focus();},30);};login.__aymMobileEmail=true;api.loginWithPhone=login;api.loginWithOtp=login;var link=document.getElementById('partyOtpLoginBtn');if(link)link.onclick=function(){login(document.getElementById('loginUsername')&&document.getElementById('loginUsername').value);};}
   install();setInterval(install,500);
+  // Match the configured Supabase Auth resend interval per email address.
+  api=async function(body){
+    var cooldownKey='aym_party_email_otp_sent_at', cooldownMs=10000;
+    if(body.action==='send'){
+      var lastSent=0;try{lastSent=Number(localStorage.getItem(cooldownKey)||0);}catch(_){}
+      var wait=Math.ceil((cooldownMs-(Date.now()-lastSent))/1000);
+      if(wait>0)throw new Error('OTP ફરી મોકલવા '+wait+' સેકન્ડ રાહ જુઓ.');
+    }
+    var response=await fetch(state.config.url+'/functions/v1/party-mobile-email-otp',{method:'POST',headers:{apikey:state.config.key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var data=await response.json().catch(function(){return {};});
+    if(!response.ok){
+      if(body.action==='send'&&(response.status===429||data.error==='otp_rate_limited'))throw new Error('OTP મોકલવાની મર્યાદા પહોંચી છે. થોડા સમય પછી ફરી પ્રયાસ કરો.');
+      if(body.action==='send')throw new Error('OTP મોકલી શકાયો નથી. Supabase Auth અને ઈમેલ સેવા તપાસો.');
+      throw new Error('કોડ ખોટો છે અથવા તેની સમયમર્યાદા પૂરી થઈ છે.');
+    }
+    if(body.action==='send')try{localStorage.setItem(cooldownKey,String(Date.now()));}catch(_){}
+    return data;
+  };
 })();
-
