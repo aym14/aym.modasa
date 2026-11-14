@@ -23839,9 +23839,13 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
       var panel = document.getElementById('nsPartyTasks');
       var grid = panel && panel.querySelector('.ns-party-tasks-grid');
       if (!grid || grid.querySelector('[data-ns-task="availableGuarantors"]')) return;
-      grid.insertAdjacentHTML('beforeend', nsTaskTile('availableGuarantors', 'fa-users', 'Available Guarantors', 'જામીનદારની યાદી'));
-      var tile = grid.querySelector('[data-ns-task="availableGuarantors"]');
-      if (tile) tile.addEventListener('click', function(){ try { sidebarAction('availableGuarantors'); } catch(e) {} });
+      var tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'ns-task-tile';
+      tile.setAttribute('data-ns-task', 'availableGuarantors');
+      tile.innerHTML = '<span class="ns-task-ico"><i class="fas fa-users" aria-hidden="true"></i></span><b>Available Guarantors</b><small>જામીનદારની યાદી</small>';
+      tile.addEventListener('click', function(){ try { sidebarAction('availableGuarantors'); } catch(e) {} });
+      grid.appendChild(tile);
     } catch(e) {}
   }
 
@@ -24071,6 +24075,12 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
   nsBackInit();
   nsDockSync();
   setInterval(nsDockSync, 2000);
+  setInterval(function(){
+    try {
+      var role = document.body.classList.contains('ns-party') ? 'party' : document.body.classList.contains('ns-viewer') ? 'viewer' : '';
+      nsEnsureAvailableGuarantorsTask(role);
+    } catch(e) {}
+  }, 700);
 
   nsEnsureLiveLinkSync();
   nsTryJoinFromHash();
