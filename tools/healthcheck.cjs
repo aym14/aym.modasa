@@ -23,6 +23,8 @@ assert.match(html, /copy\[isParty\?'partyEmailPlaceholder':'adminUsernamePlaceho
 assert.doesNotMatch(html, /Enter party mobile/, 'Party password login must not prompt for a mobile number');
 assert.match(html, /if \(editor && ownerIsEditor\) continue;/, 'full-screen Party form actions must remain inside the editor overlay');
 assert.match(html, /ફોટો અહીં અપલોડ કરો/, 'loan photo upload instructions must use the correct Gujarati label');
+assert.match(html, /if \(node\) node\.textContent = typeof window\.aymTranslate === 'function' \? window\.aymTranslate\(value\) : value;/, 'dynamic guarantor declaration text must follow the selected language');
+assert.match(html, /અમો બંને જામીનદારોએ અન્સાર યુવા મંડળની લોનની શરતો વાંચીને સમજીને લોન લેનારના જામીન થઈએ છીએ': 'we, the two guarantors/, 'two-guarantor English declaration must be translated as one complete sentence');
 assert.match(html, /const fallbackMobile = user\.username && String\(user\.username\)\.indexOf\('@'\) < 0 \? user\.username : '';/, 'Party email usernames must not appear in the mobile field');
 const migration = fs.readFileSync('supabase/migrations/202611140002_party_invite_self_registration.sql', 'utf8');
 assert.match(migration, /security definer/i, 'registration RPC must enforce server-side authorization');

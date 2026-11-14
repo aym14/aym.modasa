@@ -30205,9 +30205,25 @@ var APP = { version: '1.2.96', code: 96 };
         var borrowerDec = document.querySelector('#loanFormPaper .loan-declaration');
         if (borrowerDec) borrowerDec.innerHTML = borrowerDec.innerHTML.replace(/એક સભ્યને|(?:બે|\d+)\s*સભ્યોને/g, phrase);
 
+        Object.assign(DICT.en, {
+          'અમો જણાવેલ બંને જામીનદાર': 'we, the two named guarantors',
+          'અમો બંને જામીનદારની': 'the two guarantors’',
+          'અમો બંને જામીનદારો કોઈ વાંધો કે તકરાર લઈશું નહીં': 'we, the two guarantors, will have no objection or dispute',
+          'અમો બંને જામીનદારોએ અન્સાર યુવા મંડળની લોનની શરતો વાંચીને સમજીને લોન લેનારના જામીન થઈએ છીએ': 'we, the two guarantors, have read and understood Ansar Yuva Mandal’s loan terms and stand as guarantors for the borrower',
+          'અમો બંને જામીનદાર ઉપર': 'against the two guarantors',
+          'અમો બંને જામીનદારને': 'acceptable to the two guarantors'
+        });
+        Object.assign(DICT.hi, {
+          'અમો જણાવેલ બંને જામીનદાર': 'हम, दोनों नामित जमानतदार',
+          'અમો બંને જામીનદારની': 'हम दोनों जमानतदारों की',
+          'અમો બંને જામીનદારો કોઈ વાંધો કે તકરાર લઈશું નહીં': 'हम दोनों जमानतदारों को कोई आपत्ति या विवाद नहीं होगा',
+          'અમો બંને જામીનદારોએ અન્સાર યુવા મંડળની લોનની શરતો વાંચીને સમજીને લોન લેનારના જામીન થઈએ છીએ': 'हम दोनों जमानतदारों ने अंसार युवा मंडल की ऋण शर्तें पढ़कर समझ ली हैं और ऋण लेने वाले के जमानतदार बनते हैं',
+          'અમો બંને જામીનદાર ઉપર': 'हम दोनों जमानतदारों के विरुद्ध',
+          'અમો બંને જામીનદારને': 'हम दोनों जमानतदारों को'
+        });
         function setText(id, value) {
           var node = document.getElementById(id);
-          if (node) node.textContent = value;
+          if (node) node.textContent = typeof window.aymTranslate === 'function' ? window.aymTranslate(value) : value;
         }
         var isSingle = n === 1;
         var isPair = n === 2;
