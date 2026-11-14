@@ -9560,12 +9560,12 @@ body.ns-viewer:not(.ns-can-add-entry) #wsDockAdd{display:none!important}
 <div class="form-group" id="loginPasswordGroup"><label><i class="fas fa-lock"></i> <span data-aym-login-copy="passwordLabel">PASSWORD</span></label><input type="password" id="loginPassword" placeholder="Enter Password" autocomplete="current-password"></div>
 <div class="login-error" id="loginError"></div>
 <button class="btn-login" id="loginSubmitBtn" onclick="doLogin()"><i class="fas fa-right-to-bracket" aria-hidden="true"></i> <span data-aym-login-copy="adminLoginButton">Log in</span></button>
-<button class="btn-login" id="partyOtpLoginBtn" type="button" style="display:none" onclick="window.AYMPO&&window.AYMPO.loginWithPhone?window.AYMPO.loginWithPhone(document.getElementById('loginUsername').value):showToast('OTP login is unavailable.')"><i class="fas fa-right-to-bracket"></i> <span data-aym-login-copy="continueOtp">Continue with OTP</span></button>
+<button class="btn-login" id="partyOtpLoginBtn" type="button" style="display:none" onclick="window.AYMPartyPasswordLogin?window.AYMPartyPasswordLogin.open(document.getElementById('loginUsername').value):showToast('Party password login is unavailable. Reload the page and try again.')"><i class="fas fa-right-to-bracket"></i> <span data-aym-login-copy="continueOtp">Party Password Login</span></button>
 <p class="ns-party-otp-note" data-aym-login-copy="otpDeliveryNote">A verification email is sent to your registered email.</p>
 <p class="ns-mobile-party-note"><i class="fas fa-users" aria-hidden="true"></i> <span data-aym-login-copy="mobilePartyQrNote">The same public QR works for every Party. Never scan the Admin Cloud Join QR.</span></p>
 <div class="login-links">
 <a id="loginCreateAdminLink" onclick="showSignupForm()"><i class="fas fa-user-plus"></i> <span data-aym-login-copy="createAdmin">Create new Admin</span></a>
-<a id="loginCreatePartyLink" style="display:none" onclick="window.AYMPO&&window.AYMPO.start?window.AYMPO.start():showToast('Party registration is unavailable.')"><i class="fas fa-user-plus"></i> <span data-aym-login-copy="createPartyAccount">પાર્ટી ખાતું બનાવો</span></a>
+<a id="loginCreatePartyLink" style="display:none" onclick="window.AYMPartyPasswordLogin?window.AYMPartyPasswordLogin.setup(document.getElementById('loginUsername').value):showToast('Party password setup is unavailable. Reload the page and try again.')"><i class="fas fa-key"></i> <span data-aym-login-copy="setupPartyPassword">Set / Reset Party Password</span></a>
 <a id="loginPartyHelpLink" style="display:none" onclick="showToast(window.aymLoginCopy?window.aymLoginCopy('partyHelp'):'Ask your Admin to confirm your registered mobile and email.')"><i class="fas fa-circle-question"></i> <span data-aym-login-copy="needHelp">મદદ જોઈએ?</span></a>
 <a id="loginVerifyPartyLink" style="display:none;" onclick="showVerifyMobileForm()"><i class="fas fa-phone"></i> મોબાઇલ ચકાસો</a>
 <a id="loginForgotLink" onclick="showForgotForm()"><i class="fas fa-question-circle"></i> <span data-aym-login-copy="forgotPassword">Forgot password?</span></a>
@@ -25271,7 +25271,7 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
    3) સેટિંગ્સ → અપડેટ માં જાતે તપાસી શકાય + લિંક સેટ કરી શકાય
    બધું try/catch માં — એપના બીજા કામમાં દખલ નહીં. */
 (function () {
-var APP = { version: '1.2.93', code: 93 };
+var APP = { version: '1.2.94', code: 94 };
   window.AYM_APP = APP;
   /* Android એપમાં મૂળ લિંક મૂકવી હોય તો અહીં લખો (ખાલી = એપ જ્યાં છે ત્યાં version.json) */
   window.AYM_UPDATE_URL = '';
@@ -29654,10 +29654,10 @@ var APP = { version: '1.2.93', code: 93 };
 }
 </style>
 <script type="application/json" id="aymVersionJson">{
-"version": "1.2.93",
-  "code": 92,
-  "date": "2026-11-13",
-  "notes": "Party OTP resend interval reduced to 10 seconds",
+"version": "1.2.94",
+  "code": 94,
+  "date": "2026-11-14",
+  "notes": "Party password login and email verified password setup",
   "versionCode": 92
 }</script>
 <script type="application/json" id="aymSyncConfig">{
@@ -45028,10 +45028,11 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   COPY.en.adminUsernamePlaceholder='Enter admin username'; COPY.gu.adminUsernamePlaceholder='એડમિન યુઝરનેમ નાખો'; COPY.hi.adminUsernamePlaceholder='एडमिन यूज़रनेम दर्ज करें';
   COPY.en.partyMobilePlaceholder='Enter your registered mobile'; COPY.gu.partyMobilePlaceholder='તમારો નોંધાયેલ મોબાઇલ દાખલ કરો'; COPY.hi.partyMobilePlaceholder='अपना पंजीकृत मोबाइल दर्ज करें';
   COPY.en.adminLoginButton='Log in'; COPY.gu.adminLoginButton='લોગિન કરો'; COPY.hi.adminLoginButton='लॉग इन';
-  COPY.en.continueOtp='Continue with OTP'; COPY.gu.continueOtp='OTPથી આગળ વધો'; COPY.hi.continueOtp='OTP से आगे बढ़ें';
+  COPY.en.continueOtp='Party Password Login'; COPY.gu.continueOtp='પાર્ટી પાસવર્ડથી લોગિન'; COPY.hi.continueOtp='पार्टी पासवर्ड से लॉगिन';
   COPY.en.otpDeliveryNote='A verification email is sent to your registered email.'; COPY.gu.otpDeliveryNote='નોંધાયેલા ઇમેલ પર verification મોકલવામાં આવશે. SMS જરૂરી નથી.'; COPY.hi.otpDeliveryNote='दर्ज ईमेल पर सत्यापन भेजा जाएगा। SMS आवश्यक नहीं है।';
   COPY.en.mobilePartyQrNote='The same public QR works for every Party. Never scan the Admin Cloud Join QR.'; COPY.gu.mobilePartyQrNote='આ જ જાહેર QR દરેક પાર્ટી માટે છે. Adminનું Cloud Join QR સ્કેન ન કરો.'; COPY.hi.mobilePartyQrNote='यह सार्वजनिक QR हर पार्टी के लिए है। Admin का Cloud Join QR स्कैन न करें।';
   COPY.en.createPartyAccount='Create Party account'; COPY.gu.createPartyAccount='પાર્ટી ખાતું બનાવો'; COPY.hi.createPartyAccount='पार्टी खाता बनाएँ';
+  COPY.en.setupPartyPassword='Set / Reset Party Password'; COPY.gu.setupPartyPassword='પાર્ટી પાસવર્ડ સેટ / બદલો'; COPY.hi.setupPartyPassword='पार्टी पासवर्ड सेट / बदलें';
   COPY.en.needHelp='Need help?'; COPY.gu.needHelp='મદદ જોઈએ?'; COPY.hi.needHelp='मदद चाहिए?';
   COPY.en.partyHelp='Ask your Admin to confirm your registered mobile and email.'; COPY.gu.partyHelp='તમારો મોબાઇલ અને ઇમેલ નોંધાયેલા છે કે નહીં તે એડમિનને પૂછો.'; COPY.hi.partyHelp='अपना मोबाइल और ईमेल दर्ज है या नहीं, Admin से पूछें।';
   COPY.en.createAdmin='Create new Admin'; COPY.gu.createAdmin='નવો એડમિન બનાવો'; COPY.hi.createAdmin='नया एडमिन बनाएँ';
@@ -45421,6 +45422,6 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   }
 }
 </style>
-<script src="./party-mobile-email-login.js?v=party-password-2"></script>
+<script src="./party-mobile-email-login.js?v=party-password-3"></script>
 </body>
 </html>

@@ -123,13 +123,20 @@
       showError(root,passwordSaved?'પાસવર્ડ સાચવાયો છે, પરંતુ તરત login થયું નથી. '+detail:'Party પાસવર્ડ સેટ થઈ શક્યો નથી. '+detail);button.disabled=false;button.textContent=passwordSaved?'ફરી લોગિન કરો':'Party પાસવર્ડ સેટ કરો';if(passwordSaved)button.onclick=function(){signIn(root,password).catch(function(){showError(root,'મોબાઇલ અને Party પાસવર્ડ તપાસીને ફરી લોગિન કરો.');});};
     }
   }
+  function currentMobile(){var input=document.getElementById('loginUsername');return input&&input.value||'';}
+  function loginEntry(mobile){shell(mobile||'');}
+  function setupEntry(mobile){var root=shell(mobile||'');sendOtp(root,root.querySelector('[data-set]'));}
+  window.AYMPartyPasswordLogin={open:loginEntry,setup:setupEntry};
   function install(){
     var api=window.AYMPO;if(!api)return;
-    if(api.loginWithPhone&&api.loginWithPhone.__aymSeparatePassword)return;
-    var loginEntry=function(mobile){shell(mobile||'');};loginEntry.__aymSeparatePassword=true;
-    api.loginWithPhone=loginEntry;api.loginWithOtp=loginEntry;
+    if(!api.loginWithPhone||!api.loginWithPhone.__aymSeparatePassword){
+      loginEntry.__aymSeparatePassword=true;
+      api.loginWithPhone=loginEntry;api.loginWithOtp=loginEntry;
+    }
     var link=document.getElementById('partyOtpLoginBtn');
-    if(link){link.onclick=function(){loginEntry(document.getElementById('loginUsername')&&document.getElementById('loginUsername').value);};var label=link.querySelector('[data-aym-login-copy]');if(label)label.textContent='Party password login';}
+    if(link){link.onclick=function(){loginEntry(currentMobile());};}
+    var setup=document.getElementById('loginCreatePartyLink');
+    if(setup){setup.onclick=function(){setupEntry(currentMobile());};}
     if(!window.__aymPartyPasswordRestoreStarted){
       var saved={};try{saved=JSON.parse(localStorage.getItem('aym_phone_auth_v1')||'{}')||{};}catch(_){}
       if(saved.portal&&typeof api.restorePartyCloud==='function'){
