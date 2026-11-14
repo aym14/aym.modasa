@@ -28276,6 +28276,12 @@ var APP = { version: '1.2.96', code: 96 };
     return out;
   }
 
+  // The guarantor undertaking is translated as a sentence assembled from separate spans.
+  // Correct its base prefix and default two-guarantor wording before the first language pass.
+  DICT.en['આથી'] = 'Hereby,';
+  DICT.en['અમો જણાવેલ બંને જામીનદાર'] = 'the two named guarantors';
+  DICT.en['અમો જણાવેલ તમામ જામીનદારો'] = 'the named guarantors';
+
   function translate(str, allowPhraseFallback) {
     if (!str) return str;
     var d = DICT[lang];
