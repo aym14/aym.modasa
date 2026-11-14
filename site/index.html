@@ -30206,8 +30206,8 @@ var APP = { version: '1.2.96', code: 96 };
         if (borrowerDec) borrowerDec.innerHTML = borrowerDec.innerHTML.replace(/એક સભ્યને|(?:બે|\d+)\s*સભ્યોને/g, phrase);
 
         Object.assign(DICT.en, {
-          'આથી': 'Hereby,',
           'અમો જણાવેલ બંને જામીનદાર': 'we, the two named guarantors',
+          'અમો જણાવેલ તમામ જામીનદારો': 'we, the named guarantors',
           'અમો બંને જામીનદારની': 'the two guarantors’',
           'અમો બંને જામીનદારો કોઈ વાંધો કે તકરાર લઈશું નહીં': 'we, the two guarantors, will have no objection or dispute',
           'અમો બંને જામીનદારોએ અન્સાર યુવા મંડળની લોનની શરતો વાંચીને સમજીને લોન લેનારના જામીન થઈએ છીએ': 'we, the two guarantors, have read and understood Ansar Yuva Mandal’s loan terms and stand as guarantors for the borrower',
@@ -30228,6 +30228,10 @@ var APP = { version: '1.2.96', code: 96 };
         }
         var isSingle = n === 1;
         var isPair = n === 2;
+        var guarantorDeclaration = document.querySelector('#loanFormPaper #lfGuarantorDeclarationSection .loan-declaration');
+        if (guarantorDeclaration && window.aymGetLang && window.aymGetLang() === 'en' && guarantorDeclaration.firstChild && guarantorDeclaration.firstChild.nodeType === 3) {
+          guarantorDeclaration.firstChild.nodeValue = guarantorDeclaration.firstChild.nodeValue.replace(/^We hereby\s*/, 'Hereby, ');
+        }
         setText('lfGDecCollective', isSingle ? 'હું જણાવેલ જામીનદાર' : (isPair ? 'અમો જણાવેલ બંને જામીનદાર' : 'અમો જણાવેલ તમામ જામીનદારો'));
         setText('lfGDecPromise', isSingle ? 'બાહેધરી આપું છું' : 'બાહેધરી આપીએ છીએ');
         setText('lfGDecFee', isSingle ? 'મારી' : (isPair ? 'અમો બંને જામીનદારની' : 'અમો તમામ જામીનદારોની'));
