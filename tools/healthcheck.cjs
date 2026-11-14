@@ -26,6 +26,7 @@ assert.match(html, /ફોટો અહીં અપલોડ કરો/, 'loan 
 assert.match(html, /if \(node\) node\.textContent = typeof window\.aymTranslate === 'function' \? window\.aymTranslate\(value\) : value;/, 'dynamic guarantor declaration text must follow the selected language');
 assert.ok(html.includes('guarantorDeclaration.firstChild.nodeValue = guarantorDeclaration.firstChild.nodeValue.replace('), 'English guarantor declaration must avoid a duplicated subject');
 assert.ok(html.includes("DICT.en['આથી'] = 'Hereby,';") && html.includes("DICT.en['અમો જણાવેલ બંને જામીનદાર'] = 'the two named guarantors';"), 'initial English translation must render the assembled guarantor declaration coherently');
+assert.ok(html.includes("nsTaskTile('availableGuarantors', 'fa-users', 'Available Guarantors'") && html.includes("case 'availableGuarantors':"), 'Party dashboard must expose a working Available Guarantors task');
 assert.match(html, /અમો બંને જામીનદારોએ અન્સાર યુવા મંડળની લોનની શરતો વાંચીને સમજીને લોન લેનારના જામીન થઈએ છીએ': 'we, the two guarantors/, 'two-guarantor English declaration must be translated as one complete sentence');
 assert.match(html, /const fallbackMobile = user\.username && String\(user\.username\)\.indexOf\('@'\) < 0 \? user\.username : '';/, 'Party email usernames must not appear in the mobile field');
 const migration = fs.readFileSync('supabase/migrations/202611140002_party_invite_self_registration.sql', 'utf8');
