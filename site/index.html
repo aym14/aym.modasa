@@ -45176,7 +45176,7 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
     document.querySelectorAll('[data-aym-login-copy]').forEach(function(el){var value=copy[el.getAttribute('data-aym-login-copy')];if(value)el.textContent=value;});
     var hint=document.getElementById('qrJoinManualHint');if(hint)hint.textContent=copy.manualHint;
     var select=document.getElementById('aymLoginLanguageSelect');if(select){select.value=language;select.setAttribute('aria-label',copy.language);}
-    var mobile=document.getElementById('loginUsername'),form=document.getElementById('loginFormBlock');if(mobile){var isParty=form&&form.dataset.role==='party';mobile.placeholder=copy[isParty?'partyMobilePlaceholder':'adminUsernamePlaceholder']||mobile.placeholder;}
+    var mobile=document.getElementById('loginUsername'),form=document.getElementById('loginFormBlock');if(mobile){var isParty=form&&form.dataset.role==='party';mobile.placeholder=copy[isParty?'partyEmailPlaceholder':'adminUsernamePlaceholder']||mobile.placeholder;}
   }
   window.aymRefreshLoginCopy=function(){paintLoginCopy(currentLang());};
   window.aymApplyLoginLanguage=function(language){

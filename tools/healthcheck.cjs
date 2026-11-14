@@ -19,6 +19,7 @@ assert.match(html, /party_invite/, 'invite registration entry point is required'
 assert.match(html, /registerPartyByInvite/, 'verified Party registration API is required');
 assert.match(html, /completeInviteRegistration/, 'verified Party password setup is required');
 assert.match(fs.readFileSync('site/party-cloud.js', 'utf8'), /party-requests\.js\?v=party-request-button-1/, 'request UI cache version must be explicit');
+assert.match(html, /copy\[isParty\?'partyEmailPlaceholder':'adminUsernamePlaceholder'\]/, 'Party login must prompt for the registered email');
 const migration = fs.readFileSync('supabase/migrations/202611140002_party_invite_self_registration.sql', 'utf8');
 assert.match(migration, /security definer/i, 'registration RPC must enforce server-side authorization');
 assert.match(migration, /aym_verified_email\(\)/i, 'registration RPC must require verified email');
