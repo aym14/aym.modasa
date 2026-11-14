@@ -1,6 +1,6 @@
-/* AYM Smart Ledger v1.2.95 — Party email verification password setup fix */
+/* AYM Smart Ledger v1.2.96 — verified Party invite registration */
 const CACHE_PREFIX = 'aym-smart-ledger-pwa-';
-const CACHE_NAME = CACHE_PREFIX + 'v1.2.95-party-password-setup-fix';
+const CACHE_NAME = CACHE_PREFIX + 'v1.2.96-party-invite-registration';
 const APP_SHELL = ['./index.html', './party-cloud.js', './party-requests.js', './party-mobile-email-login.js', './manifest.json', './icons/app-icon-192.png', './icons/app-icon-512.png', './icons/app-icon-maskable-512.png'];
 
 self.addEventListener('install', (event) => {

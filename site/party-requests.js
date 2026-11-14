@@ -122,6 +122,18 @@
       save.onclick=async function(){save.disabled=true;error.textContent='';try{await window.AYMPO.updateAdminPartyForm(r.id,select.value,note.value);error.style.color='#087f70';error.textContent='સાચવ્યું';}catch(e){error.style.color='';error.textContent=e.message||'સાચવી શકાયું નથી.';}finally{save.disabled=false;}};content.appendChild(card);});
     }catch(e){content.textContent=e.message||'અરજીઓ લાવી શકાઈ નથી. Supabase migration અને Admin જોડાણ તપાસો.';}
   }
+  function makeInviteToken(){var bytes=new Uint8Array(32);crypto.getRandomValues(bytes);return Array.from(bytes).map(function(b){return b.toString(16).padStart(2,'0');}).join('');}
+  async function inviteDigest(token){var hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));return Array.from(new Uint8Array(hash)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');}
+  async function createPartyInvite(){
+    var wrap=shell('નવી Party માટે નોંધણી લિંક'),content=wrap.querySelector('.aympr-content');content.textContent='સુરક્ષિત લિંક બનાવાઈ રહી છે…';
+    try{
+      if(!window.AYMPO||!window.AYMPO.createPartyRegistrationInvite)throw new Error('નવી સુવિધા માટે app refresh કરો.');
+      var token=makeInviteToken(),expires=await window.AYMPO.createPartyRegistrationInvite(await inviteDigest(token));
+      var link=new URL(location.href);link.search='';link.hash='';link.searchParams.set('party_invite',token);
+      content.innerHTML='<p>આ લિંક એક જ Partyને share કરો. Party પોતાનું નામ, મોબાઇલ અને વિગતો ભરીને ઈમેલ OTP verify કરશે. પછી તેની વિગતો Admin ledgerમાં સીધી save થશે અને Admin app online/Auto Sync ચાલુ હોય ત્યારે આપમેળે દેખાશે. આ લિંક એક નોંધણી માટે અને 1 વર્ષ સુધી માન્ય છે. નવી લિંક બનાવશો તો હાલની લિંક બંધ થશે.</p><label for="aymprInviteUrl">Party registration link</label><input id="aymprInviteUrl" readonly value="'+esc(link.href)+'"><div class="aympr-meta">સમાપ્તિ: '+esc(new Date(expires).toLocaleDateString('gu-IN'))+'</div><div class="aympr-error" aria-live="polite"></div><div class="aympr-actions"><button type="button" data-copy>લિંક copy કરો</button></div>';
+      content.querySelector('[data-copy]').onclick=async function(){try{await navigator.clipboard.writeText(link.href);content.querySelector('.aympr-error').style.color='#087f70';content.querySelector('.aympr-error').textContent='લિંક copy થઈ ગઈ.';}catch(_){var input=content.querySelector('#aymprInviteUrl');input.focus();input.select();content.querySelector('.aympr-error').textContent='લિંક પસંદ કરી છે—Copy કરો.';}};
+    }catch(e){content.innerHTML='<div class="aympr-error" aria-live="polite"></div>';content.querySelector('.aympr-error').textContent=e.message||'Invite link બનાવી શકાઈ નથી. Supabase migration અને Admin login તપાસો.';}
+  }
   function mount() {
     if (!window.AYMPO) return;
     // Remove the duplicate fixed launcher; the dashboard already has the form tasks.
@@ -146,7 +158,7 @@
     if (!isAdmin) { if (button) button.remove(); return; }
     if (!button) { button = document.createElement('button'); button.id = buttonId; button.type = 'button'; document.body.appendChild(button); }
     button.textContent = '📥 પાર્ટી અરજીઓ';
-    button.onclick = async function(){var wrap=shell('પાર્ટી અરજીઓ'),content=wrap.querySelector('.aympr-content');content.innerHTML='<p>પાર્ટી તરફથી આવેલ અરજીઓ અને સામાન્ય વિનંતીઓ જુઓ.</p><div class="aympr-actions" style="justify-content:flex-start"><button type="button" data-open-forms>લોન / જામીન ફોર્મ</button><button type="button" class="aympr-secondary" data-open-requests>સામાન્ય વિનંતીઓ</button></div>';wrap.querySelector('[data-open-forms]').onclick=showAdminForms;wrap.querySelector('[data-open-requests]').onclick=showAdminInbox;};
+    button.onclick = async function(){var wrap=shell('પાર્ટી અરજીઓ'),content=wrap.querySelector('.aympr-content');content.innerHTML='<p>પાર્ટી તરફથી આવેલ અરજીઓ જુઓ અથવા નવી Party માટે નોંધણી લિંક બનાવો.</p><div class="aympr-actions" style="justify-content:flex-start"><button type="button" data-open-invite>નવી Party નોંધણી લિંક</button><button type="button" data-open-forms>લોન / જામીન ફોર્મ</button><button type="button" class="aympr-secondary" data-open-requests>સામાન્ય વિનંતીઓ</button></div>';wrap.querySelector('[data-open-invite]').onclick=createPartyInvite;wrap.querySelector('[data-open-forms]').onclick=showAdminForms;wrap.querySelector('[data-open-requests]').onclick=showAdminInbox;};
   }
   setInterval(mount, 1000); document.addEventListener('DOMContentLoaded', mount);
 })();
