@@ -39289,7 +39289,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
      ===================================================================== */
   function pwStrength(v) {
     var s = 0;
-    if (v.length >= 6) s++;
+    if (v.length >= 8) s++;
     if (v.length >= 10) s++;
     if (/[A-Z]/.test(v) && /[a-z]/.test(v)) s++;
     if (/\d/.test(v)) s++;
@@ -39302,7 +39302,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     setSteps(['મોબાઇલ', 'વિગત + ઇમેલ', 'OTP', 'ખાતું'], 3);
     var b = open('પાર્ટી ખાતું પૂરું કરો', 'ઇમેલ ચકાસાઈ ગયો — હવે ખાતું બનાવો');
     if(S.registrationInvite){
-      b.innerHTML='<div class="aympo-tick"><i class="fas fa-circle-check"></i> ઈમેલ વેરિફાય થઈ ગયો: <b>'+esc(S.email)+'</b></div><p class="aympo-lead">તમારો Party પાસવર્ડ બનાવો. વિગતો સીધી Admin ledgerમાં save અને sync થશે.</p>'+field('નવો Party પાસવર્ડ <em>*</em>','aympoInvitePw','type="password" autocomplete="new-password" minlength="6" maxlength="6" placeholder="ચોક્કસ 6 અક્ષર"')+field('પાસવર્ડ ફરી લખો <em>*</em>','aympoInvitePw2','type="password" autocomplete="new-password" minlength="6" maxlength="6" placeholder="એ જ પાસવર્ડ ફરી લખો"')+'<div class="aympo-err" id="aympoErr"></div><button type="button" class="aympo-btn" id="aympoCreate">નોંધણી અને પાસવર્ડ સાચવો</button>';
+      b.innerHTML='<div class="aympo-tick"><i class="fas fa-circle-check"></i> ઈમેલ વેરિફાય થઈ ગયો: <b>'+esc(S.email)+'</b></div><p class="aympo-lead">તમારો Party પાસવર્ડ બનાવો. વિગતો સીધી Admin ledgerમાં save અને sync થશે.</p>'+field('નવો Party પાસવર્ડ <em>*</em>','aympoInvitePw','type="password" autocomplete="new-password" minlength="8" maxlength="64" placeholder="ઓછામાં ઓછા 8 અક્ષર"')+field('પાસવર્ડ ફરી લખો <em>*</em>','aympoInvitePw2','type="password" autocomplete="new-password" minlength="8" maxlength="64" placeholder="એ જ પાસવર્ડ ફરી લખો"')+'<div class="aympo-err" id="aympoErr"></div><button type="button" class="aympo-btn" id="aympoCreate">નોંધણી અને પાસવર્ડ સાચવો</button>';
       q('#aympoCreate').onclick=function(){completeInviteRegistration(this);};return;
     }
     b.innerHTML =
@@ -39315,7 +39315,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
 
   async function completeInviteRegistration(btn){
     var password=String(q('#aympoInvitePw').value||''),confirm=String(q('#aympoInvitePw2').value||'');err('');
-    if(password.length!==6)return err('પાસવર્ડ ચોક્કસ 6 અક્ષરનો હોવો જોઈએ.');
+    if(password.length<8||password.length>64)return err('પાસવર્ડ 8 થી 64 અક્ષરનો હોવો જોઈએ.');
     if(password!==confirm)return err('બંને પાસવર્ડ સરખા નથી.');
     if(!S.emailAuth||!S.emailAuth.access_token)return err('ઈમેલ verification session મળ્યું નથી. ઈમેલ OTP ફરી verify કરો.');
     btnBusy(btn,true,'સાચવી રહ્યું છે…');
@@ -39344,7 +39344,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     var pw2 = skipPw ? '' : (q('#aympoPw2').value || '');
     err('');
     if (!skipPw) {
-      if (pw.length < 6) return err('પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરનો રાખો.');
+      if (pw.length < 8 || pw.length > 64) return err('પાસવર્ડ 8 થી 64 અક્ષરનો રાખો.');
       if (pw !== pw2) return err('બંને પાસવર્ડ મળતા નથી.');
     }
     var party = partyById(S.partyId);
@@ -45512,6 +45512,6 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   }
 }
 </style>
-<script src="./party-mobile-email-login.js?v=party-email-password-six-1"></script>
+<script src="./party-mobile-email-login.js?v=party-email-password-eight-1"></script>
 </body>
 </html>
