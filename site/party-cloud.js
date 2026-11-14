@@ -22,14 +22,7 @@
     return result;
   }
   window.AYMPartyCloud = { rows };
-  function session(){
-    try {
-      // currentSession is a global lexical binding in the legacy app, not a
-      // window property. Use the bridge shared with its inline auth module.
-      if (typeof window.CS === 'function') return window.CS() || null;
-      return window.currentSession || null;
-    } catch (e) { return null; }
-  }
+  function session(){try{return window.currentSession||null;}catch(e){return null;}}
   function config(){
     var saved={};try{saved=JSON.parse(localStorage.getItem('aym_phone_auth_v1')||'{}')||{};}catch(e){}
     var url='';try{url=typeof window.supabaseBaseUrl==='function'?window.supabaseBaseUrl():'';}catch(e){}
@@ -46,7 +39,9 @@
       try{localStorage.setItem('aym_phone_auth_v1',JSON.stringify(saved));}catch(e){}
     }
     var check=await fetch(cfg.url+'/auth/v1/user',{headers:{apikey:cfg.key,Authorization:'Bearer '+auth.access_token},cache:'no-store'}),user=await check.json().catch(function(){return null;});
-    if(!check.ok||!user||!user.email_confirmed_at||String(user.email||'').trim().toLowerCase()!==String(saved.email||'').trim().toLowerCase())throw new Error('Verified Party email required. Sign in again.');
+    var emailSession=!!(user&&user.email_confirmed_at&&String(user.email||'').trim().toLowerCase()===String(saved.email||'').trim().toLowerCase());
+    var partyPasswordSession=!!(user&&user.email_confirmed_at&&user.app_metadata&&user.app_metadata.aym_party_login===true);
+    if(!check.ok||!user||String(user.id||'')!==String(saved.user_id||'')||(!emailSession&&!partyPasswordSession))throw new Error('Verified Party session required. Sign in again.');
     return {cfg:cfg,auth:auth,user:user,saved:saved};
   }
   var api=window.AYMPO;
@@ -107,4 +102,3 @@
     if(!location.hash.includes('access_token=')&&window.AYMPO&&window.AYMPO.restorePartyCloud)window.AYMPO.restorePartyCloud();
   },1500);
 })();
-
