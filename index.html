@@ -18409,7 +18409,8 @@ LedgerFeatures.reports.generateReport = function () {
   let filtered = (Array.isArray(entries) ? entries : []).filter(e => e && typeof e === 'object' && !Array.isArray(e));
   if (isParty()) {
     const pid = getCurrentPartyId();
-    if (pid) filtered = filtered.filter(e => e.partyId === pid);
+    /* Fail closed: a Party report must never fall back to the whole ledger. */
+    filtered = pid ? filtered.filter(e => String(e.partyId || '') === String(pid)) : [];
   }
   if (start) filtered = filtered.filter(e => e.date >= start);
   if (end) filtered = filtered.filter(e => e.date <= end);
@@ -25270,7 +25271,7 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
    3) સેટિંગ્સ → અપડેટ માં જાતે તપાસી શકાય + લિંક સેટ કરી શકાય
    બધું try/catch માં — એપના બીજા કામમાં દખલ નહીં. */
 (function () {
-var APP = { version: '1.2.89', code: 92 };
+var APP = { version: '1.2.93', code: 93 };
   window.AYM_APP = APP;
   /* Android એપમાં મૂળ લિંક મૂકવી હોય તો અહીં લખો (ખાલી = એપ જ્યાં છે ત્યાં version.json) */
   window.AYM_UPDATE_URL = '';
@@ -29653,7 +29654,7 @@ var APP = { version: '1.2.89', code: 92 };
 }
 </style>
 <script type="application/json" id="aymVersionJson">{
-"version": "1.2.89",
+"version": "1.2.93",
   "code": 92,
   "date": "2026-11-13",
   "notes": "Party OTP resend interval reduced to 10 seconds",
@@ -40215,7 +40216,8 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     b.innerHTML=S.phoneCandidates.map(function(c,i){return '<label class="aympo-opt"><input type="radio" name="aympoPhoneAccount" value="'+i+'"'+(i===0?' checked':'')+'><span>'+esc(c.user.name||c.party.name)+' · '+esc(maskEmail(partyCandidateEmail(c)))+'</span></label>';}).join('')+'<div class="aympo-err" id="aympoErr"></div><button type="button" id="aympoPhoneAccountGo" class="aympo-btn">Send verification email</button>';
     q('#aympoPhoneAccountGo').onclick=function(){var selected=q('input[name="aympoPhoneAccount"]:checked');beginDualPartyOtp(S.phoneCandidates[selected?Number(selected.value):0],this);};
   }
-  function partyEmailIdentity(auth,email){return !!(auth&&auth.access_token&&auth.refresh_token&&auth.user&&auth.user.email_confirmed_at&&nMail(auth.user.email)===nMail(email));}
+  function isSeparatePartyAuth(auth){return !!(auth&&auth.user&&auth.user.email_confirmed_at&&auth.user.app_metadata&&auth.user.app_metadata.aym_party_login===true);}
+  function partyEmailIdentity(auth,email){return !!(auth&&auth.access_token&&auth.refresh_token&&auth.user&&auth.user.email_confirmed_at&&nMail(auth.user.email)===nMail(email))||isSeparatePartyAuth(auth);}
   async function verifyPhoneLoginOtp(btn){
     var code=qa('#aympoEmailOtpBoxes input').map(function(b){return b.value;}).join('');err('');
     if(code.length!==8)return err('Enter the complete 8-digit email code.');
@@ -40251,13 +40253,14 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     qa('[data-cloud-party]',b).forEach(function(button){button.onclick=function(){adoptPartyCloud(records[Number(this.dataset.cloudParty)],auth);};});
   }
   function adoptPartyCloud(row,auth){
-    var data=row&&row.data,p=data&&data.parties&&data.parties[0];
-    if(!partyEmailIdentity(auth,S.email)||!p||String(p.id)!==row.party_ref||nMail(row.email)!==S.email)throw new Error('Party identity mismatch.');
+    var data=row&&row.data,p=data&&data.parties&&data.parties[0],rowEmail=nMail(row&&row.email),separate=isSeparatePartyAuth(auth);
+    if(!partyEmailIdentity(auth,separate?rowEmail:S.email)||!p||String(p.id)!==row.party_ref||!rowEmail||(!separate&&rowEmail!==S.email))throw new Error('Party identity mismatch.');
+    S.email=rowEmail;
     // Replace every data collection; never merge an Admin cache into a Party view.
     ['entries','parties','categories','loanForms','moduleRecords','customModules'].forEach(function(k){SET(k,Array.isArray(data[k])?data[k]:[]);});
     ['messages','guarantorChangeForms','LOAN_PLANS','LOAN_TERMS','GC_TERMS'].forEach(function(k){SET(k,[]);});
     window.aymAccounts=[];window.aymSectionKinds=[];
-    var user={id:'cloud:'+row.organization_id+':'+row.sync_key+':'+row.party_ref,role:'party',partyId:p.id,name:p.name||'Party',username:S.email,email:S.email,authProvider:'supabase-party-cloud',emailVerified:true};
+    var user={id:'cloud:'+row.organization_id+':'+row.sync_key+':'+row.party_ref,role:'party',partyId:p.id,name:p.name||'Party',username:S.email||p.mobile,email:S.email,authProvider:'supabase-party-cloud',emailVerified:true};
     SET('users',[user]);S.phoneAuth=auth;S.emailAuth=auth;S.mobile=p.mobile||'';
     window.aymPartyReadOnlyCloud=true;
     var storageKeys=G('S',{});if(storageKeys.session)localStorage.removeItem(storageKeys.session);
@@ -45418,5 +45421,6 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   }
 }
 </style>
+<script src="./party-mobile-email-login.js?v=party-password-2"></script>
 </body>
 </html>

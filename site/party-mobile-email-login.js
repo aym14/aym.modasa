@@ -30,7 +30,7 @@
   async function postJson(url,headers,body){
     var response=await fetch(url,{method:'POST',headers:headers,body:JSON.stringify(body)});
     var data=await response.json().catch(function(){return {};});
-    if(!response.ok){var e=new Error(data.msg||data.error_description||data.message||data.error||'Request failed.');e.status=response.status;throw e;}
+    if(!response.ok){var e=new Error(data.msg||data.error_description||data.message||data.error||'Request failed.');e.status=response.status;e.code=String(data.error||data.code||'');throw e;}
     return data;
   }
   async function otp(body){
@@ -50,11 +50,11 @@
     }
     var response=await fetch(c.url+'/rest/v1/rpc/aym_my_party_data',{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+auth.access_token,'Content-Type':'application/json'},body:'{}',cache:'no-store'});
     var rows=await response.json().catch(function(){return null;});
-    if(!response.ok||!Array.isArray(rows))throw new Error('Party data તપાસી શકાયો નથી. Admin setup તપાસો.');
+    if(!response.ok||!Array.isArray(rows)){var dataError=new Error('Party data access failed.');dataError.status=response.status;dataError.code='party_data_forbidden';throw dataError;}
     var matches=[];
     rows.forEach(function(row){var parties=row&&row.data&&Array.isArray(row.data.parties)?row.data.parties:[];parties.forEach(function(p){if(p&&norm(p.mobile)===state.mobile&&String(p.id||'')===String(row.party_ref||''))matches.push(row);});});
     var identities=Array.from(new Set(matches.map(function(row){return String(row.organization_id)+':'+String(row.party_ref);} )));
-    if(identities.length!==1){authLogout(c,auth.access_token);throw new Error('આ mobile માટે મેળ ખાતો એકમાત્ર Party record મળ્યો નથી. Admin પાસે Party mapping તપાસાવો.');}
+    if(identities.length!==1){authLogout(c,auth.access_token);var mappingError=new Error('Party record mapping failed.');mappingError.code=identities.length?'party_mobile_ambiguous':'party_record_not_synced';throw mappingError;}
     localStorage.setItem('aym_phone_auth_v1',JSON.stringify({access_token:auth.access_token,refresh_token:auth.refresh_token,expires_at:Date.now()+Number(auth.expires_in||3600)*1000,user_id:user.id,phone:phone,email:'',portal:true,authMode:'party_password',supabaseUrl:c.url,publishableKey:c.key}));
     root.querySelector('.error').style.color='#087f70';root.querySelector('.error').textContent='Party ખાતું ખોલી રહ્યા છીએ…';
     setTimeout(function(){location.reload();},250);
@@ -65,7 +65,16 @@
     if(mobile.length!==10){showError(root,'યોગ્ય 10 અંકનો મોબાઇલ નંબર નાખો.');return;}
     if(!password){showError(root,'તમારો Party પાસવર્ડ નાખો.');return;}
     state.mobile=mobile;button.disabled=true;button.textContent='ચકાસાઈ રહ્યું છે…';
-    try{await signIn(root,password);}catch(_){showError(root,'લોગિન થઈ શક્યું નથી. મોબાઇલ/પાસવર્ડ તપાસો અથવા ઈમેલ OTPથી પાસવર્ડ સેટ કરો.');button.disabled=false;button.textContent='લોગિન કરો';}
+    try{await signIn(root,password);}catch(e){
+      var messages={
+        invalid_party_credentials:'મોબાઇલ અથવા પાસવર્ડ ખોટો છે, અથવા આ Partyનો પાસવર્ડ હજી સેટ થયો નથી. “પાસવર્ડ સેટ / ભૂલાયો?”થી OTP ચકાસીને પાસવર્ડ બનાવો.',
+        party_mobile_ambiguous:'આ મોબાઇલ નંબર એકથી વધુ Party રેકોર્ડમાં છે. Adminએ duplicate Party રેકોર્ડ સુધારવા પડશે.',
+        party_record_not_synced:'પાસવર્ડ સ્વીકારાયો, પણ Party રેકોર્ડ મળ્યો નથી. Adminએ Partyની વિગતો Sync કરવી પડશે.',
+        party_data_forbidden:'પાસવર્ડ સ્વીકારાયો, પણ Party data access મંજૂર નથી. Adminએ Supabase Party mapping અને permissions તપાસવા પડશે.'
+      };
+      var message=messages[e&&e.code]||(e&&e.status===401?messages.invalid_party_credentials:(e&&e.status?'લોગિન સેવા તરફથી ભૂલ ('+e.status+') આવી. Supabase Edge Function અને Auth logs તપાસો.':'લોગિન માટે સર્વર સાથે જોડાણ ન થયું. ઇન્ટરનેટ તપાસીને ફરી પ્રયાસ કરો.'));
+      showError(root,message);button.disabled=false;button.textContent='લોગિન કરો';
+    }
   }
   async function sendOtp(root,button){
     var mobile=norm(root.querySelector('#aymMobile').value);showError(root,'');
@@ -104,7 +113,15 @@
       if(!response.ok)throw new Error('party_password_setup_failed');
       passwordSaved=true;
       await signIn(root,password);
-    }catch(_){showError(root,passwordSaved?'Party પાસવર્ડ સાચવાયો છે. હવે મોબાઇલ અને આ પાસવર્ડથી ફરી લોગિન કરો.':'Party પાસવર્ડ સેટ થઈ શક્યો નથી. નોંધાયેલ ઈમેલ અને mobile Admin Syncમાં મેળ ખાતા છે તેની ખાતરી કરીને ફરી પ્રયાસ કરો.');button.disabled=false;button.textContent=passwordSaved?'ફરી લોગિન કરો':'Party પાસવર્ડ સેટ કરો';if(passwordSaved)button.onclick=function(){signIn(root,password).catch(function(){showError(root,'મોબાઇલ અને Party પાસવર્ડ તપાસીને ફરી પ્રયાસ કરો.');});};}
+    }catch(e){
+      var setupMessages={
+        party_email_mobile_mismatch:'આ મોબાઇલ અને verified ઈમેલ એક જ synchronized Party રેકોર્ડમાં મળતા નથી. Adminએ Partyનું મોબાઇલ/ઈમેલ સાચું કરીને Sync કરવું પડશે.',
+        party_mobile_ambiguous:'આ મોબાઇલ નંબર એકથી વધુ Party રેકોર્ડમાં છે. Adminએ duplicate રેકોર્ડ સુધારવા પડશે.',
+        email_verification_required:'ઈમેલ ચકાસણી પૂરી થઈ નથી. નોંધાયેલા ઈમેલનો OTP ફરીથી verify કરો.'
+      };
+      var detail=setupMessages[e&&e.code]||(e&&e.status?'પાસવર્ડ setup સેવા તરફથી ભૂલ ('+e.status+') આવી. Supabase Edge Function logs તપાસો.':'નોંધાયેલ ઈમેલ/મોબાઇલ તપાસો અને ઇન્ટરનેટ જોડાણ સાથે ફરી પ્રયાસ કરો.');
+      showError(root,passwordSaved?'પાસવર્ડ સાચવાયો છે, પરંતુ તરત login થયું નથી. '+detail:'Party પાસવર્ડ સેટ થઈ શક્યો નથી. '+detail);button.disabled=false;button.textContent=passwordSaved?'ફરી લોગિન કરો':'Party પાસવર્ડ સેટ કરો';if(passwordSaved)button.onclick=function(){signIn(root,password).catch(function(){showError(root,'મોબાઇલ અને Party પાસવર્ડ તપાસીને ફરી લોગિન કરો.');});};
+    }
   }
   function install(){
     var api=window.AYMPO;if(!api)return;
