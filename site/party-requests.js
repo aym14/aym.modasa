@@ -127,6 +127,13 @@
             termsAccepted: !!form.termsAccepted, guarantors: form.guarantors || []
           }
         };
+        if (!form.borrowerName || !String(form.borrowerName).trim()) throw new Error('લોન લેનારનું નામ લખો.');
+        if (!form.date) throw new Error('અરજીની તારીખ પસંદ કરો.');
+        if (Number(form.planIdx) < 0 || !payload.amount) throw new Error('લોન રકમનો સ્લેબ પસંદ કરો.');
+        if (!form.termsAccepted) throw new Error('લોનની શરતો વાંચીને સ્વીકારો.');
+        for (var gi = 0; gi < Number(form.guarantorsCount || 0); gi++) {
+          if (!form.guarantors[gi] || !String(form.guarantors[gi].name || '').trim()) throw new Error('જામીનદાર નં. ' + (gi + 1) + 'નું નામ લખો.');
+        }
         if (payload.purpose.length < 2) throw new Error('લોન લેવાનું કારણ લખો.');
         if (payload.mobile.replace(/\D/g,'').length < 7) throw new Error('માન્ય મોબાઇલ નંબર લખો.');
         kind = 'loan_application';
