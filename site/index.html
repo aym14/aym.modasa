@@ -28798,7 +28798,7 @@ var APP = { version: '1.2.96', code: 96 };
     return !!(DEFAULTS[r] && DEFAULTS[r][k]);
   }
   window.aymPerm=function(key){
-    if(window.aymPartyReadOnlyCloud) return key==='print';
+    if(window.aymPartyReadOnlyCloud) return key==='print'||key==='loan.apply';
     var r=role(); if(!r) return false;
     if(r==='admin') return true;
     var o=roleObj(r);
