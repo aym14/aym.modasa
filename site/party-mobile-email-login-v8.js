@@ -21,6 +21,7 @@
     var r=document.createElement('div');r.id=overlayId;
     r.innerHTML='<style>#'+overlayId+'{position:fixed;inset:0;z-index:2147483000;background:#10201f99;display:grid;place-items:center;padding:16px;font:15px system-ui,sans-serif;color:#24332f}#'+overlayId+' .card{box-sizing:border-box;width:min(440px,100%);background:#f7faf8;border-radius:18px;padding:22px;box-shadow:0 14px 50px #0004}#'+overlayId+' h2{margin:0 0 8px}#'+overlayId+' p{line-height:1.5;color:#5b6b64}#'+overlayId+' label{display:block;font-weight:700;margin:12px 0 5px}#'+overlayId+' input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #cbd8d1;border-radius:10px;background:white;font:inherit}#'+overlayId+' .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}#'+overlayId+' button{border:0;border-radius:10px;padding:11px 15px;font-weight:750;cursor:pointer;background:#087f70;color:white;font:inherit}#'+overlayId+' button.secondary{background:#e7eeea;color:#263b34}#'+overlayId+' button.link{background:transparent;color:#087f70;text-decoration:underline;padding-inline:4px}#'+overlayId+' button:disabled{opacity:.6;cursor:wait}#'+overlayId+' .error{color:#a33131;min-height:1.4em;margin-top:8px;overflow-wrap:anywhere}#'+overlayId+' .note{font-size:13px}</style><section class="card" role="dialog" aria-modal="true"><h2>મોબાઇલથી Party Login</h2><div class="fields"><p class="note">નોંધાયેલ મોબાઇલ અને Party પાસવર્ડથી લોગિન કરો. પાસવર્ડ Admin accountથી અલગ છે.</p><label for="aymMobile">મોબાઇલ નંબર</label><input id="aymMobile" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10 અંકનો નંબર" value="'+esc(prefill)+'"><label for="aymPartyPassword">Party પાસવર્ડ</label><input id="aymPartyPassword" type="password" autocomplete="current-password" placeholder="તમારો Party પાસવર્ડ"></div><div class="error" aria-live="polite"></div><div class="actions"><button type="button" class="secondary" data-cancel>બંધ કરો</button><button type="button" class="link" data-set>પાસવર્ડ સેટ / ભૂલાયો?</button><button type="button" data-main>લોગિન કરો</button></div></section>';
     r.querySelector('h2').textContent='ઈમેલથી Party Login';
+    r.querySelector('.note').textContent='નોંધાયેલ ઈમેલ અને Party પાસવર્ડથી લોગિન કરો. આ પાસવર્ડ Admin accountથી અલગ છે.';
     var identityLabel=r.querySelector('label[for="aymMobile"]');identityLabel.textContent='નોંધાયેલ ઈમેલ';identityLabel.htmlFor='aymPartyEmail';
     var identity=r.querySelector('#aymMobile');identity.id='aymPartyEmail';identity.type='email';identity.inputMode='email';identity.autocomplete='username';identity.placeholder='તમારો નોંધાયેલ ઈમેલ';
     var partyPassword=r.querySelector('#aymPartyPassword');partyPassword.minLength=6;partyPassword.maxLength=128;
@@ -28,7 +29,7 @@
     document.body.appendChild(r);
     r.querySelector('[data-main]').onclick=function(){login(r,this);};
     r.querySelector('[data-set]').onclick=function(){startOtpFlow(r,'');};
-    setTimeout(function(){r.querySelector('#aymPartyEmail').focus();},30);
+    setTimeout(function(){var emailInput=r.querySelector('#aymPartyEmail');if(emailInput&&emailInput.isConnected)emailInput.focus();},30);
     return r;
   }
   async function postJson(url,headers,body){
