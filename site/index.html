@@ -14047,7 +14047,7 @@ LedgerFeatures.identity.showLoginForm = function () {
   $('#forgotFormBlock').style.display = 'none';
   $('#verifyMobileBlock').style.display = 'none';
   const role = getLoginRole();
-  if (role === 'party') $('#loginUsername').placeholder = 'Enter party mobile';else $('#loginUsername').placeholder = 'Enter admin username';
+  if (role === 'party') $('#loginUsername').placeholder = window.aymLoginCopy ? window.aymLoginCopy('partyEmailPlaceholder') : 'તમારો નોંધાયેલ ઈમેલ દાખલ કરો';else $('#loginUsername').placeholder = 'Enter admin username';
   document.querySelectorAll('#verifyMobileBlock .verify-success').forEach(el => el.remove());
   document.getElementById('verifyStep1').style.display = 'block';
   document.getElementById('verifyStep2').style.display = 'none';
