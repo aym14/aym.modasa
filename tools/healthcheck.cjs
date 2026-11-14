@@ -21,6 +21,9 @@ assert.match(html, /completeInviteRegistration/, 'verified Party password setup 
 assert.match(fs.readFileSync('site/party-cloud.js', 'utf8'), /party-requests\.js\?v=party-request-button-1/, 'request UI cache version must be explicit');
 assert.match(html, /copy\[isParty\?'partyEmailPlaceholder':'adminUsernamePlaceholder'\]/, 'Party login must prompt for the registered email');
 assert.doesNotMatch(html, /Enter party mobile/, 'Party password login must not prompt for a mobile number');
+assert.match(html, /if \(editor && ownerIsEditor\) continue;/, 'full-screen Party form actions must remain inside the editor overlay');
+assert.match(html, /ફોટો અહીં અપલોડ કરો/, 'loan photo upload instructions must use the correct Gujarati label');
+assert.match(html, /const fallbackMobile = user\.username && String\(user\.username\)\.indexOf\('@'\) < 0 \? user\.username : '';/, 'Party email usernames must not appear in the mobile field');
 const migration = fs.readFileSync('supabase/migrations/202611140002_party_invite_self_registration.sql', 'utf8');
 assert.match(migration, /security definer/i, 'registration RPC must enforce server-side authorization');
 assert.match(migration, /aym_verified_email\(\)/i, 'registration RPC must require verified email');

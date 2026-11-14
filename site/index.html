@@ -9944,7 +9944,7 @@ body.ns-viewer:not(.ns-can-add-entry) #wsDockAdd{display:none!important}
                   <label style="font-size:.6rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.04em;display:block;text-align:center;">પાસપોર્ટ સાઇઝ ફોટો</label>
                   <div class="loan-photo-box" id="lfPhotoBox" onclick="document.getElementById('lfPhotoInput').click()" style="width:150px;min-height:170px;">
                     <i class="fas fa-camera" style="font-size:1.6rem;"></i>
-                    <span>કોટો અહીં ચોટાડવો<br>(Click to upload)</span>
+                    <span>ફોટો અહીં અપલોડ કરો<br>(Click to upload)</span>
                   </div>
                   <input type="file" id="lfPhotoInput" accept="image/*" style="display:none;">
                   <div class="loan-sign-below-photo" style="width:150px;">લોન લેનારની સહી</div>
@@ -12797,7 +12797,7 @@ LedgerFeatures.loanForms.loadLoanFormIntoUI = function (f) {
   set('lfReason', f.reason);
   const box = document.getElementById('lfPhotoBox');
   if (box) {
-    if (isSafeLogoData(f.photo)) box.innerHTML = `<img src="${f.photo}" alt="Photo">`;else box.innerHTML = '<i class="fas fa-camera" style="font-size:1.6rem;"></i><span>કોટો અહીં ચોટાડવો<br>(Click to upload)</span>';
+    if (isSafeLogoData(f.photo)) box.innerHTML = `<img src="${f.photo}" alt="Photo">`;else box.innerHTML = '<i class="fas fa-camera" style="font-size:1.6rem;"></i><span>ફોટો અહીં અપલોડ કરો<br>(Click to upload)</span>';
   }
   selectedLoanPlanIdx = sanitizePlanIdx(f.planIdx);
   document.querySelectorAll('#loanPlansTbody tr').forEach((tr, idx) => tr.classList.toggle('selected', idx === selectedLoanPlanIdx));
@@ -13682,10 +13682,11 @@ LedgerFeatures.identity.openProfile = function () {
   if (!currentSession) return;
   const user = users.find(u => u.id === currentSession.userId);
   if (!user) return;
-  $('#profileNameInput').value = user.name || '';
-  $('#profileMobile').value = user.mobile || user.username || '';
-  $('#profileNewPassword').value = '';
   const party = user.partyId ? getParty(user.partyId) : null;
+  $('#profileNameInput').value = user.name || '';
+  const fallbackMobile = user.username && String(user.username).indexOf('@') < 0 ? user.username : '';
+  $('#profileMobile').value = user.mobile || (party && party.mobile) || fallbackMobile;
+  $('#profileNewPassword').value = '';
   $('#profileFatherName').value = party ? (party.fatherName || party.guardianName || '') : '';
   $('#profileAddress').value = party ? (party.address || '') : '';
   $('#profileOccupation').value = party ? (party.occupation || '') : '';
@@ -13699,7 +13700,9 @@ LedgerFeatures.identity.saveProfile = async function () {
   const user = users.find(u => u.id === currentSession.userId);
   if (!user) return;
   const nameEl = $('#profileNameInput')?.value.trim() || $('#settingsProfileName')?.value.trim() || user.name;
-  const mobileEl = $('#profileMobile')?.value || $('#settingsProfileMobile')?.value || '';
+  const party = user.partyId ? getParty(user.partyId) : null;
+  const fallbackMobile = user.username && String(user.username).indexOf('@') < 0 ? user.username : '';
+  const mobileEl = $('#profileMobile')?.value || $('#settingsProfileMobile')?.value || user.mobile || (party && party.mobile) || fallbackMobile;
   const newPw = $('#profileNewPassword')?.value || $('#settingsProfileNewPassword')?.value || '';
   const fatherName = $('#profileFatherName')?.value.trim() || $('#settingsProfileFatherName')?.value.trim() || '';
   const address = $('#profileAddress')?.value.trim() || $('#settingsProfileAddress')?.value.trim() || '';
@@ -13715,8 +13718,8 @@ LedgerFeatures.identity.saveProfile = async function () {
     try {
       await window.AYMPO.updatePartyProfile({name:nameEl, fatherName:fatherName, address:address, occupation:occupation});
       user.name = nameEl;
-      const party = getParty(user.partyId);
-      if (party) { party.name=nameEl; if (fatherName) { party.fatherName=fatherName; party.guardianName=fatherName; } party.address=address; party.occupation=occupation; }
+      const currentParty = getParty(user.partyId);
+      if (currentParty) { currentParty.name=nameEl; if (fatherName) { currentParty.fatherName=fatherName; currentParty.guardianName=fatherName; } currentParty.address=address; currentParty.occupation=occupation; }
       currentSession.name = nameEl;
       closeProfile();
       if ($('#settingsModal').style.display === 'flex') switchSettingsTab('profile');
@@ -44353,6 +44356,10 @@ body #settingsModal .q4.aymui-syncgrid .auto-sync-toggle > span{
         if (owner) {
           var ownerIsEditor = owner.id === 'loanFormEditorView' || owner.id === 'gcEditorView';
           if (ownerIsEditor !== editor || !isVisible(owner)) continue;
+          /* Keep editor actions inside the full-screen editor. Moving them to
+             the underlying page bar makes Back/Print unreachable beneath the
+             editor's fixed overlay. */
+          if (editor && ownerIsEditor) continue;
         }
         if (node.classList.contains('header-actions-right') && !node.children.length) continue;
         var parent = node.parentNode;
