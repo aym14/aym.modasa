@@ -99,6 +99,9 @@
   loadRequestUi();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadMobileEmailLogin,{once:true});else loadMobileEmailLogin();
   setTimeout(function(){
-    if(!location.hash.includes('access_token=')&&window.AYMPO&&window.AYMPO.restorePartyCloud)window.AYMPO.restorePartyCloud();
+    if(!location.hash.includes('access_token=')&&!window.__aymPartyPasswordRestoreStarted&&window.AYMPO&&window.AYMPO.restorePartyCloud){
+      window.__aymPartyPasswordRestoreStarted=true;
+      window.AYMPO.restorePartyCloud();
+    }
   },1500);
 })();
