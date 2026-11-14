@@ -15404,10 +15404,8 @@ LedgerFeatures.shell.switchView = function (viewName) {
     document.getElementById('navGuarantorChange')?.classList.add('active');
     renderGcTermsList();
     applyLogo();
-    setTimeout(() => {
-      try {
-        startNewGuarantorChangeForm();
-      } catch (_) {}
+    if (!(window.aymPartyReadOnlyCloud && isParty())) setTimeout(() => {
+      try { startNewGuarantorChangeForm(); } catch (_) {}
     }, 40);
   } else if (viewName === 'availableGuarantors') {
     document.getElementById('viewAvailableGuarantors')?.classList.add('active');
@@ -40337,7 +40335,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     var storageKeys=G('S',{});if(storageKeys.session)localStorage.removeItem(storageKeys.session);
     savePhoneAuthSession();
     close();loginAs(user,'Email Cloud');
-    ['navMessages','navGuarantorChange','navAvailableGuarantors','btnNewLoanForm','fabAddEntry'].forEach(function(id){var el=q('#'+id);if(el)el.style.display='none';});
+    ['navMessages','navGuarantorChange','navAvailableGuarantors','fabAddEntry'].forEach(function(id){var el=q('#'+id);if(el)el.style.display='none';});
     toast('તમારો પોતાનો cloud હિસાબ મળ્યો. આ view ફક્ત વાંચવા માટે છે.');
   }
   window.AYMPO = {

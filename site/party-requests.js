@@ -63,23 +63,32 @@
     // are intercepted below and sent to the reviewed, server-side form inbox.
     if (type === 'loan_application') {
       if (typeof window.sidebarAction === 'function') window.sidebarAction('loanForm');
-      if (typeof window.startNewLoanForm === 'function') window.startNewLoanForm();
     } else if (type === 'guarantor_change') {
       if (typeof window.sidebarAction === 'function') window.sidebarAction('guarantorChange');
-      else if (typeof window.startNewGuarantorChangeForm === 'function') window.startNewGuarantorChangeForm();
+      if (typeof window.backToGcList === 'function') window.backToGcList();
     } else return false;
-    setTimeout(function () {
-      var draft = document.getElementById('btnLoanSaveDraft');
-      var loanSubmit = document.getElementById('btnLoanSubmit');
-      if (draft) draft.style.display = 'none';
-      if (loanSubmit) loanSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> અરજી એડમિનને મોકલો';
-      var gcSave = document.querySelector('#gcEditorView button[onclick*="saveGuarantorChangeForm"]');
-      if (gcSave) gcSave.innerHTML = '<i class="fas fa-paper-plane"></i> અરજી એડમિનને મોકલો';
-    }, 80);
+    setTimeout(refreshPartyFormActions, 80);
     return true;
+  }
+  function refreshPartyFormActions() {
+    if (!window.aymPartyReadOnlyCloud) return;
+    var draft = document.getElementById('btnLoanSaveDraft');
+    var loanSubmit = document.getElementById('btnLoanSubmit');
+    if (draft) draft.style.display = 'none';
+    if (loanSubmit) loanSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> અરજી એડમિનને મોકલો';
+    var gcSave = document.querySelector('#gcEditorView button[onclick*="saveGuarantorChangeForm"]');
+    if (gcSave) gcSave.innerHTML = '<i class="fas fa-paper-plane"></i> અરજી એડમિનને મોકલો';
   }
   window.AYMPartyRequests = window.AYMPartyRequests || {};
   window.AYMPartyRequests.openCloudTaskForm = openCloudTaskForm;
+  document.addEventListener('click', function (event) {
+    if (!window.aymPartyReadOnlyCloud) return;
+    var target=event.target&&event.target.closest?event.target:null;
+    if (!target) return;
+    if (target.closest('#btnNewLoanForm') || target.closest('#gcListView button[onclick*="startNewGuarantorChangeForm"]')) {
+      setTimeout(refreshPartyFormActions, 80);
+    }
+  }, true);
   document.addEventListener('click', function (event) {
     if (!window.aymPartyReadOnlyCloud) return;
     var tile = event.target && event.target.closest ? event.target.closest('#nsPartyTasks [data-ns-task]') : null;
