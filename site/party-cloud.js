@@ -46,6 +46,20 @@
   }
   var api=window.AYMPO;
   if(api){
+    if(!api.updatePartyProfile)api.updatePartyProfile=async function(profile){
+      var current=session();if(!current||current.role!=='party'||!window.aymPartyReadOnlyCloud)throw new Error('Party cloud sign-in required.');
+      var state=await partyToken(),parts=String(current.userId||current.id||'').split(':');
+      if(parts.length<4||parts[0]!=='cloud')throw new Error('Party ledger identity is invalid.');
+      var response=await fetch(state.cfg.url+'/rest/v1/rpc/aym_update_my_party_profile',{method:'POST',headers:{apikey:state.cfg.key,Authorization:'Bearer '+state.auth.access_token,'Content-Type':'application/json'},body:JSON.stringify({p_organization_id:parts[1],p_sync_key:parts.slice(2,-1).join(':'),p_party_ref:parts[parts.length-1],p_name:String(profile.name||''),p_father_name:String(profile.fatherName||''),p_address:String(profile.address||''),p_occupation:String(profile.occupation||'')})});
+      var result=await response.json().catch(function(){return null;});if(!response.ok)throw new Error(result&&result.message||'Profile update failed ('+response.status+').');return result;
+    };
+    if(!api.changePartyPassword)api.changePartyPassword=async function(password){
+      var current=session();if(!current||current.role!=='party'||!window.aymPartyReadOnlyCloud)throw new Error('Party cloud sign-in required.');
+      if(typeof password!=='string'||password.length<8)throw new Error('પાસવર્ડ ઓછામાં ઓછા 8 અક્ષરનો હોવો જોઈએ.');
+      var state=await partyToken();
+      var response=await fetch(state.cfg.url+'/auth/v1/user',{method:'PUT',headers:{apikey:state.cfg.key,Authorization:'Bearer '+state.auth.access_token,'Content-Type':'application/json'},body:JSON.stringify({password:password})});
+      var result=await response.json().catch(function(){return null;});if(!response.ok)throw new Error(result&&result.msg||result&&result.message||'Password update failed ('+response.status+').');return result;
+    };
     if(!api.submitPartyRequest)api.submitPartyRequest=async function(subject,message){
       var current=session();if(!current||current.role!=='party'||!window.aymPartyReadOnlyCloud)throw new Error('Party cloud sign-in required.');
       var state=await partyToken(),parts=String(current.userId||current.id||'').split(':');
@@ -90,7 +104,7 @@
   }
   function loadRequestUi(){
     if(document.querySelector('script[data-aym-party-requests]'))return;
-    var script=document.createElement('script');script.src='./party-requests.js?v=invite-registration-1-party-admin-form-editors-1';script.async=true;script.dataset.aymPartyRequests='1';document.head.appendChild(script);
+    var script=document.createElement('script');script.src='./party-requests.js?v=party-request-button-1';script.async=true;script.dataset.aymPartyRequests='1';document.head.appendChild(script);
   }
   function loadMobileEmailLogin(){
     if(document.querySelector('script[data-aym-mobile-email-login]'))return;

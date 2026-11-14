@@ -260,9 +260,11 @@
     restrictCloudPartyReportFilter();
     if (isParty) {
       var partyButton = document.getElementById(buttonId);
-      if (partyButton) partyButton.remove();
+      if (!partyButton) { partyButton=document.createElement('button');partyButton.id=buttonId;partyButton.type='button';document.body.appendChild(partyButton); }
+      partyButton.textContent='✉️ એડમિનને વિનંતી';
+      partyButton.onclick=showPartyForm;
       var taskPanel = document.getElementById('nsPartyTasks');
-      if (taskPanel) taskPanel.querySelectorAll('[data-ns-task="availableGuarantors"],[data-ns-task="messages"]').forEach(function (item) { item.remove(); });
+      if (taskPanel) taskPanel.querySelectorAll('[data-ns-task="availableGuarantors"]').forEach(function (item) { item.remove(); });
       return;
     }
     var button = document.getElementById(buttonId);
@@ -271,5 +273,11 @@
     button.textContent = '📥 પાર્ટી અરજીઓ';
     button.onclick = async function(){var wrap=shell('પાર્ટી અરજીઓ'),content=wrap.querySelector('.aympr-content');content.innerHTML='<p>પાર્ટી તરફથી આવેલ અરજીઓ જુઓ અથવા નવી Party માટે નોંધણી લિંક બનાવો.</p><div class="aympr-actions" style="justify-content:flex-start"><button type="button" data-open-invite>નવી Party નોંધણી લિંક</button><button type="button" data-open-forms>લોન / જામીન ફોર્મ</button><button type="button" class="aympr-secondary" data-open-requests>સામાન્ય વિનંતીઓ</button></div>';wrap.querySelector('[data-open-invite]').onclick=createPartyInvite;wrap.querySelector('[data-open-forms]').onclick=showAdminForms;wrap.querySelector('[data-open-requests]').onclick=showAdminInbox;};
   }
+  document.addEventListener('click',function(event){
+    if(!window.aymPartyReadOnlyCloud)return;
+    var target=event.target&&event.target.closest?event.target.closest('#navMessages,#nsPartyTasks [data-ns-task="messages"]'):null;
+    if(!target)return;
+    event.preventDefault();event.stopPropagation();if(event.stopImmediatePropagation)event.stopImmediatePropagation();showPartyForm();
+  },true);
   setInterval(mount, 1000); document.addEventListener('DOMContentLoaded', mount);
 })();

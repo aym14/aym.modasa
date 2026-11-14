@@ -13694,7 +13694,7 @@ LedgerFeatures.identity.openProfile = function () {
 LedgerFeatures.identity.closeProfile = function () {
   $('#profileModal').style.display = 'none';
 };
-LedgerFeatures.identity.saveProfile = function () {
+LedgerFeatures.identity.saveProfile = async function () {
   if (!currentSession) return;
   const user = users.find(u => u.id === currentSession.userId);
   if (!user) return;
@@ -13709,6 +13709,21 @@ LedgerFeatures.identity.saveProfile = function () {
   if (!mobile) return showToast('⚠️ યોગ્ય મોબાઇલ નંબર નાખો (10 અંક, 6-9 થી શરૂ)');
   if (mobileInUse(mobile, user.id, user.partyId || '')) return showToast('⚠️ આ મોબાઇલ પહેલેથી વપરાયેલો છે');
   if (newPw && newPw.length < 4) return showToast('⚠️ ઓછામાં ઓછા 4 અક્ષર');
+  if (window.aymPartyReadOnlyCloud && user.role === 'party') {
+    if (newPw) return showToast('🔐 પાસવર્ડ બદલવા માટે પ્રોફાઇલના “પાસવર્ડ બદલો” વિકલ્પનો ઉપયોગ કરો');
+    if (mobile !== normalizeMobile(user.mobile || user.username)) return showToast('📞 મોબાઇલ નંબર બદલવા એડમિનનો સંપર્ક કરો');
+    try {
+      await window.AYMPO.updatePartyProfile({name:nameEl, fatherName:fatherName, address:address, occupation:occupation});
+      user.name = nameEl;
+      const party = getParty(user.partyId);
+      if (party) { party.name=nameEl; if (fatherName) { party.fatherName=fatherName; party.guardianName=fatherName; } party.address=address; party.occupation=occupation; }
+      currentSession.name = nameEl;
+      closeProfile();
+      if ($('#settingsModal').style.display === 'flex') switchSettingsTab('profile');
+      showToast('✅ પ્રોફાઇલ ક્લાઉડમાં સચવાઈ');
+    } catch (e) { showToast('❌ પ્રોફાઇલ સચવાઈ નથી: ' + (e.message || 'ફરી પ્રયાસ કરો')); }
+    return;
+  }
   user.name = nameEl || user.name;
   user.mobile = mobile;
   if (user.role === 'party' || user.role === 'viewer') user.username = mobile;
@@ -39751,13 +39766,23 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
       if (bar) { bar.style.width = (s / 4 * 100) + '%'; bar.dataset.s = s; }
       if (lbl) lbl.textContent = pw.value ? strengthLabel[s] : 'પાસવર્ડ લખો';
     });
-    q('#aympoSave').addEventListener('click', function () {
+    q('#aympoSave').addEventListener('click', async function () {
       var p1 = q('#aympoPw').value || '', p2 = q('#aympoPw2').value || '';
       err('');
       if (p1.length < 6) return err('ઓછામાં ઓછા 6 અક્ષરનો પાસવર્ડ રાખો.');
       if (p1 !== p2) return err('બંને પાસવર્ડ મળતા નથી.');
       var u = U().filter(function (x) { return x.id === S.userId; })[0];
       if (!u) return err('એકાઉન્ટ મળ્યું નથી.');
+      if (window.aymPartyReadOnlyCloud && u.role === 'party') {
+        if (p1.length < 8) return err('ઓછામાં ઓછા 8 અક્ષરનો પાસવર્ડ રાખો.');
+        var saveButton=q('#aympoSave'); if(saveButton){saveButton.disabled=true;saveButton.textContent='સચવાઈ રહ્યું છે…';}
+        try {
+          await window.AYMPO.changePartyPassword(p1);
+          u.passwordChangedAt=new Date().toISOString();u.passwordChangedVia=S.viaPw||(S.otp?'ઇમેલ OTP':'પાસવર્ડ');
+          close();toast('✅ Supabase ખાતાનો પાસવર્ડ અપડેટ થયો. હવે નવા પાસવર્ડથી લોગિન કરો.');
+        } catch(e) { err(e.message||'પાસવર્ડ સચવાયો નથી.');if(saveButton){saveButton.disabled=false;saveButton.innerHTML='પાસવર્ડ બદલો <i class="fas fa-key"></i>';} }
+        return;
+      }
       u.password = hashPw(p1);
       u.passwordChangedAt = new Date().toISOString();
       persist();
@@ -45381,7 +45406,7 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   }, 800);
 })();
 </script>
-<script src="./party-cloud.js?v=party-admin-form-editors-1"></script>
+<script src="./party-cloud.js?v=party-profile-persist-1"></script>
 <style id="aym-loan-form-print-layout-v1">
 /* Loan form print layout: consistent A4 hierarchy, readable fields and rules. */
 @page aymA4Portrait { size: A4 portrait; margin: 9mm 9mm 10mm; }
