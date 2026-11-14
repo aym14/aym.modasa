@@ -18,6 +18,7 @@ jobs:
         with:
           node-version: '22'
       - run: node tools/healthcheck.cjs
+      - run: node tools/edge-functions.test.mjs
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

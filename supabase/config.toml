@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.party-mobile-email-otp]
 verify_jwt = false
+
+[functions.party-password-auth]
+verify_jwt = false

@@ -71,7 +71,7 @@
     state.email=email;button.disabled=true;button.textContent='ચકાસાઈ રહ્યું છે…';
     try{await signIn(root,password);}catch(e){
       var messages={
-        invalid_party_credentials:'ઈમેલ અથવા પાસવર્ડ ખોટો છે, અથવા આ Partyનો પાસવર્ડ હજી સેટ થયો નથી. “પાસવર્ડ સેટ / ભૂલાયો?”થી OTP ચકાસીને પાસવર્ડ બનાવો.',
+        too_many_attempts:'ઘણા પ્રયાસ થયા છે. 15 મિનિટ પછી ફરી પ્રયાસ કરો.',invalid_party_credentials:'ઈમેલ અથવા પાસવર્ડ ખોટો છે, અથવા આ Partyનો પાસવર્ડ હજી સેટ થયો નથી. “પાસવર્ડ સેટ / ભૂલાયો?”થી OTP ચકાસીને પાસવર્ડ બનાવો.',
         party_email_ambiguous:'આ ઈમેલ એકથી વધુ Party રેકોર્ડમાં છે. Adminએ duplicate Party રેકોર્ડ સુધારવા પડશે.',
         party_record_not_synced:'પાસવર્ડ સ્વીકારાયો, પણ Party રેકોર્ડ મળ્યો નથી. Adminએ Partyની વિગતો Sync કરવી પડશે.',
         party_data_forbidden:'પાસવર્ડ સ્વીકારાયો, પણ Party data access મંજૂર નથી. Adminએ Supabase Party mapping અને permissions તપાસવા પડશે.'
@@ -88,7 +88,7 @@
       state.config=state.config||await cfg();
       await otp({action:'send',mobile:mobile});
       root.querySelector('h2').textContent='ઈમેલ ચકાસો';
-      root.querySelector('.fields').innerHTML='<p>નોંધાયેલા ઈમેલ પર આવેલ 8 અંકનો OTP નાખો. OTP ચકાસ્યા પછી તરત Party પાસવર્ડ બનાવવાનો વિકલ્પ આવશે.</p><label for="aymEmailOtp">ઈમેલ OTP</label><input id="aymEmailOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{8}" placeholder="8 અંકનો કોડ">';
+      root.querySelector('.fields').innerHTML='<p>જો આ મોબાઇલ નંબર નોંધાયેલો હશે તો તેના ઈમેલ પર OTP મોકલાયો છે. આવેલ OTP (6 થી 10 અંક) નાખો. OTP ચકાસ્યા પછી તરત Party પાસવર્ડ બનાવવાનો વિકલ્પ આવશે.</p><label for="aymEmailOtp">ઈમેલ OTP</label><input id="aymEmailOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="10" pattern="[0-9]{6,10}" placeholder="ઈમેલમાં આવેલ કોડ">';
       var main=root.querySelector('[data-main]');main.textContent='ઈમેલ ચકાસો';main.onclick=function(){verifyOtp(root,this);};
       var set=root.querySelector('[data-set]');set.hidden=true;button.disabled=false;root.querySelector('#aymEmailOtp').focus();
     }catch(e){
@@ -98,7 +98,7 @@
   }
   async function verifyOtp(root,button){
     var token=String(root.querySelector('#aymEmailOtp').value||'').replace(/\D/g,'');showError(root,'');
-    if(token.length!==8){showError(root,'8 અંકનો OTP નાખો.');return;}
+    if(token.length<6||token.length>10){showError(root,'ઈમેલમાં આવેલ 6 થી 10 અંકનો OTP નાખો.');return;}
     button.disabled=true;button.textContent='ચકાસાઈ રહ્યું છે…';
     try{
       var result=await otp({action:'verify',mobile:state.mobile,token:token}),session=result.session||{},user=result.user||{};
@@ -108,7 +108,7 @@
       if(!session.access_token||!session.refresh_token||!user.id||!user.email)throw new Error('invalid_code');
       state.emailSession=session;state.email=String(user.email||'').trim().toLowerCase();
       root.querySelector('h2').textContent='ઈમેલ ચકાસાઈ ગયો — પાસવર્ડ બનાવો';
-      root.querySelector('.fields').innerHTML='<p>હવે તમારો Party પાસવર્ડ બનાવો. આગળથી Party Loginમાં આ જ ઈમેલ અને પાસવર્ડ વાપરો. આ પાસવર્ડ Admin loginથી અલગ છે.</p><label for="aymNewPartyPassword">નવો Party પાસવર્ડ</label><input id="aymNewPartyPassword" type="password" autocomplete="new-password" minlength="6" maxlength="6" placeholder="ચોક્કસ 6 અક્ષર"><label for="aymConfirmPartyPassword">પાસવર્ડ ફરી લખો</label><input id="aymConfirmPartyPassword" type="password" autocomplete="new-password" minlength="6" maxlength="6" placeholder="પાસવર્ડની પુષ્ટિ">';
+      root.querySelector('.fields').innerHTML='<p>હવે તમારો Party પાસવર્ડ બનાવો. આગળથી Party Loginમાં આ જ ઈમેલ અને પાસવર્ડ વાપરો. આ પાસવર્ડ Admin loginથી અલગ છે.</p><label for="aymNewPartyPassword">નવો Party પાસવર્ડ</label><input id="aymNewPartyPassword" type="password" autocomplete="new-password" minlength="8" maxlength="64" placeholder="ઓછામાં ઓછા 8 અક્ષર"><label for="aymConfirmPartyPassword">પાસવર્ડ ફરી લખો</label><input id="aymConfirmPartyPassword" type="password" autocomplete="new-password" minlength="8" maxlength="64" placeholder="પાસવર્ડની પુષ્ટિ">';
       button.disabled=false;button.textContent='Party પાસવર્ડ સેટ કરો';button.onclick=function(){setPassword(root,this);};root.querySelector('#aymNewPartyPassword').focus();
     }catch(e){
       var verifyMessages={party_mobile_ambiguous:'આ મોબાઇલ એકથી વધુ Party રેકોર્ડમાં છે. Adminએ duplicate Party રેકોર્ડ સુધારવા પડશે.',invalid_code:'OTP ખોટો છે અથવા તેની સમયમર્યાદા પૂરી થઈ છે. ફરીથી OTP મંગાવીને પ્રયાસ કરો.'};
@@ -117,7 +117,7 @@
   }
   async function setPassword(root,button){
     var password=String(root.querySelector('#aymNewPartyPassword').value||''),confirm=String(root.querySelector('#aymConfirmPartyPassword').value||'');showError(root,'');
-    if(password.length!==6){showError(root,'પાસવર્ડ ચોક્કસ 6 અક્ષરનો હોવો જોઈએ.');return;}
+    if(password.length<8||password.length>64){showError(root,'પાસવર્ડ 8 થી 64 અક્ષરનો હોવો જોઈએ.');return;}
     if(password!==confirm){showError(root,'બંને પાસવર્ડ સરખા નથી.');return;}
     button.disabled=true;button.textContent='સાચવી રહ્યા છીએ…';
     var passwordSaved=false;

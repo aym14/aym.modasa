@@ -1,8 +1,27 @@
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+const attempts = new Map<string, { count: number; resetAt: number }>();
+/* Best-effort per-instance throttle (Supabase Auth keeps its own global limits). */
+function tooMany(key: string, limit: number, windowMs: number): boolean {
+  const now = Date.now();
+  if (attempts.size > 5000) { for (const [k, v] of attempts) if (v.resetAt <= now) attempts.delete(k); }
+  const cur = attempts.get(key);
+  if (!cur || cur.resetAt <= now) { attempts.set(key, { count: 1, resetAt: now + windowMs }); return false; }
+  cur.count += 1;
+  return cur.count > limit;
+}
+function clientIp(request: Request): string {
+  return (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown';
+}
+/* Set AYM_ALLOWED_ORIGINS (comma separated, e.g. https://aym14.github.io) to lock CORS; unset keeps "*". */
+function corsFor(request: Request): Record<string, string> {
+  const base: Record<string, string> = {
+    'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+  const allowed = String(Deno.env.get('AYM_ALLOWED_ORIGINS') || '').split(',').map((v) => v.trim().replace(/\/+$/, '')).filter(Boolean);
+  if (!allowed.length) return { ...base, 'Access-Control-Allow-Origin': '*' };
+  const origin = String(request.headers.get('Origin') || '').replace(/\/+$/, '');
+  return allowed.includes(origin) ? { ...base, 'Access-Control-Allow-Origin': origin, Vary: 'Origin' } : { ...base, Vary: 'Origin' };
+}
 
 function envKey(name: string): string {
   const raw = Deno.env.get(name) || '';
@@ -19,14 +38,14 @@ function mobile10(value: unknown): string {
   return d.length >= 10 ? d.slice(-10) : '';
 }
 function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 }
 type Target = { organization_id: string; party_ref: string; email: string; mobile: string };
 
 async function findTarget(url: string, serviceKey: string, mobile: string, verifiedEmail?: string): Promise<Target[]> {
   const found = new Map<string, Target>();
   for (let offset = 0; offset < 10000; offset += 500) {
-    const response = await fetch(url + '/rest/v1/aym_party_portal?select=organization_id,party_ref,email,data&order=organization_id.asc,party_ref.asc&limit=500', {
+    const response = await fetch(url + '/rest/v1/aym_party_portal?select=organization_id,party_ref,email,parties:data->parties&order=organization_id.asc,party_ref.asc&limit=500', {
       headers: { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey, Range: offset + '-' + (offset + 499), 'Range-Unit': 'items' },
       cache: 'no-store',
     });
@@ -34,7 +53,7 @@ async function findTarget(url: string, serviceKey: string, mobile: string, verif
     const rows = await response.json();
     if (!Array.isArray(rows)) throw new Error('party_lookup_failed');
     for (const row of rows) {
-      const parties = row?.data?.parties;
+      const parties = row?.parties;
       if (!Array.isArray(parties)) continue;
       for (const party of parties) {
         if (mobile10(party?.mobile) !== mobile) continue;
@@ -54,7 +73,7 @@ async function findTarget(url: string, serviceKey: string, mobile: string, verif
 async function findTargetByEmail(url: string, serviceKey: string, email: string): Promise<Target[]> {
   const found = new Map<string, Target>();
   for (let offset = 0; offset < 10000; offset += 500) {
-    const response = await fetch(url + '/rest/v1/aym_party_portal?select=organization_id,party_ref,email,data&order=organization_id.asc,party_ref.asc&limit=500', {
+    const response = await fetch(url + '/rest/v1/aym_party_portal?select=organization_id,party_ref,email,parties:data->parties&order=organization_id.asc,party_ref.asc&limit=500', {
       headers: { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey, Range: offset + '-' + (offset + 499), 'Range-Unit': 'items' },
       cache: 'no-store',
     });
@@ -62,7 +81,7 @@ async function findTargetByEmail(url: string, serviceKey: string, email: string)
     const rows = await response.json();
     if (!Array.isArray(rows)) throw new Error('party_lookup_failed');
     for (const row of rows) {
-      const parties = row?.data?.parties;
+      const parties = row?.parties;
       if (!Array.isArray(parties)) continue;
       for (const party of parties) {
         const partyEmail = String(party?.email || '').trim().toLowerCase();
@@ -105,8 +124,7 @@ async function rest(url: string, serviceKey: string, path: string, method: strin
   if (!response.ok) throw new Error('party_mapping_update_failed');
 }
 
-Deno.serve(async (request) => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+async function handle(request: Request): Promise<Response> {
   if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
 
   const url = String(Deno.env.get('SUPABASE_URL') || '').replace(/\/+$/, '');
@@ -123,7 +141,7 @@ Deno.serve(async (request) => {
   const password = String(input.password || '');
   const action = String(input.action || '');
   const validPasswordLength = action === 'set_password'
-    ? password.length === 6
+    ? password.length >= 8 && password.length <= 64
     : action === 'login' && password.length >= 6 && password.length <= 128;
   if (!validPasswordLength || !['set_password', 'login'].includes(action) || (action === 'set_password' && !mobile) || (action === 'login' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
     return json({ error: 'invalid_request' }, 400);
@@ -131,8 +149,10 @@ Deno.serve(async (request) => {
 
   try {
     if (input.action === 'login') {
+      if (tooMany('pw-login:' + email + ':' + clientIp(request), 10, 15 * 60_000) || tooMany('pw-login-email:' + email, 30, 15 * 60_000)) return json({ error: 'too_many_attempts' }, 429);
       const targets = await findTargetByEmail(url, serviceKey, email);
-      if (targets.length !== 1) return json({ error: targets.length > 1 ? 'party_email_ambiguous' : 'invalid_party_credentials' }, targets.length > 1 ? 409 : 401);
+      // One generic reply for unknown or duplicate emails: no account enumeration.
+      if (targets.length !== 1) return json({ error: 'invalid_party_credentials' }, 401);
       const target = targets[0];
       const accountPath = 'aym_party_password_accounts?select=auth_user_id&organization_id=eq.' + encodeURIComponent(target.organization_id) + '&party_ref=eq.' + encodeURIComponent(target.party_ref);
       const accountResponse = await fetch(url + '/rest/v1/' + accountPath, { headers: { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey }, cache: 'no-store' });
@@ -147,6 +167,7 @@ Deno.serve(async (request) => {
       return json({ session: auth, user: auth.user });
     }
     if (!accessToken) return json({ error: 'email_verification_required' }, 401);
+    if (tooMany('pw-set:' + clientIp(request), 20, 15 * 60_000)) return json({ error: 'too_many_attempts' }, 429);
     const userResponse = await fetch(url + '/auth/v1/user', {
       headers: { apikey: publishableKey, Authorization: 'Bearer ' + accessToken }, cache: 'no-store',
     });
@@ -169,22 +190,22 @@ Deno.serve(async (request) => {
 
     let partyAuthUserId = accounts[0]?.auth_user_id || '';
     let created = false;
-    const email = await partyAlias(target);
+    const aliasEmail = await partyAlias(target);
     if (partyAuthUserId) {
       await authAdmin(url, serviceKey, 'PUT', '/' + encodeURIComponent(partyAuthUserId), {
-        email, email_confirm: true, password,
+        email: aliasEmail, email_confirm: true, password,
         app_metadata: { aym_party_login: true },
       });
     } else {
       const createdUser = await authAdmin(url, serviceKey, 'POST', '', {
-        email, password, email_confirm: true,
+        email: aliasEmail, password, email_confirm: true,
         user_metadata: { account_type: 'party' },
       });
       partyAuthUserId = String(createdUser?.id || createdUser?.user?.id || '');
       if (!partyAuthUserId) throw new Error('party_auth_create_failed');
       created = true;
       await authAdmin(url, serviceKey, 'PUT', '/' + encodeURIComponent(partyAuthUserId), {
-        email, email_confirm: true,
+        email: aliasEmail, email_confirm: true,
         app_metadata: { aym_party_login: true },
       });
     }
@@ -213,4 +234,13 @@ Deno.serve(async (request) => {
   } catch (_) {
     return json({ error: 'party_password_setup_failed' }, 400);
   }
+}
+
+Deno.serve(async (request) => {
+  const cors = corsFor(request);
+  if (request.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  let response: Response;
+  try { response = await handle(request); } catch (_) { response = json({ error: 'internal_error' }, 500); }
+  for (const [k, v] of Object.entries(cors)) response.headers.set(k, v);
+  return response;
 });

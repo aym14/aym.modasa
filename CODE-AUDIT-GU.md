@@ -24,3 +24,26 @@
 - Appનું `1.2.82` / code `84` release metadata embedded update record અને service-worker cache સાથે મેળ ખાતું કર્યું.
 - Local merge base હવે backend/project અને dataset ઓળખે છે: Supabase organization + sync key, server URL + sync key, અને GitHub owner/repository/branch/path. અલગ dataset માટે જૂનો merge base ફરી વપરાતો નથી.
 - 52 inline JavaScript blocks, service worker, JSON config અને embedded update metadataનું syntax/parse validation ફરી કર્યું. Live Supabase/GitHub data પર sync ચલાવ્યું નથી.
+
+## 2026-11-14 સમીક્ષા (v1.2.98)
+
+### સુધારેલું
+- Party OTP લંબાઈ: Edge Function અને `party-mobile-email-login.js` ફક્ત 8 અંક સ્વીકારતાં હતાં, જ્યારે દસ્તાવેજ 6 અંક કહે છે (Supabase email OTP length 6–10 ગોઠવી શકાય). હવે 6 થી 10 અંક સ્વીકારાય છે.
+- `sw.js`: `.js/.json` ફાઇલો હવે network-first છે; જૂની cached `party-cloud.js` / `party-requests.js` નવા deploy પછી પણ ચાલતી રહે તેવી સમસ્યા દૂર. Cache નામ `v1.2.98-sw-otp-fix`.
+
+### બીજા રાઉન્ડમાં સુધારેલું (v1.2.98)
+- **ગંભીર બગ:** `party-password-auth`માં Party પાસવર્ડ login હંમેશા નિષ્ફળ જતું હતું (`email` ચલ બ્લોકમાં પછીથી જાહેર થતો હોવાથી ReferenceError → `party_password_setup_failed`). ચલનું નામ `aliasEmail` કર્યું; login હવે ચાલે છે.
+- OTP `send`: નોંધાયેલ અને અનોંધાયેલ નંબર બંને માટે સરખો `{ok:true}` જવાબ (નંબર enumeration બંધ); અનોંધાયેલ નંબરને ઈમેલ જતો નથી.
+- Rate limit: OTP send (નંબર દીઠ 5 / 15 મિનિટ), OTP verify (10), password login (ઈમેલ+IP દીઠ 10), password set. ઇન-મેમરી, દરેક instance માટે; Supabase Authની પોતાની મર્યાદા ઉપરાંત.
+- Login પર ઈમેલ ન મળે/ડુપ્લિકેટ હોય તો બંને માટે એક જ `invalid_party_credentials` જવાબ.
+- નવો Party પાસવર્ડ 8–64 અક્ષર (જૂના 6 અક્ષરના પાસવર્ડથી login ચાલુ રહે છે).
+- Functions હવે આખું ledger JSON નહીં, ફક્ત `data->parties` વાંચે છે (ઓછો ડેટા, ઝડપી).
+- CORS: Supabase Function secret `AYM_ALLOWED_ORIGINS` (દા.ત. `https://aym14.github.io`) મૂકો તો ફક્ત એ origin ચાલશે; ન મૂકો તો અગાઉ જેમ `*`.
+- નવો `tools/edge-functions.test.mjs` regression test, GitHub workflowમાં જોડ્યો.
+- Deploy: `supabase functions deploy party-mobile-email-otp party-password-auth`.
+
+### હજી ખુલ્લું (આર્કિટેક્ચર બદલવું પડે)
+- Party session (refresh token) `localStorage`માં સચવાય છે; `index.html`માં બે જગ્યાએ `new Function(...eval...)` છે (CSP લાગુ કરવી હોય તો પહેલાં આ દૂર કરવું).
+- Invite link 365 દિવસ માન્ય (SQL function બદલવી પડે).
+- Rate limit instance-wise છે; કડક global limit માટે Supabaseમાં table-આધારિત counter જોઈએ.
+- Live Supabase પર આ ફેરફારો ચકાસ્યા નથી (ફક્ત mocked tests).

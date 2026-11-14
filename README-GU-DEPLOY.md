@@ -5,7 +5,7 @@
 ## પહેલાં Supabase તૈયાર કરો
 
 1. `supabase/README-GU.md` વાંચો.
-2. `supabase/migrations/`ની ચારેય migration SQL ફાઇલો નામના ક્રમમાં Supabase projectમાં લાગુ કરો. છેલ્લી `202611090002_aym_party_portal.sql` verified emailથી પોતાના Party records વાંચવા માટે જરૂરી છે.
+2. `supabase/migrations/`ની બધી migration SQL ફાઇલો નામના ક્રમમાં Supabase projectમાં લાગુ કરો. Party email OTP login અને password setup માટે `party-mobile-email-otp` તથા `party-password-auth` Edge Functions deploy કરો (`supabase functions deploy party-mobile-email-otp party-password-auth`).
 3. Admin માટે Supabase Auth email user બનાવો અને એ જ user UUIDને `aym_org_members`ની active `admin` membership સાથે જોડો. OTP sign-in પહેલાં user અસ્તિત્વમાં હોવો જરૂરી છે; public signup ચાલુ ન કરો.
 4. Publishable key વાપરો. Supabase Secret/service-role key બ્રાઉઝર કે packageમાં ન મૂકો.
 
@@ -45,4 +45,4 @@ Settings → Backup and restoreથી JSON backup download/restore કરી શ
 
 સ્થાનિક validation: Node.js 22+ સાથે package rootમાં `node tools/healthcheck.cjs` ચલાવો.
 
-આ તપાસમાં database migration/RLS execution, વાસ્તવિક OTP delivery અને authenticated cloud round-trip ચલાવ્યાં નથી. તેના માટે project/account access જરૂરી છે. Party/local login અને browserમાં બનતો SMS OTP server authorizationનું સ્થાન લેતા નથી; full cloud Ledger ફક્ત Supabaseના active Adminને RLSથી મળે છે. Public Party access માટે અલગ server-authorized, Party-scoped API જરૂરી છે.
+આ પેકેજ તૈયાર કરવાથી live database migration કે Edge Function આપમેળે લાગુ થતા નથી; તે માટે Supabase projectમાં deploy કરવું જરૂરી છે. Party email OTP ફક્ત અલગ Party password સેટ/રીસેટ કરે છે; સામાન્ય login mobile અને Party passwordથી થાય છે. Admin Auth account/password અલગ રહે છે. Full cloud Ledger ફક્ત Supabaseના active Adminને RLSથી મળે છે.

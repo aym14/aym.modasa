@@ -4,8 +4,8 @@ Website: https://aym14.github.io/aym.modasa/
 
 Repository: https://github.com/aym14/aym.modasa
 
-GitHub Pages `main` branchના root પરથી publish થાય છે. આ repositoryમાં `site/`ની અંદરની ફાઇલો સીધી rootમાં upload કરી છે અને icons `icons/`માં છે. સ્થાનિક packageનો `site/` folder જ website source છે.
+GitHub Actions workflow `main` branch પર push થતાં પહેલા `tools/healthcheck.cjs` અને `tools/edge-functions.test.mjs` ચલાવે છે, પછી `site/` publish કરે છે. `.github/workflows/pages.yml` જ આ deployment configuration છે. Pagesનું URL ઉપર આપેલું છે.
 
-Update કરતી વખતે `site/`ની સુધારેલી ફાઇલો repository rootમાં મૂકો. દરેક commit પછી GitHubનો pages-build-deployment workflow ફરી ચાલે છે. સ્થાનિક `.github/workflows/pages.yml` આખા packageને repositoryમાં રાખવા માટેનું વૈકલ્પિક layout છે; તે હાલના root deploymentમાં upload કરેલું નથી.
+Website ફેરફાર માટે `site/` update કરો. Supabase Edge Function source `supabase/functions/`માં રહે છે, પરંતુ GitHub Pages workflow તેને Supabase projectમાં deploy કરતું નથી; તે માટે Supabase CLIથી અલગ deploy જરૂરી છે. Database migrations પણ અલગથી સંભાળવાના છે; પહેલેથી લાગુ થયેલી migration ફાઇલો બદલશો નહીં.
 
 Supabase migrations, organization Admin membership અને OTP/SMS gateway configuration અલગથી કરવાના રહે છે. Hosting deployment database configuration કરતું નથી.

@@ -1,6 +1,6 @@
-/* AYM Smart Ledger v1.2.97 — Party email/password login */
+/* AYM Smart Ledger v1.2.98 — Party email/password login */
 const CACHE_PREFIX = 'aym-smart-ledger-pwa-';
-const CACHE_NAME = CACHE_PREFIX + 'v1.2.97-party-email-password-six-login';
+const CACHE_NAME = CACHE_PREFIX + 'v1.2.98-sw-otp-fix';
 const APP_SHELL = ['./index.html', './party-cloud.js', './party-requests.js', './party-mobile-email-login.js', './manifest.json', './icons/app-icon-192.png', './icons/app-icon-512.png', './icons/app-icon-maskable-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -55,6 +55,19 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
+    const isCode = /\.(?:js|json)$/i.test(url.pathname);
+    if (isCode) {
+      /* Scripts/config: network first so a new deploy is never masked by an old cached copy. */
+      try {
+        const fresh = await fetch(request);
+        if (fresh && fresh.ok) cache.put(request, fresh.clone()).catch(() => {});
+        return fresh;
+      } catch (_) {
+        const stale = await cache.match(request);
+        if (stale) return stale;
+        throw _;
+      }
+    }
     const cached = await cache.match(request);
     if (cached) return cached;
     const response = await fetch(request);
