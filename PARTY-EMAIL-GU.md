@@ -29,9 +29,9 @@ Cloud Sync Settings appના Admin sessionની અંદર જ છે. Admin
 
 SMTP password/secret ફક્ત Supabase Dashboardમાં જ દાખલ કરો; તેને આ repository, `licensing-config.json`, QR code કે browser codeમાં ન મૂકો. Supabaseના default SMTPની વર્તમાન મર્યાદાઓ બદલાઈ શકે છે; custom SMTP setup જરૂરી છે. [Supabase SMTP setup](https://supabase.com/docs/guides/auth/auth-smtp) અને [email templates](https://supabase.com/docs/guides/auth/auth-email-templates) જુઓ.
 
-Party login હવે નોંધાયેલ ઇમેલથી verification link અથવા email code વાપરે છે; મોબાઇલ OTP જરૂરી નથી. મોબાઇલ નંબર ફક્ત સ્થાનિક Party account શોધવા ઉપયોગી છે. Email verification મોબાઇલની માલિકી verify કરતું નથી.
+Partyનું સામાન્ય login નોંધાયેલા ઈમેલ અને Partyના ચોક્કસ 6 અક્ષરના પાસવર્ડથી થાય છે. પહેલી વાર પાસવર્ડ સેટ કરવા અથવા ભૂલેલો પાસવર્ડ બદલવા નોંધાયેલ મોબાઇલથી Party record ઓળખીને તેના ઈમેલ પર OTP ચકાસવામાં આવે છે. Party Auth account માટે private internal email identity બને છે; તે Adminના Auth email/accountને બદલતું નથી. આ માટે `202611140001_aym_party_separate_password_auth.sql` અને `supabase functions deploy party-password-auth` જરૂરી છે. ઈમેલ OTP ચકાસ્યા પછી જ server Party record સાથે mobile/email mapping તપાસે છે અને password સેટ કરે છે.
 
-Admin પહેલાં Party record અને તેના સાથે role `party` ધરાવતું login તથા સાચો email ગોઠવે. Party પોતે verification mail મંગાવી શકે છે. Link તે જ browser/deviceમાં ખોલવી જ્યાં mail મંગાવ્યો હોય. નવી tabમાં પણ pending request local storageથી મળે છે; token local storageમાં pending request સાથે રાખાતો નથી. Callback Supabase `/user`થી token અને confirmed email તપાસ્યા પછી જ સ્થાનિક Party સાથે જોડે છે. Missing/unmatched Party record હોય તો login થતું નથી. Admin role આપવામાં આવતો નથી.
+Adminએ Party recordમાં સાચો mobile અને email રાખીને Sync કરવું. Party login modalમાં **પાસવર્ડ સેટ / ભૂલાયો?** પસંદ કરે, મોબાઇલ દાખલ કરે, નોંધાયેલ email પર આવેલ OTP ચકાસે અને Party password સેટ કરે. ત્યારબાદ ઈમેલ + Party passwordથી login થાય છે. આ accountને Admin role મળતો નથી.
 
 ## Partyને ડિફોલ્ટથી શું મળે
 
@@ -45,7 +45,7 @@ Entry add/edit, loan approval/collection, settings, member management અને 
 
 ## મર્યાદા
 
-Cloud portal માટે `202611090002_aym_party_portal.sql` લાગુ કરો. Adminના snapshotમાં દરેક Partyના `email` પરથી પસંદ કરેલા પોતાના recordsનું projection બને છે. Party નવા ફોનમાં email verify કરીને `aym_my_party_data` RPCથી પોતાનો ડેટા મેળવે છે. RLS verified Auth email સાથે rows મેળવે છે; browserનો Party ID/email parameter access નક્કી કરતો નથી. Anonymous read અને Party write બંધ છે. સંપૂર્ણ Admin snapshot હજી Admin માટે જ છે. Adminએ Partyનો સાચો email રાખીને Sync કરવો જરૂરી છે. Email બદલાય કે Party દૂર થાય ત્યારે આગળના Admin Syncથી જૂનું projection દૂર થાય છે.
+Cloud portal માટે migrations લાગુ કરો. Adminના snapshotમાં દરેક Partyના `email` પરથી પસંદ કરેલા પોતાના recordsનું projection બને છે. Partyનું અલગ password Auth user `aym_my_party_data` RPCથી પોતાનો ડેટા મેળવે છે. RLS server-side Party mapping, confirmed internal Auth user અને active Party membership તપાસે છે; browserનો Party ID/email parameter access નક્કી કરતો નથી. Anonymous read અને Party write બંધ છે. સંપૂર્ણ Admin snapshot હજી Admin માટે જ છે. Adminએ Partyનો સાચો email/mobile રાખીને Sync કરવો જરૂરી છે. Email બદલાય કે Party દૂર થાય ત્યારે આગળના Admin Syncથી જૂનું projection દૂર થાય છે.
 
 Cloud Party portal હાલમાં read-only છે: પોતાનો હિસાબ, profile, સંબંધિત loan summary અને print/PDF. Loan application, message sending, guarantor directory અને data edits માટે અલગ સુરક્ષિત write APIs બનાવ્યા વગર ઉપયોગ કરવો નહીં. Portal સ્થાનિક Admin ledger સાથે merge થતું નથી અને Party modeમાં base persist બંધ છે. Sign-out પછી in-memory data દૂર કરવા પેજ reload થાય છે. Server પર revoke કર્યા પછી પહેલેથી screen પર દેખાયેલ માહિતી પાછી ખેંચી શકાતી નથી; આગળનું authenticated fetch નવી policy લાગુ કરે છે.
 
@@ -53,4 +53,4 @@ Cloud Party portal હાલમાં read-only છે: પોતાનો હ�
 
 લાઇવ databaseમાં transaction-only isolation checks પાસ: પોતાના records, cross-Party denial, secret filtering, Admin snapshot denial, write denial, anonymous denial અને email revoke. Sample records rollback કર્યાં છે.
 
-Email sendingની Supabase મર્યાદા અને custom SMTP configuration લાગુ રહે છે. Actual Party login માટે Admin ledger snapshot અને ઇમેલની લિંક ખોલીને user verification જરૂરી છે; આ પૂર્ણ થયા વગર real Party end-to-end test પાસ ગણવો નહીં.
+Email sendingની Supabase મર્યાદા અને custom SMTP configuration લાગુ રહે છે. પહેલી વાર password setup અથવા password reset માટે જ Partyના verified email પર OTP પહોંચવો જરૂરી છે. Migration અને Edge Function deploy થયા પછી જ આ login flow ઉપલબ્ધ થાય છે.

@@ -26,7 +26,7 @@ type Target = { organization_id: string; party_ref: string; email: string; mobil
 async function findTarget(url: string, serviceKey: string, mobile: string, verifiedEmail?: string): Promise<Target[]> {
   const found = new Map<string, Target>();
   for (let offset = 0; offset < 10000; offset += 500) {
-    const response = await fetch(url + '/rest/v1/aym_party_portal?select=organization_id,party_ref,email,data&limit=500', {
+    const response = await fetch(url + '/rest/v1/aym_party_portal?select=organization_id,party_ref,email,data&order=organization_id.asc,party_ref.asc&limit=500', {
       headers: { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey, Range: offset + '-' + (offset + 499), 'Range-Unit': 'items' },
       cache: 'no-store',
     });
@@ -44,6 +44,33 @@ async function findTarget(url: string, serviceKey: string, mobile: string, verif
         if (!ref || ref !== String(row.party_ref || '')) continue;
         const key = String(row.organization_id) + ':' + ref;
         found.set(key, { organization_id: String(row.organization_id), party_ref: ref, email, mobile: '+91' + mobile });
+      }
+    }
+    if (rows.length < 500) break;
+  }
+  return Array.from(found.values());
+}
+
+async function findTargetByEmail(url: string, serviceKey: string, email: string): Promise<Target[]> {
+  const found = new Map<string, Target>();
+  for (let offset = 0; offset < 10000; offset += 500) {
+    const response = await fetch(url + '/rest/v1/aym_party_portal?select=organization_id,party_ref,email,data&order=organization_id.asc,party_ref.asc&limit=500', {
+      headers: { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey, Range: offset + '-' + (offset + 499), 'Range-Unit': 'items' },
+      cache: 'no-store',
+    });
+    if (!response.ok) throw new Error('party_lookup_failed');
+    const rows = await response.json();
+    if (!Array.isArray(rows)) throw new Error('party_lookup_failed');
+    for (const row of rows) {
+      const parties = row?.data?.parties;
+      if (!Array.isArray(parties)) continue;
+      for (const party of parties) {
+        const partyEmail = String(party?.email || '').trim().toLowerCase();
+        if (!partyEmail || partyEmail !== email || partyEmail !== String(row.email || '').trim().toLowerCase()) continue;
+        const ref = String(party?.id || '');
+        if (!ref || ref !== String(row.party_ref || '')) continue;
+        const key = String(row.organization_id) + ':' + ref;
+        found.set(key, { organization_id: String(row.organization_id), party_ref: ref, email: partyEmail, mobile: '+91' + mobile10(party?.mobile) });
       }
     }
     if (rows.length < 500) break;
@@ -89,18 +116,23 @@ Deno.serve(async (request) => {
   const accessToken = authorization.replace(/^Bearer\s+/i, '').trim();
   if (!url || !serviceKey || !publishableKey) return json({ error: 'function_not_configured' }, 500);
 
-  let input: { action?: string; mobile?: string; password?: string };
+  let input: { action?: string; mobile?: string; email?: string; password?: string };
   try { input = await request.json(); } catch (_) { return json({ error: 'invalid_request' }, 400); }
   const mobile = mobile10(input.mobile);
+  const email = String(input.email || '').trim().toLowerCase();
   const password = String(input.password || '');
-  if (!mobile || password.length < 10 || password.length > 128 || !['set_password', 'login'].includes(String(input.action || ''))) {
+  const action = String(input.action || '');
+  const validPasswordLength = action === 'set_password'
+    ? password.length === 6
+    : action === 'login' && password.length >= 6 && password.length <= 128;
+  if (!validPasswordLength || !['set_password', 'login'].includes(action) || (action === 'set_password' && !mobile) || (action === 'login' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
     return json({ error: 'invalid_request' }, 400);
   }
 
   try {
     if (input.action === 'login') {
-      const targets = await findTarget(url, serviceKey, mobile);
-      if (targets.length !== 1) return json({ error: 'invalid_party_credentials' }, 401);
+      const targets = await findTargetByEmail(url, serviceKey, email);
+      if (targets.length !== 1) return json({ error: targets.length > 1 ? 'party_email_ambiguous' : 'invalid_party_credentials' }, targets.length > 1 ? 409 : 401);
       const target = targets[0];
       const accountPath = 'aym_party_password_accounts?select=auth_user_id&organization_id=eq.' + encodeURIComponent(target.organization_id) + '&party_ref=eq.' + encodeURIComponent(target.party_ref);
       const accountResponse = await fetch(url + '/rest/v1/' + accountPath, { headers: { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey }, cache: 'no-store' });

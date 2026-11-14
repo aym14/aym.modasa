@@ -13788,18 +13788,18 @@ LedgerFeatures.identity.setLoginFormMode = function (mode) {
   }
   const usernameField = $('#loginUsername');
   if (usernameField) {
-    usernameField.type = isPartyLogin ? 'tel' : 'text';
-    usernameField.inputMode = isPartyLogin ? 'numeric' : 'text';
-    usernameField.autocomplete = isPartyLogin ? 'tel' : 'username';
+    usernameField.type = isPartyLogin ? 'email' : 'text';
+    usernameField.inputMode = isPartyLogin ? 'email' : 'text';
+    usernameField.autocomplete = 'username';
     usernameField.placeholder = isPartyLogin
-      ? (window.aymLoginCopy ? window.aymLoginCopy('partyMobilePlaceholder') : 'તમારો નોંધાયેલ મોબાઇલ દાખલ કરો')
+      ? (window.aymLoginCopy ? window.aymLoginCopy('partyEmailPlaceholder') : 'તમારો નોંધાયેલ ઈમેલ દાખલ કરો')
       : (window.aymLoginCopy ? window.aymLoginCopy('adminUsernamePlaceholder') : 'એડમિન યુઝરનેમ નાખો');
   }
   const usernameLabel = $('#loginUsernameLabelText');
   if (usernameLabel) {
-    const copyKey = isPartyLogin ? 'registeredMobile' : 'usernameMobile';
+    const copyKey = isPartyLogin ? 'registeredEmail' : 'usernameMobile';
     usernameLabel.setAttribute('data-aym-login-copy', copyKey);
-    usernameLabel.textContent = window.aymLoginCopy ? window.aymLoginCopy(copyKey) : (isPartyLogin ? 'નોંધાયેલ મોબાઇલ' : 'યુઝરનેમ / મોબાઇલ');
+    usernameLabel.textContent = window.aymLoginCopy ? window.aymLoginCopy(copyKey) : (isPartyLogin ? 'નોંધાયેલ ઈમેલ' : 'યુઝરનેમ / મોબાઇલ');
   }
   if (window.aymRefreshLoginCopy) window.aymRefreshLoginCopy();
   $('#loginError').textContent = '';
@@ -39302,7 +39302,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     setSteps(['મોબાઇલ', 'વિગત + ઇમેલ', 'OTP', 'ખાતું'], 3);
     var b = open('પાર્ટી ખાતું પૂરું કરો', 'ઇમેલ ચકાસાઈ ગયો — હવે ખાતું બનાવો');
     if(S.registrationInvite){
-      b.innerHTML='<div class="aympo-tick"><i class="fas fa-circle-check"></i> ઈમેલ વેરિફાય થઈ ગયો: <b>'+esc(S.email)+'</b></div><p class="aympo-lead">તમારો Party પાસવર્ડ બનાવો. વિગતો સીધી Admin ledgerમાં save અને sync થશે.</p>'+field('નવો Party પાસવર્ડ <em>*</em>','aympoInvitePw','type="password" autocomplete="new-password" minlength="10" maxlength="128" placeholder="ઓછામાં ઓછા 10 અક્ષર"')+field('પાસવર્ડ ફરી લખો <em>*</em>','aympoInvitePw2','type="password" autocomplete="new-password" minlength="10" maxlength="128" placeholder="એ જ પાસવર્ડ ફરી લખો"')+'<div class="aympo-err" id="aympoErr"></div><button type="button" class="aympo-btn" id="aympoCreate">નોંધણી અને પાસવર્ડ સાચવો</button>';
+      b.innerHTML='<div class="aympo-tick"><i class="fas fa-circle-check"></i> ઈમેલ વેરિફાય થઈ ગયો: <b>'+esc(S.email)+'</b></div><p class="aympo-lead">તમારો Party પાસવર્ડ બનાવો. વિગતો સીધી Admin ledgerમાં save અને sync થશે.</p>'+field('નવો Party પાસવર્ડ <em>*</em>','aympoInvitePw','type="password" autocomplete="new-password" minlength="6" maxlength="6" placeholder="ચોક્કસ 6 અક્ષર"')+field('પાસવર્ડ ફરી લખો <em>*</em>','aympoInvitePw2','type="password" autocomplete="new-password" minlength="6" maxlength="6" placeholder="એ જ પાસવર્ડ ફરી લખો"')+'<div class="aympo-err" id="aympoErr"></div><button type="button" class="aympo-btn" id="aympoCreate">નોંધણી અને પાસવર્ડ સાચવો</button>';
       q('#aympoCreate').onclick=function(){completeInviteRegistration(this);};return;
     }
     b.innerHTML =
@@ -39315,7 +39315,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
 
   async function completeInviteRegistration(btn){
     var password=String(q('#aympoInvitePw').value||''),confirm=String(q('#aympoInvitePw2').value||'');err('');
-    if(password.length<10||password.length>128)return err('પાસવર્ડ 10થી 128 અક્ષરનો હોવો જોઈએ.');
+    if(password.length!==6)return err('પાસવર્ડ ચોક્કસ 6 અક્ષરનો હોવો જોઈએ.');
     if(password!==confirm)return err('બંને પાસવર્ડ સરખા નથી.');
     if(!S.emailAuth||!S.emailAuth.access_token)return err('ઈમેલ verification session મળ્યું નથી. ઈમેલ OTP ફરી verify કરો.');
     btnBusy(btn,true,'સાચવી રહ્યું છે…');
@@ -45068,9 +45068,9 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   COPY.en.partyQrHeading='One QR for every Party';
   COPY.gu.partyQrHeading='બધી પાર્ટી માટે એક જ QR';
   COPY.hi.partyQrHeading='हर पार्टी के लिए एक QR';
-  COPY.en.partyQrText='Scan the shared code to open the app. Sign in with your own registered mobile.';
-  COPY.gu.partyQrText='શેર કરેલો QR સ્કેન કરીને એપ ખોલો. તમારા નોંધાયેલા મોબાઇલથી લોગિન કરો.';
-  COPY.hi.partyQrText='ऐप खोलने के लिए साझा QR स्कैन करें। अपने पंजीकृत मोबाइल से लॉगिन करें।';
+  COPY.en.partyQrText='Scan the shared code to open the app. Sign in with your registered email and Party password.';
+  COPY.gu.partyQrText='શેર કરેલો QR સ્કેન કરીને એપ ખોલો. નોંધાયેલા ઈમેલ અને Party પાસવર્ડથી લોગિન કરો.';
+  COPY.hi.partyQrText='ऐप खोलने के लिए साझा QR स्कैन करें। दर्ज ईमेल और Party पासवर्ड से लॉगिन करें।';
   COPY.en.partyQrPublicLabel='APP LINK ONLY · NO ACCOUNT DATA'; COPY.gu.partyQrPublicLabel='માત્ર એપ લિંક · એકાઉન્ટ ડેટા નહીં'; COPY.hi.partyQrPublicLabel='केवल ऐप लिंक · खाता डेटा नहीं';
   COPY.en.partyQrPrivacy='This is one public app link for all parties. It contains no account password or Cloud Sync key.';
   COPY.gu.partyQrPrivacy='આ બધી પાર્ટી માટેની જાહેર એપ લિંક છે. તેમાં એકાઉન્ટનો પાસવર્ડ કે Cloud Sync key નથી.';
@@ -45099,9 +45099,9 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   COPY.en.cloudJoinHint='Use the Join QR only on a trusted admin device. It contains Cloud Sync settings; do not share it with party/member accounts.';
   COPY.gu.cloudJoinHint='Join QR ફક્ત વિશ્વાસપાત્ર એડમિન ડિવાઇસ પર વાપરો. તેમાં Cloud Sync સેટિંગ હોય છે; પાર્ટી/સભ્ય એકાઉન્ટ સાથે શેર ન કરો.';
   COPY.hi.cloudJoinHint='Join QR केवल भरोसेमंद एडमिन डिवाइस पर इस्तेमाल करें। इसमें Cloud Sync सेटिंग होती है; पार्टी/सदस्य खातों के साथ साझा न करें।';
-  COPY.en.partyOtpLogin='Mobile + email OTP sign-in';
-   COPY.gu.partyOtpLogin='મોબાઇલ + ઇમેલ OTPથી લોગિન';
-   COPY.hi.partyOtpLogin='मोबाइल + ईमेल OTP से लॉगिन';
+  COPY.en.partyOtpLogin='Email + Party password sign-in';
+   COPY.gu.partyOtpLogin='ઈમેલ + Party પાસવર્ડથી લોગિન';
+   COPY.hi.partyOtpLogin='ईमेल + Party पासवर्ड से लॉगिन';
   COPY.en.brandTagline='Income, expenses, loans and instalments — all in one place.';
   COPY.gu.brandTagline='આવક, જાવક, લોન અને હપ્તાનો હિસાબ — એક જ જગ્યાએ, સરળ અને સુરક્ષિત.';
   COPY.hi.brandTagline='आय, खर्च, लोन और किस्तों का हिसाब — सब एक ही जगह।';
@@ -45112,17 +45112,19 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   COPY.en.partyLogin='Party login'; COPY.gu.partyLogin='પાર્ટી લોગિન'; COPY.hi.partyLogin='पार्टी लॉगिन';
   COPY.en.usernameMobile='USERNAME / MOBILE'; COPY.gu.usernameMobile='યુઝરનેમ / મોબાઇલ'; COPY.hi.usernameMobile='यूज़रनेम / मोबाइल';
   COPY.en.registeredMobile='REGISTERED MOBILE'; COPY.gu.registeredMobile='નોંધાયેલ મોબાઇલ'; COPY.hi.registeredMobile='पंजीकृत मोबाइल';
+  COPY.en.registeredEmail='REGISTERED EMAIL'; COPY.gu.registeredEmail='નોંધાયેલ ઈમેલ'; COPY.hi.registeredEmail='पंजीकृत ईमेल';
   COPY.en.passwordLabel='PASSWORD'; COPY.gu.passwordLabel='પાસવર્ડ'; COPY.hi.passwordLabel='पासवर्ड';
   COPY.en.adminUsernamePlaceholder='Enter admin username'; COPY.gu.adminUsernamePlaceholder='એડમિન યુઝરનેમ નાખો'; COPY.hi.adminUsernamePlaceholder='एडमिन यूज़रनेम दर्ज करें';
   COPY.en.partyMobilePlaceholder='Enter your registered mobile'; COPY.gu.partyMobilePlaceholder='તમારો નોંધાયેલ મોબાઇલ દાખલ કરો'; COPY.hi.partyMobilePlaceholder='अपना पंजीकृत मोबाइल दर्ज करें';
+  COPY.en.partyEmailPlaceholder='Enter your registered email'; COPY.gu.partyEmailPlaceholder='તમારો નોંધાયેલ ઈમેલ દાખલ કરો'; COPY.hi.partyEmailPlaceholder='अपना पंजीकृत ईमेल दर्ज करें';
   COPY.en.adminLoginButton='Log in'; COPY.gu.adminLoginButton='લોગિન કરો'; COPY.hi.adminLoginButton='लॉग इन';
   COPY.en.continueOtp='Party Password Login'; COPY.gu.continueOtp='પાર્ટી પાસવર્ડથી લોગિન'; COPY.hi.continueOtp='पार्टी पासवर्ड से लॉगिन';
-  COPY.en.otpDeliveryNote='A verification email is sent to your registered email.'; COPY.gu.otpDeliveryNote='નોંધાયેલા ઇમેલ પર verification મોકલવામાં આવશે. SMS જરૂરી નથી.'; COPY.hi.otpDeliveryNote='दर्ज ईमेल पर सत्यापन भेजा जाएगा। SMS आवश्यक नहीं है।';
+  COPY.en.otpDeliveryNote='Use your registered email and Party password. Email OTP is for password setup or reset.'; COPY.gu.otpDeliveryNote='નોંધાયેલા ઈમેલ અને Party પાસવર્ડથી લોગિન કરો. OTP પાસવર્ડ સેટ / રીસેટ માટે છે.'; COPY.hi.otpDeliveryNote='दर्ज ईमेल और Party पासवर्ड से लॉगिन करें। OTP पासवर्ड सेट / रीसेट के लिए है।';
   COPY.en.mobilePartyQrNote='The same public QR works for every Party. Never scan the Admin Cloud Join QR.'; COPY.gu.mobilePartyQrNote='આ જ જાહેર QR દરેક પાર્ટી માટે છે. Adminનું Cloud Join QR સ્કેન ન કરો.'; COPY.hi.mobilePartyQrNote='यह सार्वजनिक QR हर पार्टी के लिए है। Admin का Cloud Join QR स्कैन न करें।';
   COPY.en.createPartyAccount='Create Party account'; COPY.gu.createPartyAccount='પાર્ટી ખાતું બનાવો'; COPY.hi.createPartyAccount='पार्टी खाता बनाएँ';
   COPY.en.setupPartyPassword='Set / Reset Party Password'; COPY.gu.setupPartyPassword='પાર્ટી પાસવર્ડ સેટ / બદલો'; COPY.hi.setupPartyPassword='पार्टी पासवर्ड सेट / बदलें';
   COPY.en.needHelp='Need help?'; COPY.gu.needHelp='મદદ જોઈએ?'; COPY.hi.needHelp='मदद चाहिए?';
-  COPY.en.partyHelp='Ask your Admin to confirm your registered mobile and email.'; COPY.gu.partyHelp='તમારો મોબાઇલ અને ઇમેલ નોંધાયેલા છે કે નહીં તે એડમિનને પૂછો.'; COPY.hi.partyHelp='अपना मोबाइल और ईमेल दर्ज है या नहीं, Admin से पूछें।';
+  COPY.en.partyHelp='Ask your Admin to confirm your registered email and mobile.'; COPY.gu.partyHelp='તમારો ઈમેલ અને મોબાઇલ નોંધાયેલા છે કે નહીં તે Adminને પૂછો.'; COPY.hi.partyHelp='Admin से अपना दर्ज ईमेल और मोबाइल जाँचने को कहें।';
   COPY.en.createAdmin='Create new Admin'; COPY.gu.createAdmin='નવો એડમિન બનાવો'; COPY.hi.createAdmin='नया एडमिन बनाएँ';
     COPY.en.backupSyncTitle='Backup and sync'; COPY.gu.backupSyncTitle='સરળ બેકઅપ અને સિંક'; COPY.hi.backupSyncTitle='आसान बैकअप और सिंक';
     COPY.en.backupSyncDescription='Transfer data between devices with a backup file.'; COPY.gu.backupSyncDescription='બેકઅપ ફાઇલથી એક ડિવાઇસનો ડેટા બીજા ડિવાઇસમાં મોકલો.'; COPY.hi.backupSyncDescription='बैकअप फ़ाइल से एक डिवाइस का डेटा दूसरे डिवाइस पर भेजें।';
@@ -45510,6 +45512,6 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   }
 }
 </style>
-<script src="./party-mobile-email-login.js?v=party-password-6"></script>
+<script src="./party-mobile-email-login.js?v=party-email-password-six-1"></script>
 </body>
 </html>
