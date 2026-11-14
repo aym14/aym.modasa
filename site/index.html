@@ -23696,6 +23696,7 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
       document.body.classList.toggle('ns-viewer', role === 'viewer');
       document.body.classList.toggle('ns-admin', role === 'admin');
       nsPartyTasksSync(role);
+      nsEnsureAvailableGuarantorsTask(role);
       nsHomeGridSync(role);
       var dock = document.getElementById('wsDock');
       if (!dock) return;
@@ -23828,6 +23829,19 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
         });
       });
       nsTasksBadgeSync(panel);
+    } catch(e) {}
+  }
+  /* Keep this required Party task visible even if another home refresh or
+     an older cached task panel replaces the dashboard's generated markup. */
+  function nsEnsureAvailableGuarantorsTask(role){
+    try {
+      if (role !== 'party' && role !== 'viewer') return;
+      var panel = document.getElementById('nsPartyTasks');
+      var grid = panel && panel.querySelector('.ns-party-tasks-grid');
+      if (!grid || grid.querySelector('[data-ns-task="availableGuarantors"]')) return;
+      grid.insertAdjacentHTML('beforeend', nsTaskTile('availableGuarantors', 'fa-users', 'Available Guarantors', 'જામીનદારની યાદી'));
+      var tile = grid.querySelector('[data-ns-task="availableGuarantors"]');
+      if (tile) tile.addEventListener('click', function(){ try { sidebarAction('availableGuarantors'); } catch(e) {} });
     } catch(e) {}
   }
 
