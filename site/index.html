@@ -40323,7 +40323,13 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     S.email=rowEmail;
     // Replace every data collection; never merge an Admin cache into a Party view.
     ['entries','parties','categories','loanForms','moduleRecords','customModules'].forEach(function(k){SET(k,Array.isArray(data[k])?data[k]:[]);});
-    ['messages','guarantorChangeForms','LOAN_PLANS','LOAN_TERMS','GC_TERMS'].forEach(function(k){SET(k,[]);});
+    ['messages','guarantorChangeForms'].forEach(function(k){SET(k,[]);});
+    // The shared Admin form editors need the public loan slabs and terms.
+    // Load them from the authenticated Party projection when available;
+    // otherwise leave the app's built-in defaults intact.
+    if(Array.isArray(data.loanPlans)&&data.loanPlans.length)SET('LOAN_PLANS',data.loanPlans.filter(function(p){return p&&typeof p==='object';}));
+    if(Array.isArray(data.loanTerms))SET('LOAN_TERMS',data.loanTerms.filter(function(t){return typeof t==='string';}));
+    if(Array.isArray(data.guarantorTerms))SET('GC_TERMS',data.guarantorTerms.filter(function(t){return typeof t==='string';}));
     window.aymAccounts=[];window.aymSectionKinds=[];
     var user={id:'cloud:'+row.organization_id+':'+row.sync_key+':'+row.party_ref,role:'party',partyId:p.id,name:p.name||'Party',username:S.email||p.mobile,email:S.email,authProvider:'supabase-party-cloud',emailVerified:true};
     SET('users',[user]);S.phoneAuth=auth;S.emailAuth=auth;S.mobile=p.mobile||'';
@@ -45377,7 +45383,7 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   }, 800);
 })();
 </script>
-<script src="./party-cloud.js?v=party-cloud-auth-restore-guard"></script>
+<script src="./party-cloud.js?v=party-admin-form-editors-1"></script>
 <style id="aym-loan-form-print-layout-v1">
 /* Loan form print layout: consistent A4 hierarchy, readable fields and rules. */
 @page aymA4Portrait { size: A4 portrait; margin: 9mm 9mm 10mm; }

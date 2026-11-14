@@ -59,7 +59,23 @@
     var current = null;
     try { current = typeof window.CS === 'function' ? window.CS() : window.currentSession; } catch (_) {}
     if (!current || current.role !== 'party') return false;
-    showApplicationForm(type);
+    // Use the same full-screen form editors as Admin. Cloud Party submissions
+    // are intercepted below and sent to the reviewed, server-side form inbox.
+    if (type === 'loan_application') {
+      if (typeof window.sidebarAction === 'function') window.sidebarAction('loanForm');
+      if (typeof window.startNewLoanForm === 'function') window.startNewLoanForm();
+    } else if (type === 'guarantor_change') {
+      if (typeof window.sidebarAction === 'function') window.sidebarAction('guarantorChange');
+      else if (typeof window.startNewGuarantorChangeForm === 'function') window.startNewGuarantorChangeForm();
+    } else return false;
+    setTimeout(function () {
+      var draft = document.getElementById('btnLoanSaveDraft');
+      var loanSubmit = document.getElementById('btnLoanSubmit');
+      if (draft) draft.style.display = 'none';
+      if (loanSubmit) loanSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> અરજી એડમિનને મોકલો';
+      var gcSave = document.querySelector('#gcEditorView button[onclick*="saveGuarantorChangeForm"]');
+      if (gcSave) gcSave.innerHTML = '<i class="fas fa-paper-plane"></i> અરજી એડમિનને મોકલો';
+    }, 80);
     return true;
   }
   window.AYMPartyRequests = window.AYMPartyRequests || {};
@@ -75,6 +91,81 @@
     event.stopPropagation();
     if (event.stopImmediatePropagation) event.stopImmediatePropagation();
     openCloudTaskForm(type);
+  }, true);
+  // Never run the local Admin ledger save/approval path for a Cloud Party.
+  // Submit only the fields needed by the validated online application RPC.
+  document.addEventListener('click', function (event) {
+    if (!window.aymPartyReadOnlyCloud) return;
+    var target = event.target && event.target.closest ? event.target : null;
+    var loanButton = target && target.closest('#btnLoanSubmit');
+    var gcButton = target && target.closest('#gcEditorView button[onclick*="saveGuarantorChangeForm"]');
+    if (!loanButton && !gcButton) return;
+    event.preventDefault(); event.stopPropagation();
+    if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+    var button = loanButton || gcButton;
+    var original = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> મોકલાઈ રહ્યું છે…';
+    Promise.resolve().then(function () {
+      var payload, kind;
+      if (loanButton) {
+        if (typeof window.collectLoanFormFromUI !== 'function') throw new Error('લોન ફોર્મ તૈયાર નથી. પેજ ફરી ખોલો.');
+        var form = window.collectLoanFormFromUI();
+        payload = {
+          amount: Number(form.amount || 0), purpose: String(form.reason || '').trim(),
+          address: String(form.address || '').trim(), mobile: String(form.borrowerMobile || '').trim(),
+          guarantors: (form.guarantors || []).map(function (g) { return String(g && g.name || '').trim(); }).filter(Boolean),
+          note: '', application_number: String(form.comNo || ''), date: String(form.date || ''),
+          guardian_name: String(form.guardianName || ''), occupation: String(form.occupation || ''),
+          guarantor_details: (form.guarantors || []).map(function (g) { return {name:g.name||'',mobile:g.mobile||'',address:g.address||''}; }),
+          form_data: {
+            comNo: form.comNo || '', date: form.date || '', chequeNo: form.chequeNo || '',
+            guardianName: form.guardianName || '', guardianMobile: form.guardianMobile || '',
+            occupation: form.occupation || '', planIdx: form.planIdx, fileFee: Number(form.fileFee || 0),
+            installments: Number(form.installments || 0), installmentAmount: Number(form.installmentAmount || 0),
+            lastAmount: Number(form.lastAmount || 0), land: form.land || '',
+            termsAccepted: !!form.termsAccepted, guarantors: form.guarantors || []
+          }
+        };
+        if (payload.purpose.length < 2) throw new Error('લોન લેવાનું કારણ લખો.');
+        if (payload.mobile.replace(/\D/g,'').length < 7) throw new Error('માન્ય મોબાઇલ નંબર લખો.');
+        kind = 'loan_application';
+      } else {
+        if (typeof window.collectGcFormFromUI !== 'function') throw new Error('જામીન ફોર્મ તૈયાર નથી. પેજ ફરી ખોલો.');
+        var form = window.collectGcFormFromUI();
+        var replacing = (form.oldGuarantors || []).filter(function (g) { return g && g.replace; });
+        var replacements = (form.newGuarantors || []).filter(function (g) { return g && String(g.name || '').trim(); });
+        payload = {
+          loan_reference: String(form.comNo || form.applicantName || '').trim(),
+          old_guarantor: replacing.map(function (g) { return g.name; }).join(', ').trim(),
+          new_guarantor: replacements.map(function (g) { return g.name; }).join(', ').trim(),
+          new_guarantor_mobile: replacements.map(function (g) { return g.mobile || ''; }).join(', '),
+          new_guarantor_address: replacements.map(function (g) { return g.address || ''; }).join(' | '),
+          reason: String(form.reason || '').trim(), note: '',
+          loan_amount: Number(form.loanAmount || 0), outstanding: Number(form.outstanding || 0),
+          applicant_name: String(form.applicantName || ''), date: String(form.date || ''),
+          old_guarantors: form.oldGuarantors || [], new_guarantors: replacements,
+          form_data: {
+            comNo: form.comNo || '', date: form.date || '', loanDate: form.loanDate || '',
+            applicantName: form.applicantName || '', loanAmount: Number(form.loanAmount || 0),
+            paidInstallments: Number(form.paidInstallments || 0), paidAmount: Number(form.paidAmount || 0),
+            outstanding: Number(form.outstanding || 0), reason: form.reason || '',
+            oldGuarantors: form.oldGuarantors || [], newGuarantors: replacements
+          }
+        };
+        if (!payload.loan_reference) throw new Error('લોન પસંદ કરો.');
+        if (!payload.old_guarantor) throw new Error('બદલવાના હાલના જામીનદાર પસંદ કરો.');
+        if (!payload.new_guarantor) throw new Error('નવા જામીનદારની વિગતો ભરો.');
+        if (payload.reason.length < 2) throw new Error('બદલવાનું કારણ લખો.');
+        kind = 'guarantor_change';
+      }
+      return window.AYMPO.submitPartyForm(kind, payload);
+    }).then(function () {
+      if (typeof window.showToast === 'function') window.showToast('✅ અરજી એડમિનની સમીક્ષા માટે મોકલાઈ.');
+      if (typeof window.sidebarAction === 'function') window.sidebarAction('home');
+    }).catch(function (error) {
+      if (typeof window.showToast === 'function') window.showToast(error && error.message || 'અરજી મોકલી શકાઈ નથી.');
+    }).finally(function () { button.disabled = false; button.innerHTML = original; });
   }, true);
   function restrictCloudPartyReportFilter() {
     if (!window.aymPartyReadOnlyCloud) return;
@@ -117,6 +208,10 @@
       rows.forEach(function(r){var details=r.payload||{},loan=r.form_type==='loan_application';var lines=loan?[
         ['માંગેલી રકમ','₹ '+Number(details.amount||0).toLocaleString('en-IN')],['હેતુ',details.purpose],['સરનામું',details.address],['મોબાઇલ',details.mobile],['જામીનદાર',Array.isArray(details.guarantors)?details.guarantors.join(', '):''],['નોંધ',details.note]
       ]:[['લોન/ખાતા',details.loan_reference],['હાલના જામીનદાર',details.old_guarantor],['નવા જામીનદાર',details.new_guarantor],['મોબાઇલ',details.new_guarantor_mobile],['સરનામું',details.new_guarantor_address],['કારણ',details.reason],['નોંધ',details.note]];
+      var extra=details.form_data||{},extraLabels={comNo:'ફોર્મ નંબર',date:'તારીખ',chequeNo:'ચેક નંબર',guardianName:'વાલીનું નામ',guardianMobile:'વાલીનો મોબાઇલ',occupation:'વ્યવસાય',fileFee:'ફાઇલ ચાર્જ',installments:'કુલ હપ્તા',installmentAmount:'હપ્તાની રકમ',lastAmount:'છેલ્લો હપ્તો',land:'જમીન',loanDate:'લોન પાસ તારીખ',applicantName:'અરજદાર',loanAmount:'લોન રકમ',paidInstallments:'ભરેલા હપ્તા',paidAmount:'ભરેલી રકમ',outstanding:'બાકી રકમ'};
+      Object.keys(extraLabels).forEach(function(key){var value=extra[key];if(value!==undefined&&value!==null&&value!=='')lines.push([extraLabels[key],value]);});
+      (loan?(extra.guarantors||[]):(extra.newGuarantors||[])).forEach(function(g,i){if(g&&g.name)lines.push(['જામીનદાર '+(i+1),[g.name,g.mobile,g.address].filter(Boolean).join(' · ')]);});
+      if(!loan)(extra.oldGuarantors||[]).filter(function(g){return g&&g.replace;}).forEach(function(g,i){lines.push(['બદલવાના જૂના જામીનદાર',g.name]);});
       var card=document.createElement('article');card.className='aympr-card-item';card.innerHTML='<strong>'+esc(formLabels[r.form_type]||r.form_type)+'</strong><div class="aympr-meta">'+esc(r.party_name)+' · '+esc(r.party_email)+' · '+esc(new Date(r.created_at).toLocaleString('gu-IN'))+'</div>'+lines.filter(function(x){return x[1]!==undefined&&x[1]!=='';}).map(function(x){return '<div class="aympr-message"><b>'+esc(x[0])+':</b> '+esc(x[1])+'</div>';}).join('')+'<label>અરજીની સ્થિતિ</label><select aria-label="અરજીની સ્થિતિ"><option value="pending">નવી</option><option value="reviewing">તપાસમાં</option><option value="approved">મંજૂર</option><option value="rejected">નામંજૂર</option></select><label>એડમિનની નોંધ</label><textarea maxlength="2000" placeholder="પાર્ટી માટે નોંધ">'+esc(r.admin_note||'')+'</textarea><div class="aympr-error" aria-live="polite"></div><div class="aympr-actions"><button type="button">સ્થિતિ સાચવો</button></div>';
       var select=card.querySelector('select'),note=card.querySelector('textarea'),error=card.querySelector('.aympr-error'),save=card.querySelector('button');select.value=r.status;
       save.onclick=async function(){save.disabled=true;error.textContent='';try{await window.AYMPO.updateAdminPartyForm(r.id,select.value,note.value);error.style.color='#087f70';error.textContent='સાચવ્યું';}catch(e){error.style.color='';error.textContent=e.message||'સાચવી શકાયું નથી.';}finally{save.disabled=false;}};content.appendChild(card);});
