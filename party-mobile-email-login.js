@@ -83,10 +83,14 @@
     try{
       state.config=state.config||await cfg();
       await otp({action:'send',mobile:mobile});
-      root.querySelector('.fields').innerHTML='<p>નોંધાયેલા ઈમેલ પર આવેલ 8 અંકનો OTP નાખો.</p><label for="aymEmailOtp">ઈમેલ OTP</label><input id="aymEmailOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{8}" placeholder="8 અંકનો કોડ">';
+      root.querySelector('h2').textContent='ઈમેલ ચકાસો';
+      root.querySelector('.fields').innerHTML='<p>નોંધાયેલા ઈમેલ પર આવેલ 8 અંકનો OTP નાખો. OTP ચકાસ્યા પછી તરત Party પાસવર્ડ બનાવવાનો વિકલ્પ આવશે.</p><label for="aymEmailOtp">ઈમેલ OTP</label><input id="aymEmailOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{8}" placeholder="8 અંકનો કોડ">';
       var main=root.querySelector('[data-main]');main.textContent='ઈમેલ ચકાસો';main.onclick=function(){verifyOtp(root,this);};
       var set=root.querySelector('[data-set]');set.hidden=true;button.disabled=false;root.querySelector('#aymEmailOtp').focus();
-    }catch(e){showError(root,e.status===429?'ઘણા OTP પ્રયાસ થયા છે. થોડી વાર પછી ફરી પ્રયાસ કરો.':'OTP મોકલી શકાયો નથી. નોંધાયેલ mobile અને ઈમેલ તપાસો.');button.disabled=false;}
+    }catch(e){
+      var sendMessages={party_mobile_ambiguous:'આ મોબાઇલ એકથી વધુ Party રેકોર્ડમાં છે. Adminએ duplicate Party રેકોર્ડ સુધારવા પડશે.',party_email_not_configured:'આ Partyના રેકોર્ડમાં ઈમેલ મળ્યો નથી. Adminએ Partyનો ઈમેલ સાચવીને Sync કરવો પડશે.',otp_rate_limited:'ઘણા OTP પ્રયાસ થયા છે. થોડી વાર પછી ફરી પ્રયાસ કરો.',otp_unavailable:'ઈમેલ OTP સેવા હાલ ઉપલબ્ધ નથી. Supabase Auth અને email template તપાસો.'};
+      showError(root,sendMessages[e&&e.code]||(e&&e.status?'OTP મોકલી શકાયો નથી (સેવા ભૂલ '+e.status+').':'OTP મોકલી શકાયો નથી. નોંધાયેલ mobile અને ઈમેલ તપાસો.'));button.disabled=false;
+    }
   }
   async function verifyOtp(root,button){
     var token=String(root.querySelector('#aymEmailOtp').value||'').replace(/\D/g,'');showError(root,'');
@@ -94,11 +98,18 @@
     button.disabled=true;button.textContent='ચકાસાઈ રહ્યું છે…';
     try{
       var result=await otp({action:'verify',mobile:state.mobile,token:token}),session=result.session||{},user=result.user||{};
-      if(!session.access_token||!session.refresh_token||!user.id||!user.email||!user.email_confirmed_at)throw new Error('invalid_code');
+      // The OTP edge function has already bound this session to the email resolved
+      // for this mobile. The password-auth endpoint independently verifies the
+      // confirmed email against the bearer token before accepting a password.
+      if(!session.access_token||!session.refresh_token||!user.id||!user.email)throw new Error('invalid_code');
       state.emailSession=session;
-      root.querySelector('.fields').innerHTML='<p>ઈમેલ ચકાસાઈ ગયો. આ પાસવર્ડ ફક્ત Party login માટે રહેશે.</p><label for="aymNewPartyPassword">નવો Party પાસવર્ડ</label><input id="aymNewPartyPassword" type="password" autocomplete="new-password" minlength="10" placeholder="ઓછામાં ઓછા 10 અક્ષર"><label for="aymConfirmPartyPassword">પાસવર્ડ ફરી લખો</label><input id="aymConfirmPartyPassword" type="password" autocomplete="new-password" minlength="10" placeholder="પાસવર્ડની પુષ્ટિ">';
+      root.querySelector('h2').textContent='ઈમેલ ચકાસાઈ ગયો — પાસવર્ડ બનાવો';
+      root.querySelector('.fields').innerHTML='<p>હવે તમારો Party પાસવર્ડ બનાવો. આગળથી Party Loginમાં આ જ મોબાઇલ નંબર અને પાસવર્ડ વાપરો. આ પાસવર્ડ Admin loginથી અલગ છે.</p><label for="aymNewPartyPassword">નવો Party પાસવર્ડ</label><input id="aymNewPartyPassword" type="password" autocomplete="new-password" minlength="10" placeholder="ઓછામાં ઓછા 10 અક્ષર"><label for="aymConfirmPartyPassword">પાસવર્ડ ફરી લખો</label><input id="aymConfirmPartyPassword" type="password" autocomplete="new-password" minlength="10" placeholder="પાસવર્ડની પુષ્ટિ">';
       button.disabled=false;button.textContent='Party પાસવર્ડ સેટ કરો';button.onclick=function(){setPassword(root,this);};root.querySelector('#aymNewPartyPassword').focus();
-    }catch(_){showError(root,'OTP ખોટો છે અથવા તેની સમયમર્યાદા પૂરી થઈ છે. નવો OTP મંગાવો.');button.disabled=false;button.textContent='ઈમેલ ચકાસો';}
+    }catch(e){
+      var verifyMessages={party_mobile_ambiguous:'આ મોબાઇલ એકથી વધુ Party રેકોર્ડમાં છે. Adminએ duplicate Party રેકોર્ડ સુધારવા પડશે.',invalid_code:'OTP ખોટો છે અથવા તેની સમયમર્યાદા પૂરી થઈ છે. ફરીથી OTP મંગાવીને પ્રયાસ કરો.'};
+      showError(root,verifyMessages[e&&e.code]||(e&&e.status?'ઈમેલ verification સેવા તરફથી ભૂલ ('+e.status+') આવી. Supabase Auth logs તપાસો.':'OTP verify થઈ શક્યો નથી. ફરીથી OTP મંગાવો અને પ્રયાસ કરો.'));button.disabled=false;button.textContent='ઈમેલ ચકાસો';
+    }
   }
   async function setPassword(root,button){
     var password=String(root.querySelector('#aymNewPartyPassword').value||''),confirm=String(root.querySelector('#aymConfirmPartyPassword').value||'');showError(root,'');
@@ -107,10 +118,10 @@
     button.disabled=true;button.textContent='સાચવી રહ્યા છીએ…';
     var passwordSaved=false;
     try{
-      var c=state.config, response=await postJson(c.url+'/functions/v1/party-password-auth',{
+      var c=state.config, result=await postJson(c.url+'/functions/v1/party-password-auth',{
         apikey:c.key,Authorization:'Bearer '+state.emailSession.access_token,'Content-Type':'application/json'
       },{action:'set_password',mobile:state.mobile,password:password});
-      if(!response.ok)throw new Error('party_password_setup_failed');
+      if(!result||result.ok!==true)throw new Error('party_password_setup_failed');
       passwordSaved=true;
       await signIn(root,password);
     }catch(e){
@@ -119,7 +130,7 @@
         party_mobile_ambiguous:'આ મોબાઇલ નંબર એકથી વધુ Party રેકોર્ડમાં છે. Adminએ duplicate રેકોર્ડ સુધારવા પડશે.',
         email_verification_required:'ઈમેલ ચકાસણી પૂરી થઈ નથી. નોંધાયેલા ઈમેલનો OTP ફરીથી verify કરો.'
       };
-      var detail=setupMessages[e&&e.code]||(e&&e.status?'પાસવર્ડ setup સેવા તરફથી ભૂલ ('+e.status+') આવી. Supabase Edge Function logs તપાસો.':'નોંધાયેલ ઈમેલ/મોબાઇલ તપાસો અને ઇન્ટરનેટ જોડાણ સાથે ફરી પ્રયાસ કરો.');
+      var detail=setupMessages[e&&e.code]||(e&&e.status?'પાસવર્ડ setup સેવા તરફથી ભૂલ ('+e.status+') આવી. Supabase Edge Function logs તપાસો.':'પાસવર્ડ setup સેવા પૂર્ણ થઈ નથી. નોંધાયેલ ઈમેલ/મોબાઇલ અને ઇન્ટરનેટ તપાસીને ફરી પ્રયાસ કરો.');
       showError(root,passwordSaved?'પાસવર્ડ સાચવાયો છે, પરંતુ તરત login થયું નથી. '+detail:'Party પાસવર્ડ સેટ થઈ શક્યો નથી. '+detail);button.disabled=false;button.textContent=passwordSaved?'ફરી લોગિન કરો':'Party પાસવર્ડ સેટ કરો';if(passwordSaved)button.onclick=function(){signIn(root,password).catch(function(){showError(root,'મોબાઇલ અને Party પાસવર્ડ તપાસીને ફરી લોગિન કરો.');});};
     }
   }

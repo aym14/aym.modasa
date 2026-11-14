@@ -1,6 +1,6 @@
-/* AYM Smart Ledger v1.2.94 — Party password login entry points */
+/* AYM Smart Ledger v1.2.95 — Party email verification password setup fix */
 const CACHE_PREFIX = 'aym-smart-ledger-pwa-';
-const CACHE_NAME = CACHE_PREFIX + 'v1.2.94-party-password-entry-points';
+const CACHE_NAME = CACHE_PREFIX + 'v1.2.95-party-password-setup-fix';
 const APP_SHELL = ['./index.html', './party-cloud.js', './party-requests.js', './party-mobile-email-login.js', './manifest.json', './icons/app-icon-192.png', './icons/app-icon-512.png', './icons/app-icon-maskable-512.png'];
 
 self.addEventListener('install', (event) => {
