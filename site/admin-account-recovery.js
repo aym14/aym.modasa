@@ -25,16 +25,21 @@
 
   function addUi() {
     var login = document.getElementById('loginFormBlock');
-    if (!login || document.getElementById(buttonId)) return;
-    var button = document.createElement('button');
-    button.id = buttonId;
-    button.type = 'button';
-    button.textContent = 'Admin login મળતું નથી? Email OTPથી account restore કરો';
-    button.style.cssText = 'display:block;width:100%;margin:12px 0 0;padding:10px 12px;border:1px solid #b8d3cc;border-radius:10px;background:#f4faf7;color:#12685b;font:600 14px system-ui;cursor:pointer;white-space:normal';
-    var submit = document.getElementById('loginSubmitBtn');
-    if (submit && submit.parentNode === login) login.insertBefore(button, submit);
-    else login.appendChild(button);
-    button.addEventListener('click', openPanel);
+    if (!login) return;
+    var button = document.getElementById(buttonId);
+    if (!button) {
+      button = document.createElement('button');
+      button.id = buttonId;
+      button.type = 'button';
+      button.textContent = 'Admin login મળતું નથી? Email OTPથી account restore કરો';
+      button.style.cssText = 'display:block;width:100%;margin:12px 0 0;padding:10px 12px;border:1px solid #b8d3cc;border-radius:10px;background:#f4faf7;color:#12685b;font:600 14px system-ui;cursor:pointer;white-space:normal';
+      var submit = document.getElementById('loginSubmitBtn');
+      if (submit && submit.parentNode === login) login.insertBefore(button, submit);
+      else login.appendChild(button);
+      button.addEventListener('click', openPanel);
+    }
+    var username = document.getElementById('loginUsername');
+    button.hidden = !!username && username.type === 'tel';
   }
 
   function openPanel() {
@@ -154,5 +159,5 @@
   }
 
   addUi();
-  new MutationObserver(addUi).observe(document.body, { childList: true, subtree: true });
+  new MutationObserver(addUi).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['type'] });
 })();
