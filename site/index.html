@@ -16229,11 +16229,8 @@ LedgerFeatures.shell.clearAllEntries = function () {
   showToast('🗑️ બધો ડેટા ખાલી કર્યો');
 };
 LedgerFeatures.shell.initApp = function () {
-  if (isAdmin() || isViewer()) {
-    try {
-      ensureLoanModule();
-    } catch (_) {}
-  }
+  /* Do not recreate a removed loan module during every app startup.
+     Loan accounting is initialized on demand when a loan is actually accepted. */
   $('#entryDate').value = todayStr();
   $('#entryType').value = 'income';
   populatePartyList();
@@ -34327,6 +34324,17 @@ var APP = { version: '1.2.96', code: 96 };
     } else {
       if (!confirm('વિભાગ "' + a.name + '" ડિલીટ કરવો?\n\n' + n + ' રેકર્ડ છે. એની બે કેટેગરી અલગ પ્રકાર તરીકે રહેશે — એન્ટ્રી કે રેકર્ડ ડિલીટ નહીં થાય.')) return;
     }
+    /* Record an explicit delete before syncing. Without this tombstone an older
+       cloud snapshot can merge the same category/module back into the ledger. */
+    try {
+      var tombKind = a.mode === 'section' ? 'customModules' : 'categories';
+      var tombRecord = {}; tombRecord[tombKind + ':' + id] = Date.now();
+      if (typeof window.aymTombMerge === 'function') window.aymTombMerge(tombRecord);
+      else if (window.AYM_TOMB) { window.AYM_TOMB[tombKind + ':' + id] = Date.now(); if (window.aymTombSave) window.aymTombSave(); }
+      /* Deleting an initial/default category is an intentional choice; never
+         seed the standard list over that choice on a later login. */
+      if (a.mode !== 'section') localStorage.setItem('fm_seed_cats_v1', '1');
+    } catch (_) {}
     window.aymAccounts = (window.aymAccounts || []).filter(function (x) { return x.id !== id; });
     commit();
     msg('🗑️ ડિલીટ થયું', true);
@@ -45639,11 +45647,11 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   }
 }
 </style>
-<style id="settings-heading-inline-title-v1-2-101">
+<style id="settings-heading-inline-title-v1-2-102">
 @media screen {
   body #settingsModal .settings-section-heading {
     grid-template-columns:max-content minmax(0,1fr) max-content max-content !important;
-    grid-template-rows:auto auto auto !important;
+    grid-template-rows:auto auto auto auto !important;
     align-items:center !important;
     column-gap:10px !important;
     row-gap:6px !important;
@@ -45680,7 +45688,20 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   }
   body #settingsModal .settings-section-heading > .la-subtitle {
     grid-column:1 / -1 !important;
+    grid-row:4 !important;
+  }
+  body #settingsModal .settings-section-heading:has(> .la-header-search) > h2,
+  body #settingsModal .settings-section-heading:has(> .la-header-party-controls) > h2 {
+    grid-column:1 / -1 !important;
     grid-row:3 !important;
+  }
+  body #settingsModal .settings-section-heading > .la-header-party-controls {
+    flex-wrap:wrap !important;
+    justify-content:flex-start !important;
+  }
+  body #settingsModal .settings-section-heading > .la-header-party-controls > .la-header-search {
+    flex:1 1 260px !important;
+    min-width:min(100%,220px) !important;
   }
 }
 @media (max-width:640px) {
@@ -45689,6 +45710,8 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   body #settingsModal .settings-section-heading > h2 { font-size:17px !important; line-height:1.25 !important; padding-left:8px !important; }
   body #settingsModal .settings-section-heading > .aym-settings-close { width:38px !important; height:38px !important; min-width:38px !important; }
   body #settingsModal .settings-section-heading > .ws-settings-back { padding:8px 10px !important; font-size:12px !important; white-space:nowrap !important; }
+  body #settingsModal .settings-section-heading > .la-header-party-controls { gap:5px !important; }
+  body #settingsModal .settings-section-heading > .la-header-party-controls > .la-header-search { flex:1 1 100% !important; min-width:0 !important; max-width:none !important; }
 }
 </style>
  <script data-aym-mobile-email-login="1" src="./party-mobile-email-login.js?v=mobile-password-login-12"></script>
