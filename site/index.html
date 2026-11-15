@@ -23813,7 +23813,7 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
       var ub = document.getElementById('sidebarUnreadBadge');
       /* Message counts change frequently. Keep them out of the render signature
          so badge updates never replace the task buttons or interrupt clicks. */
-      var sig = role + '|' + items.map(function(i){ return i.id + ':' + i.label; }).join('|');
+      var sig = role + '|party-tasks-v2|' + items.map(function(i){ return i.id + ':' + i.label; }).join('|');
       if (panel && sig === nsTasksSig) { nsTasksBadgeSync(panel); return; }
       nsTasksSig = sig;
       if (!panel) {
@@ -40414,7 +40414,7 @@ body.ns2026 .aympo-opt small{color:var(--ns-muted);font-size:.78rem}
     var storageKeys=G('S',{});if(storageKeys.session)localStorage.removeItem(storageKeys.session);
     savePhoneAuthSession();
     close();loginAs(user,'Email Cloud');
-    ['navMessages','navGuarantorChange','navAvailableGuarantors','fabAddEntry'].forEach(function(id){var el=q('#'+id);if(el)el.style.display='none';});
+    ['navMessages','navGuarantorChange','fabAddEntry'].forEach(function(id){var el=q('#'+id);if(el)el.style.display='none';});
     toast('તમારો પોતાનો cloud હિસાબ મળ્યો. આ view ફક્ત વાંચવા માટે છે.');
   }
   window.AYMPO = {
