@@ -14,7 +14,11 @@
 
   function save(value) {
     if (typeof saveCloudConfig !== 'function') throw new Error('Cloud settings are unavailable. Reload the page.');
-    saveCloudConfig(value);
+    if (typeof cloudCfg !== 'undefined' && cloudCfg && typeof cloudCfg === 'object') {
+      Object.assign(cloudCfg, value);
+      value = cloudCfg;
+    }
+    if (saveCloudConfig(value) === false) throw new Error('Cloud settings આ deviceમાં સાચવી શકાયાં નહીં. Storage space તપાસો અને ફરી પ્રયાસ કરો.');
   }
 
   function explain(error) {
@@ -116,6 +120,7 @@
 
   async function verifyOtp() {
     var cfg = config();
+    var previousAutoSync = null;
     var email = String(document.getElementById('aymAdminRecoveryEmail').value || '').trim().toLowerCase();
     var otp = String(document.getElementById('aymAdminRecoveryOtp').value || '').replace(/\D/g, '');
     if (!/^\d{6,10}$/.test(otp)) { setStatus('Emailમાં આવેલો 6 થી 10 અંકનો OTP દાખલ કરો.', true); return; }
@@ -136,6 +141,7 @@
       supabaseSaveSession(auth);
       var admin = await supabaseEnsureAdmin();
       cfg = config();
+      previousAutoSync = !!cfg.autoSync;
       cfg.provider = 'supabase';
       cfg.autoSync = true;
       cfg.supabaseAdminEmail = email;
@@ -143,7 +149,7 @@
       cfg.supabaseTable = cfg.supabaseTable || 'aym_cloud_ledger_snapshots';
       save(cfg);
       var row = await supabaseFetchRow();
-      if (!row || !row.data) throw new Error('Admin membership ચકાસાયું, પણ cloudમાં Ledger snapshot નથી. જૂના Admin deviceનું Cloud Sync તપાસો.');
+      if (!row || !row.data) throw new Error('Supabase Admin membership ચકાસાઈ, પરંતુ આ organizationની “main” sync key માટે cloud Ledger snapshot નથી. જૂના Admin deviceમાં સેટિંગ → Cloud ખોલી Auto Sync ચાલુ કરો અને Sync Now સફળ થાય તેની ખાતરી કરો. ત્યારબાદ અહીં OTPથી ફરી account restore કરો.');
       if (typeof window.aymLoginCloudPull !== 'function' || !await window.aymLoginCloudPull()) {
         throw new Error('Ledger snapshot મળ્યો, પણ આ device પર account restore ન થઈ શક્યું. જૂના Admin deviceનું Cloud Sync તપાસો.');
       }
@@ -156,6 +162,9 @@
       var loginError = document.getElementById('loginError');
       if (loginError) loginError.textContent = '';
     } catch (error) {
+      if (previousAutoSync !== null) {
+        try { cfg = config(); cfg.autoSync = previousAutoSync; save(cfg); } catch (_) {}
+      }
       if (typeof supabaseClearSession === 'function') supabaseClearSession();
       setStatus(explain(error), true);
     } finally {

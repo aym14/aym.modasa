@@ -19,6 +19,9 @@ assert.match(html, /name="viewport"[^>]*width=device-width/i, 'responsive viewpo
 assert.match(html, /admin-account-recovery\.js\?v=admin-recovery-2/, 'Admin account recovery must load on the login page');
 assert.match(fs.readFileSync('site/admin-account-recovery.js', 'utf8'), /await supabaseEnsureAdmin\(\)/, 'Admin recovery must use the protected organization membership check');
 assert.match(fs.readFileSync('site/admin-account-recovery.js', 'utf8'), /button\.hidden = !!username && username\.type === 'tel'/, 'Admin recovery must stay hidden during Party login');
+assert.match(fs.readFileSync('site/admin-account-recovery.js', 'utf8'), /Object\.assign\(cloudCfg, value\)/, 'Admin recovery must update the live cloud config as well as persisted settings');
+assert.match(fs.readFileSync('site/admin-account-recovery.js', 'utf8'), /cfg\.autoSync = previousAutoSync/, 'Failed Admin recovery must restore the prior Auto Sync setting');
+assert.match(fs.readFileSync('site/admin-account-recovery.js', 'utf8'), /main” sync key[\s\S]*?Sync Now/, 'Missing snapshot error must provide concrete recovery instructions');
 assert.match(html, /aym_org_members\?select=organization_id,role,is_active[\s\S]*?role=eq\.admin/, 'Admin authorization must require active organization Admin membership');
 assert.match(fs.readFileSync('site/sw.js', 'utf8'), /'\.\/admin-account-recovery\.js'/, 'Admin recovery must be included in the offline app shell');
 assert.match(html, /party_invite/, 'invite registration entry point is required');
