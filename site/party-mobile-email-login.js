@@ -63,6 +63,32 @@
     root.querySelector('.error').style.color='#087f70';root.querySelector('.error').textContent='Party ખાતું ખોલી રહ્યા છીએ…';
     setTimeout(function(){location.reload();},250);
   }
+  async function loginFromMain(mobileValue,passwordValue,button){
+    var mobile=norm(mobileValue),password=String(passwordValue||''),error=document.getElementById('loginError');
+    if(error)error.textContent='';
+    if(mobile.length!==10){if(error)error.textContent='યોગ્ય 10 અંકનો નોંધાયેલ મોબાઇલ નંબર નાખો.';return;}
+    if(!password){if(error)error.textContent='તમારો Party પાસવર્ડ નાખો.';return;}
+    var oldHtml=button&&button.innerHTML;if(button){button.disabled=true;button.innerHTML='ચકાસાઈ રહ્યું છે…';}
+    try{
+      var c=state.config||await cfg();state.config=c;
+      var result=await postJson(c.url+'/functions/v1/party-password-auth',{'apikey':c.key,'Content-Type':'application/json'},{action:'login',mobile:mobile,password:password});
+      var auth=result.session||{},user=result.user||{},party=result.party||{};
+      if(!auth.access_token||!auth.refresh_token||!user.id||!user.app_metadata||user.app_metadata.aym_party_login!==true||!party.organization_id||!party.party_ref||!party.email){authLogout(c,auth.access_token);throw new Error('invalid_party_credentials');}
+      var response=await fetch(c.url+'/rest/v1/rpc/aym_my_party_data',{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+auth.access_token,'Content-Type':'application/json'},body:'{}',cache:'no-store'});
+      var rows=await response.json().catch(function(){return null;});
+      if(!response.ok||!Array.isArray(rows))throw new Error('party_data_forbidden');
+      var matches=rows.filter(function(row){return String(row.organization_id)===String(party.organization_id)&&String(row.party_ref)===String(party.party_ref);});
+      var partyData=matches.length===1&&matches[0].data;
+      var partyRow=partyData&&Array.isArray(partyData.parties)&&partyData.parties.find(function(p){return p&&String(p.id)===String(party.party_ref)&&String(p.email||'').trim().toLowerCase()===String(party.email).trim().toLowerCase();});
+      if(!partyRow)throw new Error('party_record_not_synced');
+      localStorage.setItem('aym_phone_auth_v1',JSON.stringify({access_token:auth.access_token,refresh_token:auth.refresh_token,expires_at:Date.now()+Number(auth.expires_in||3600)*1000,user_id:user.id,phone:'+91'+mobile,email:String(party.email).trim().toLowerCase(),portal:true,authMode:'party_password',supabaseUrl:c.url,publishableKey:c.key}));
+      if(error)error.textContent='Party ડેશબોર્ડ ખોલી રહ્યા છીએ…';
+      setTimeout(function(){location.reload();},250);
+    }catch(e){
+      var messages={too_many_attempts:'ઘણા પ્રયાસ થયા છે. થોડી વાર પછી ફરી પ્રયાસ કરો.',invalid_party_credentials:'મોબાઇલ નંબર અથવા Party પાસવર્ડ ખોટો છે.',party_data_forbidden:'લોગિન થયું, પરંતુ Party ledger access મળ્યો નથી. Admin પાસે Sync અને permissions ચકાસાવો.',party_record_not_synced:'Party record synced નથી. Admin પાસે Partyની વિગતો Sync કરાવો.'};
+      if(error)error.textContent=messages[e&&e.code]||messages[e&&e.message]||(e&&e.status?'લોગિન સેવા તરફથી ભૂલ ('+e.status+') આવી.':'લોગિન માટે સર્વર સાથે જોડાણ ન થયું. ઇન્ટરનેટ તપાસીને ફરી પ્રયાસ કરો.');
+    }finally{if(button){button.disabled=false;button.innerHTML=oldHtml||'પાર્ટી પાસવર્ડથી લોગિન';}}
+  }
   async function login(root,button){
     var email=String(root.querySelector('#aymPartyEmail').value||'').trim().toLowerCase(),password=String(root.querySelector('#aymPartyPassword').value||'');
     showError(root,'');
@@ -147,7 +173,7 @@
   }
   function loginEntry(value){shell(value&&String(value).indexOf('@')>=0?value:'');}
   function setupEntry(value){var mobile=value&&String(value).indexOf('@')<0?norm(value):'',root=shell('');startOtpFlow(root,mobile);if(mobile.length===10)sendOtp(root,root.querySelector('[data-main]'));}
-  window.AYMPartyPasswordLogin={open:loginEntry,setup:setupEntry};
+  window.AYMPartyPasswordLogin={open:loginEntry,setup:setupEntry,login:loginFromMain};
   function install(){
     var api=window.AYMPO;if(!api)return;
     if(!api.loginWithPhone||!api.loginWithPhone.__aymSeparatePassword){

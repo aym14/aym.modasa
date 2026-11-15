@@ -13785,8 +13785,8 @@ LedgerFeatures.identity.setLoginFormMode = function (mode) {
   const passwordGroup = $('#loginPasswordGroup');
   const partyOtpButton = $('#partyOtpLoginBtn');
   if (usernameGroup) usernameGroup.style.display = '';
-  if (passwordGroup) passwordGroup.style.display = isPartyLogin ? 'none' : '';
-  if (partyOtpButton) partyOtpButton.style.display = isPartyLogin ? '' : 'none';
+  if (passwordGroup) passwordGroup.style.display = '';
+  if (partyOtpButton) partyOtpButton.style.display = 'none';
   const createAdminLink = $('#loginCreateAdminLink');
   if (createAdminLink) createAdminLink.style.display = role === 'admin' && !users.some(user => user && user.role === 'admin') ? '' : 'none';
   const createPartyLink = $('#loginCreatePartyLink');
@@ -13798,28 +13798,47 @@ LedgerFeatures.identity.setLoginFormMode = function (mode) {
   const verifyPartyLink = $('#loginVerifyPartyLink');
   if (verifyPartyLink) verifyPartyLink.style.display = 'none';
   const submitBtn = $('#loginSubmitBtn');
-  if (submitBtn) submitBtn.style.display = isPartyLogin ? 'none' : '';
+  if (submitBtn) submitBtn.style.display = '';
   const submitLabel = submitBtn && submitBtn.querySelector('[data-aym-login-copy]');
   if (submitLabel) {
-    submitLabel.setAttribute('data-aym-login-copy', 'adminLoginButton');
-    submitLabel.textContent = window.aymLoginCopy ? window.aymLoginCopy('adminLoginButton') : 'લોગિન કરો';
+    const buttonCopy = isPartyLogin ? 'partyLoginButton' : 'adminLoginButton';
+    submitLabel.setAttribute('data-aym-login-copy', buttonCopy);
+    submitLabel.textContent = window.aymLoginCopy ? window.aymLoginCopy(buttonCopy) : (isPartyLogin ? 'પાર્ટી પાસવર્ડથી લોગિન' : 'લોગિન કરો');
   }
   const usernameField = $('#loginUsername');
   if (usernameField) {
-    usernameField.type = isPartyLogin ? 'email' : 'text';
-    usernameField.inputMode = isPartyLogin ? 'email' : 'text';
-    usernameField.autocomplete = 'username';
+    usernameField.type = isPartyLogin ? 'tel' : 'text';
+    usernameField.inputMode = isPartyLogin ? 'numeric' : 'text';
+    usernameField.autocomplete = isPartyLogin ? 'tel' : 'username';
     usernameField.placeholder = isPartyLogin
-      ? (window.aymLoginCopy ? window.aymLoginCopy('partyEmailPlaceholder') : 'તમારો નોંધાયેલ ઈમેલ દાખલ કરો')
+      ? (window.aymLoginCopy ? window.aymLoginCopy('partyMobilePlaceholder') : 'તમારો નોંધાયેલ મોબાઇલ દાખલ કરો')
       : (window.aymLoginCopy ? window.aymLoginCopy('adminUsernamePlaceholder') : 'એડમિન યુઝરનેમ નાખો');
   }
   const usernameLabel = $('#loginUsernameLabelText');
   if (usernameLabel) {
-    const copyKey = isPartyLogin ? 'registeredEmail' : 'usernameMobile';
+    const copyKey = isPartyLogin ? 'registeredMobile' : 'usernameMobile';
     usernameLabel.setAttribute('data-aym-login-copy', copyKey);
-    usernameLabel.textContent = window.aymLoginCopy ? window.aymLoginCopy(copyKey) : (isPartyLogin ? 'નોંધાયેલ ઈમેલ' : 'યુઝરનેમ / મોબાઇલ');
+    usernameLabel.textContent = window.aymLoginCopy ? window.aymLoginCopy(copyKey) : (isPartyLogin ? 'નોંધાયેલ મોબાઇલ' : 'યુઝરનેમ / મોબાઇલ');
   }
+  const passwordLabel = $('#loginPasswordGroup [data-aym-login-copy]');
+  if (passwordLabel) {
+    const passwordCopy = isPartyLogin ? 'partyPasswordLabel' : 'passwordLabel';
+    passwordLabel.setAttribute('data-aym-login-copy', passwordCopy);
+    passwordLabel.textContent = window.aymLoginCopy ? window.aymLoginCopy(passwordCopy) : (isPartyLogin ? 'પાર્ટી પાસવર્ડ' : 'પાસવર્ડ');
+  }
+  const passwordInput = $('#loginPassword');
+  if (passwordInput) passwordInput.placeholder = isPartyLogin
+    ? (window.aymLoginCopy ? window.aymLoginCopy('partyPasswordPlaceholder') : 'તમારો Party પાસવર્ડ નાખો')
+    : 'Enter Password';
   if (window.aymRefreshLoginCopy) window.aymRefreshLoginCopy();
+  const otpNote = document.querySelector('.ns-party-otp-note');
+  if (otpNote) {
+    otpNote.style.display = isPartyLogin ? '' : 'none';
+    otpNote.setAttribute('data-aym-login-copy', isPartyLogin ? 'partyOtpHelp' : 'otpDeliveryNote');
+    otpNote.textContent = isPartyLogin
+      ? (window.aymLoginCopy ? window.aymLoginCopy('partyOtpHelp') : 'પાસવર્ડ ભૂલાયો હોય તો “Set / Reset Party Password” પસંદ કરો; રોજના login માટે મોબાઇલ અને પાસવર્ડ વાપરો.')
+      : '';
+  }
   $('#loginError').textContent = '';
 };
 LedgerFeatures.identity.showAdminLoginForm = function () {
@@ -13880,8 +13899,12 @@ LedgerFeatures.identity.doLogin = async function () {
   const pw = $('#loginPassword').value;
   const role = getLoginRole();
   if (role !== 'admin') {
-    $('#loginError').textContent = 'પાર્ટી લોગિન માટે મોબાઇલ અને ઇમેલ પર આવેલ બંને OTP ચકાસો.';
-    return;
+    if (!usernameInput || !pw) { $('#loginError').textContent = 'મોબાઇલ નંબર અને Party પાસવર્ડ નાખો.'; return; }
+    if (!window.AYMPartyPasswordLogin || typeof window.AYMPartyPasswordLogin.login !== 'function') {
+      $('#loginError').textContent = 'Party login સેવા ઉપલબ્ધ નથી. પેજ ફરી લોડ કરીને પ્રયાસ કરો.';
+      return;
+    }
+    return window.AYMPartyPasswordLogin.login(usernameInput, pw, $('#loginSubmitBtn'));
   }
   if (!usernameInput || !pw) {
     $('#loginError').textContent = 'બધાં ખાનાં ભરો.';
@@ -14050,7 +14073,7 @@ LedgerFeatures.identity.showLoginForm = function () {
   $('#forgotFormBlock').style.display = 'none';
   $('#verifyMobileBlock').style.display = 'none';
   const role = getLoginRole();
-  if (role === 'party') $('#loginUsername').placeholder = window.aymLoginCopy ? window.aymLoginCopy('partyEmailPlaceholder') : 'તમારો નોંધાયેલ ઈમેલ દાખલ કરો';else $('#loginUsername').placeholder = 'Enter admin username';
+  if (role === 'party') $('#loginUsername').placeholder = window.aymLoginCopy ? window.aymLoginCopy('partyMobilePlaceholder') : 'તમારો નોંધાયેલ મોબાઇલ દાખલ કરો';else $('#loginUsername').placeholder = 'Enter admin username';
   document.querySelectorAll('#verifyMobileBlock .verify-success').forEach(el => el.remove());
   document.getElementById('verifyStep1').style.display = 'block';
   document.getElementById('verifyStep2').style.display = 'none';
@@ -45163,9 +45186,9 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   COPY.en.cloudJoinHint='Use the Join QR only on a trusted admin device. It contains Cloud Sync settings; do not share it with party/member accounts.';
   COPY.gu.cloudJoinHint='Join QR ફક્ત વિશ્વાસપાત્ર એડમિન ડિવાઇસ પર વાપરો. તેમાં Cloud Sync સેટિંગ હોય છે; પાર્ટી/સભ્ય એકાઉન્ટ સાથે શેર ન કરો.';
   COPY.hi.cloudJoinHint='Join QR केवल भरोसेमंद एडमिन डिवाइस पर इस्तेमाल करें। इसमें Cloud Sync सेटिंग होती है; पार्टी/सदस्य खातों के साथ साझा न करें।';
-  COPY.en.partyOtpLogin='Email + Party password sign-in';
-   COPY.gu.partyOtpLogin='ઈમેલ + Party પાસવર્ડથી લોગિન';
-   COPY.hi.partyOtpLogin='ईमेल + Party पासवर्ड से लॉगिन';
+  COPY.en.partyOtpLogin='Mobile + Party password sign-in';
+   COPY.gu.partyOtpLogin='મોબાઇલ + Party પાસવર્ડથી લોગિન';
+   COPY.hi.partyOtpLogin='मोबाइल + Party पासवर्ड से लॉगिन';
   COPY.en.brandTagline='Income, expenses, loans and instalments — all in one place.';
   COPY.gu.brandTagline='આવક, જાવક, લોન અને હપ્તાનો હિસાબ — એક જ જગ્યાએ, સરળ અને સુરક્ષિત.';
   COPY.hi.brandTagline='आय, खर्च, लोन और किस्तों का हिसाब — सब एक ही जगह।';
@@ -45175,15 +45198,18 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   COPY.en.adminLogin='Admin login'; COPY.gu.adminLogin='એડમિન લોગિન'; COPY.hi.adminLogin='एडमिन लॉगिन';
   COPY.en.partyLogin='Party login'; COPY.gu.partyLogin='પાર્ટી લોગિન'; COPY.hi.partyLogin='पार्टी लॉगिन';
   COPY.en.usernameMobile='USERNAME / MOBILE'; COPY.gu.usernameMobile='યુઝરનેમ / મોબાઇલ'; COPY.hi.usernameMobile='यूज़रनेम / मोबाइल';
-  COPY.en.registeredMobile='REGISTERED MOBILE'; COPY.gu.registeredMobile='નોંધાયેલ મોબાઇલ'; COPY.hi.registeredMobile='पंजीकृत मोबाइल';
   COPY.en.registeredEmail='REGISTERED EMAIL'; COPY.gu.registeredEmail='નોંધાયેલ ઈમેલ'; COPY.hi.registeredEmail='पंजीकृत ईमेल';
   COPY.en.passwordLabel='PASSWORD'; COPY.gu.passwordLabel='પાસવર્ડ'; COPY.hi.passwordLabel='पासवर्ड';
   COPY.en.adminUsernamePlaceholder='Enter admin username'; COPY.gu.adminUsernamePlaceholder='એડમિન યુઝરનેમ નાખો'; COPY.hi.adminUsernamePlaceholder='एडमिन यूज़रनेम दर्ज करें';
   COPY.en.partyMobilePlaceholder='Enter your registered mobile'; COPY.gu.partyMobilePlaceholder='તમારો નોંધાયેલ મોબાઇલ દાખલ કરો'; COPY.hi.partyMobilePlaceholder='अपना पंजीकृत मोबाइल दर्ज करें';
+  COPY.en.partyPasswordLabel='PARTY PASSWORD'; COPY.gu.partyPasswordLabel='પાર્ટી પાસવર્ડ'; COPY.hi.partyPasswordLabel='पार्टी पासवर्ड';
+  COPY.en.partyPasswordPlaceholder='Enter your Party password'; COPY.gu.partyPasswordPlaceholder='તમારો Party પાસવર્ડ નાખો'; COPY.hi.partyPasswordPlaceholder='अपना Party पासवर्ड दर्ज करें';
   COPY.en.partyEmailPlaceholder='Enter your registered email'; COPY.gu.partyEmailPlaceholder='તમારો નોંધાયેલ ઈમેલ દાખલ કરો'; COPY.hi.partyEmailPlaceholder='अपना पंजीकृत ईमेल दर्ज करें';
   COPY.en.adminLoginButton='Log in'; COPY.gu.adminLoginButton='લોગિન કરો'; COPY.hi.adminLoginButton='लॉग इन';
+  COPY.en.partyLoginButton='Party Password Login'; COPY.gu.partyLoginButton='પાર્ટી પાસવર્ડથી લોગિન'; COPY.hi.partyLoginButton='पार्टी पासवर्ड से लॉगिन';
   COPY.en.continueOtp='Party Password Login'; COPY.gu.continueOtp='પાર્ટી પાસવર્ડથી લોગિન'; COPY.hi.continueOtp='पार्टी पासवर्ड से लॉगिन';
-  COPY.en.otpDeliveryNote='Use your registered email and Party password. Email OTP is for password setup or reset.'; COPY.gu.otpDeliveryNote='નોંધાયેલા ઈમેલ અને Party પાસવર્ડથી લોગિન કરો. OTP પાસવર્ડ સેટ / રીસેટ માટે છે.'; COPY.hi.otpDeliveryNote='दर्ज ईमेल और Party पासवर्ड से लॉगिन करें। OTP पासवर्ड सेट / रीसेट के लिए है।';
+  COPY.en.otpDeliveryNote='Use your registered mobile and Party password to sign in.'; COPY.gu.otpDeliveryNote='લોગિન માટે નોંધાયેલ મોબાઇલ નંબર અને Party પાસવર્ડ વાપરો.'; COPY.hi.otpDeliveryNote='लॉगिन के लिए पंजीकृत मोबाइल और Party पासवर्ड डालें।';
+  COPY.en.partyOtpHelp='Forgot your password? Use “Set / Reset Party Password” to verify your registered mobile by email OTP.'; COPY.gu.partyOtpHelp='પાસવર્ડ ભૂલાયો? “Set / Reset Party Password”થી નોંધાયેલ મોબાઇલ પર email OTP ચકાસો.'; COPY.hi.partyOtpHelp='पासवर्ड भूल गए? “Set / Reset Party Password” से पंजीकृत मोबाइल पर email OTP सत्यापित करें।';
   COPY.en.mobilePartyQrNote='The same public QR works for every Party. Never scan the Admin Cloud Join QR.'; COPY.gu.mobilePartyQrNote='આ જ જાહેર QR દરેક પાર્ટી માટે છે. Adminનું Cloud Join QR સ્કેન ન કરો.'; COPY.hi.mobilePartyQrNote='यह सार्वजनिक QR हर पार्टी के लिए है। Admin का Cloud Join QR स्कैन न करें।';
   COPY.en.createPartyAccount='Create Party account'; COPY.gu.createPartyAccount='પાર્ટી ખાતું બનાવો'; COPY.hi.createPartyAccount='पार्टी खाता बनाएँ';
   COPY.en.setupPartyPassword='Set / Reset Party Password'; COPY.gu.setupPartyPassword='પાર્ટી પાસવર્ડ સેટ / બદલો'; COPY.hi.setupPartyPassword='पार्टी पासवर्ड सेट / बदलें';
@@ -45211,7 +45237,7 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
     document.querySelectorAll('[data-aym-login-copy]').forEach(function(el){var value=copy[el.getAttribute('data-aym-login-copy')];if(value)el.textContent=value;});
     var hint=document.getElementById('qrJoinManualHint');if(hint)hint.textContent=copy.manualHint;
     var select=document.getElementById('aymLoginLanguageSelect');if(select){select.value=language;select.setAttribute('aria-label',copy.language);}
-    var mobile=document.getElementById('loginUsername'),form=document.getElementById('loginFormBlock');if(mobile){var isParty=form&&form.dataset.role==='party';mobile.placeholder=copy[isParty?'partyEmailPlaceholder':'adminUsernamePlaceholder']||mobile.placeholder;}
+    var mobile=document.getElementById('loginUsername'),form=document.getElementById('loginFormBlock');if(mobile){var isParty=form&&form.dataset.role==='party';mobile.placeholder=copy[isParty?'partyMobilePlaceholder':'adminUsernamePlaceholder']||mobile.placeholder;}
   }
   window.aymRefreshLoginCopy=function(){paintLoginCopy(currentLang());};
   window.aymApplyLoginLanguage=function(language){

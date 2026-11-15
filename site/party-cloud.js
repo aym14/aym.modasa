@@ -108,7 +108,7 @@
   }
   function loadMobileEmailLogin(){
     if(document.querySelector('script[data-aym-mobile-email-login]'))return;
-    var script=document.createElement('script');script.src='./party-mobile-email-login-v9.js?v=login-focus-guard';script.async=true;script.dataset.aymMobileEmailLogin='1';document.head.appendChild(script);
+    var script=document.createElement('script');script.src='./party-mobile-email-login.js';script.async=true;script.dataset.aymMobileEmailLogin='1';document.head.appendChild(script);
   }
   loadRequestUi();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadMobileEmailLogin,{once:true});else loadMobileEmailLogin();

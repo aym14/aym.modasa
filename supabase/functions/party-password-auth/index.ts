@@ -143,15 +143,17 @@ async function handle(request: Request): Promise<Response> {
   const validPasswordLength = action === 'set_password'
     ? password.length >= 8 && password.length <= 64
     : action === 'login' && password.length >= 6 && password.length <= 128;
-  if (!validPasswordLength || !['set_password', 'login'].includes(action) || (action === 'set_password' && !mobile) || (action === 'login' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+  const validLoginIdentity = mobile || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (!validPasswordLength || !['set_password', 'login'].includes(action) || (action === 'set_password' && !mobile) || (action === 'login' && !validLoginIdentity)) {
     return json({ error: 'invalid_request' }, 400);
   }
 
   try {
     if (input.action === 'login') {
-      if (tooMany('pw-login:' + email + ':' + clientIp(request), 10, 15 * 60_000) || tooMany('pw-login-email:' + email, 30, 15 * 60_000)) return json({ error: 'too_many_attempts' }, 429);
-      const targets = await findTargetByEmail(url, serviceKey, email);
-      // One generic reply for unknown or duplicate emails: no account enumeration.
+      const loginKey = mobile ? 'mobile:' + mobile : 'email:' + email;
+      if (tooMany('pw-login:' + loginKey + ':' + clientIp(request), 10, 15 * 60_000) || tooMany('pw-login-identity:' + loginKey, 30, 15 * 60_000)) return json({ error: 'too_many_attempts' }, 429);
+      const targets = mobile ? await findTarget(url, serviceKey, mobile) : await findTargetByEmail(url, serviceKey, email);
+      // One generic reply for unknown or duplicate identities: no account enumeration.
       if (targets.length !== 1) return json({ error: 'invalid_party_credentials' }, 401);
       const target = targets[0];
       const accountPath = 'aym_party_password_accounts?select=auth_user_id&organization_id=eq.' + encodeURIComponent(target.organization_id) + '&party_ref=eq.' + encodeURIComponent(target.party_ref);
@@ -164,7 +166,7 @@ async function handle(request: Request): Promise<Response> {
       });
       const auth = await authResponse.json().catch(() => null);
       if (!authResponse.ok || !auth?.access_token || !auth?.refresh_token || auth?.user?.id !== accounts[0].auth_user_id || auth?.user?.app_metadata?.aym_party_login !== true) return json({ error: 'invalid_party_credentials' }, 401);
-      return json({ session: auth, user: auth.user });
+      return json({ session: auth, user: auth.user, party: { organization_id: target.organization_id, party_ref: target.party_ref, email: target.email, mobile: target.mobile } });
     }
     if (!accessToken) return json({ error: 'email_verification_required' }, 401);
     if (tooMany('pw-set:' + clientIp(request), 20, 15 * 60_000)) return json({ error: 'too_many_attempts' }, 429);
