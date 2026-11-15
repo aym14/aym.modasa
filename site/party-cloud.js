@@ -104,7 +104,7 @@
   }
   function loadRequestUi(){
     if(document.querySelector('script[data-aym-party-requests]'))return;
-    var script=document.createElement('script');script.src='./party-requests.js?v=party-request-button-1';script.async=true;script.dataset.aymPartyRequests='1';document.head.appendChild(script);
+    var script=document.createElement('script');script.src='./party-requests.js?v=party-request-button-2';script.async=true;script.dataset.aymPartyRequests='1';document.head.appendChild(script);
   }
   function loadMobileEmailLogin(){
     if(document.querySelector('script[data-aym-mobile-email-login]'))return;

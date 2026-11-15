@@ -18,7 +18,7 @@ assert.match(html, /name="viewport"[^>]*width=device-width/i, 'responsive viewpo
 assert.match(html, /party_invite/, 'invite registration entry point is required');
 assert.match(html, /registerPartyByInvite/, 'verified Party registration API is required');
 assert.match(html, /completeInviteRegistration/, 'verified Party password setup is required');
-assert.match(fs.readFileSync('site/party-cloud.js', 'utf8'), /party-requests\.js\?v=party-request-button-1/, 'request UI cache version must be explicit');
+assert.match(fs.readFileSync('site/party-cloud.js', 'utf8'), /party-requests\.js\?v=party-request-button-2/, 'request UI cache version must be explicit');
 assert.match(html, /usernameField\.type = isPartyLogin \? 'tel' : 'text'/, 'Party login must use a mobile field');
 assert.match(html, /window\.AYMPartyPasswordLogin\.login\(usernameInput, pw/, 'Party login must submit inline without opening a login dialog');
 assert.match(fs.readFileSync('supabase/functions/party-password-auth/index.ts', 'utf8'), /findTarget\(url, serviceKey, mobile\)/, 'Party password login must resolve the registered mobile server-side');
@@ -28,7 +28,8 @@ assert.match(html, /if \(node\) node\.textContent = typeof window\.aymTranslate 
 assert.ok(html.includes('guarantorDeclaration.firstChild.nodeValue = guarantorDeclaration.firstChild.nodeValue.replace('), 'English guarantor declaration must avoid a duplicated subject');
 assert.ok(html.includes("DICT.en['આથી'] = 'Hereby,';") && html.includes("DICT.en['અમો જણાવેલ બંને જામીનદાર'] = 'the two named guarantors';"), 'initial English translation must render the assembled guarantor declaration coherently');
 assert.ok(html.includes("nsTaskTile('availableGuarantors', 'fa-users', 'Available Guarantors'") && html.includes("case 'availableGuarantors':"), 'Party dashboard must expose a working Available Guarantors task');
-assert.ok(html.includes("var sig = role + '|party-tasks-v3|' + items.map(function(i){ return i.id + ':' + i.label; }).join('|');") && html.includes('nsEnsureAvailableGuarantorsTile(panel);'), 'Party task panel must restore a missing Guarantors tile during its normal sync');
+assert.ok(html.includes("var sig = role + '|party-tasks-v3|' + items.map(function(i){ return i.id + ':' + i.label; }).join('|');"), 'Party task tiles must invalidate stale markup when their task list changes');
+assert.ok(!fs.readFileSync('site/party-requests.js', 'utf8').includes("querySelectorAll('[data-ns-task=\"availableGuarantors\"]')"), 'Party request UI must not remove the Available Guarantors task');
 assert.ok(html.includes("['navMessages','navGuarantorChange','fabAddEntry'].forEach(function(id){var el=q('#'+id);if(el)el.style.display='none';});"), 'read-only Party portal must not hide the Available Guarantors navigation option');
 assert.match(html, /અમો બંને જામીનદારોએ અન્સાર યુવા મંડળની લોનની શરતો વાંચીને સમજીને લોન લેનારના જામીન થઈએ છીએ': 'we, the two guarantors/, 'two-guarantor English declaration must be translated as one complete sentence');
 assert.match(html, /const fallbackMobile = user\.username && String\(user\.username\)\.indexOf\('@'\) < 0 \? user\.username : '';/, 'Party email usernames must not appear in the mobile field');

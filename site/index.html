@@ -23791,20 +23791,6 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
       '<span class="ns-task-ico"><i class="fas ' + nsEsc(icon) + '"></i>' + (act === 'messages' ? '<span class="ns-dock-badge" data-ns-task-badge style="display:none"></span>' : '') + '</span>' +
       '<b>' + nsEsc(label) + '</b>' + (sub ? '<small>' + nsEsc(sub) + '</small>' : '') + '</button>';
   }
-  function nsEnsureAvailableGuarantorsTile(panel){
-    try {
-      var grid = panel && panel.querySelector('.ns-party-tasks-grid');
-      if (!grid || grid.querySelector('[data-ns-task="availableGuarantors"]')) return;
-      var tile = document.createElement('button');
-      tile.type = 'button';
-      tile.className = 'ns-task-tile';
-      tile.setAttribute('data-ns-task', 'availableGuarantors');
-      tile.innerHTML = '<span class="ns-task-ico"><i class="fas fa-users"></i></span><b>Available Guarantors</b><small>જામીનદારની યાદી</small>';
-      tile.addEventListener('click', function(){ try { sidebarAction('availableGuarantors'); } catch(e) {} });
-      var messages = grid.querySelector('[data-ns-task="messages"]');
-      grid.insertBefore(tile, messages || null);
-    } catch(e) {}
-  }
   function nsTasksBadgeSync(panel){
     try {
       var badge = panel ? panel.querySelector('[data-ns-task-badge]') : null;
@@ -23828,7 +23814,7 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
       /* Message counts change frequently. Keep them out of the render signature
          so badge updates never replace the task buttons or interrupt clicks. */
       var sig = role + '|party-tasks-v3|' + items.map(function(i){ return i.id + ':' + i.label; }).join('|');
-      if (panel && sig === nsTasksSig) { nsEnsureAvailableGuarantorsTile(panel); nsTasksBadgeSync(panel); return; }
+      if (panel && sig === nsTasksSig) { nsTasksBadgeSync(panel); return; }
       nsTasksSig = sig;
       if (!panel) {
         panel = document.createElement('div');
@@ -23855,7 +23841,6 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
       html += nsTaskTile('profile', 'fa-user', 'મારી પ્રોફાઇલ', 'માહિતી અને પાસવર્ડ');
       html += '</div>';
       panel.innerHTML = html;
-      nsEnsureAvailableGuarantorsTile(panel);
       panel.querySelectorAll('[data-ns-task]').forEach(function(b){
         b.addEventListener('click', function(){
           var act = b.getAttribute('data-ns-task');

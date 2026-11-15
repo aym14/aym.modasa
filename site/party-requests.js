@@ -263,8 +263,6 @@
       if (!partyButton) { partyButton=document.createElement('button');partyButton.id=buttonId;partyButton.type='button';document.body.appendChild(partyButton); }
       partyButton.textContent='✉️ એડમિનને વિનંતી';
       partyButton.onclick=showPartyForm;
-      var taskPanel = document.getElementById('nsPartyTasks');
-      if (taskPanel) taskPanel.querySelectorAll('[data-ns-task="availableGuarantors"]').forEach(function (item) { item.remove(); });
       return;
     }
     var button = document.getElementById(buttonId);
