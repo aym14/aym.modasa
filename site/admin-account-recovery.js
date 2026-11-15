@@ -24,6 +24,11 @@
   }
 
   function addUi() {
+    document.querySelectorAll('[data-login-role]').forEach(function (tab) {
+      if (tab.dataset.aymRecoveryWatch) return;
+      tab.dataset.aymRecoveryWatch = '1';
+      tab.addEventListener('click', function () { window.setTimeout(addUi, 0); });
+    });
     var login = document.getElementById('loginFormBlock');
     if (!login) return;
     var button = document.getElementById(buttonId);
@@ -159,5 +164,5 @@
   }
 
   addUi();
-  new MutationObserver(addUi).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['type'] });
+  new MutationObserver(addUi).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['type', 'class', 'aria-selected'] });
 })();
