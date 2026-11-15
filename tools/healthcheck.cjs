@@ -19,6 +19,7 @@ assert.match(html, /party_invite/, 'invite registration entry point is required'
 assert.match(html, /registerPartyByInvite/, 'verified Party registration API is required');
 assert.match(html, /completeInviteRegistration/, 'verified Party password setup is required');
 assert.match(fs.readFileSync('site/party-cloud.js', 'utf8'), /party-requests\.js\?v=party-request-button-2/, 'request UI cache version must be explicit');
+assert.match(html, /party-cloud\.js\?v=party-available-guarantors-1/, 'updated Party cloud loader must reach existing clients');
 assert.match(html, /usernameField\.type = isPartyLogin \? 'tel' : 'text'/, 'Party login must use a mobile field');
 assert.match(html, /window\.AYMPartyPasswordLogin\.login\(usernameInput, pw/, 'Party login must submit inline without opening a login dialog');
 assert.match(fs.readFileSync('supabase/functions/party-password-auth/index.ts', 'utf8'), /findTarget\(url, serviceKey, mobile\)/, 'Party password login must resolve the registered mobile server-side');
