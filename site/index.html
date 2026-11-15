@@ -12288,12 +12288,13 @@ LedgerFeatures.cloud.updateCloudUI = function () {
   if (recCountEl) recCountEl.textContent = entries.length;
   const statusBadge = document.getElementById('cloudSyncStatusBadge');
   const isReady = provider === 'supabase' ? !!(cfg.supabaseUrl && cfg.supabaseAnonKey && cfg.supabaseOrganizationId && supabaseLoadSession()) : provider === 'github' ? !!(cfg.ghToken && cfg.ghOwner && cfg.ghRepo) : provider === 'server' ? !!String(cfg.serverUrl || '').trim() : !!(cfg.apiKey && cfg.binId);
+  const lastSyncAt = Number(cfg.lastSyncTs) || Date.parse(cfg.lastSync || '') || 0;
+  const recentlySynced = !!(cfg.autoSync && lastSyncAt && Date.now() >= lastSyncAt && Date.now() - lastSyncAt < 10 * 60 * 1000);
   if (statusBadge) {
-    const isSynced = cfg.lastSync && Date.now() - cfg.lastSyncTs < 60000;
-    statusBadge.className = 'status-badge ' + (isSynced ? 'synced' : 'idle');
-    statusBadge.textContent = isSynced ? 'Synced' : isReady ? 'Ready' : 'Idle';
+    statusBadge.className = 'status-badge ' + (recentlySynced ? 'synced' : 'idle');
+    statusBadge.textContent = recentlySynced ? 'Synced' : isReady ? 'Ready' : 'Idle';
   }
-  if (cfg.lastSync && Date.now() - cfg.lastSyncTs < 60000) setSyncStatus('synced', 'સિંક થયું');else setSyncStatus('idle', isReady ? 'Ready' : 'Offline');
+  if (recentlySynced) setSyncStatus('synced', 'સિંક થયું');else setSyncStatus('idle', isReady ? 'Ready' : 'Offline');
   if (cloudAutoSyncTimer) {
     clearInterval(cloudAutoSyncTimer);
     cloudAutoSyncTimer = null;
@@ -22421,6 +22422,15 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
      the cloud shortly later; devices also check for a newer cloud copy.
       Supabase snapshots are limited to active Admin membership by database RLS. */
   var nsSyncTimer = null, nsSyncBusy = false, nsSuppressUntil = 0, nsLastChangeTs = 0, nsInCloudPersist = false, nsCloudPersistPending = false;
+  var nsLastBackgroundSyncError = '', nsLastBackgroundSyncErrorAt = 0;
+  function nsRecordBackgroundSyncError(action, error){
+    var message = String(error && error.message || 'અજાણી ભૂલ');
+    var key = action + ': ' + message;
+    if (key === nsLastBackgroundSyncError && Date.now() - nsLastBackgroundSyncErrorAt <= 60000) return;
+    nsLastBackgroundSyncError = key;
+    nsLastBackgroundSyncErrorAt = Date.now();
+    try { appendSyncLog('Background ' + key, 'err'); } catch(e) {}
+  }
   function nsServerMode(){ try { return typeof cloudCfg !== 'undefined' && !!cloudCfg && (cloudCfg.provider || 'jsonbin') === 'server'; } catch(e) { return false; } }
   function nsServerReady(){ try { return nsServerMode() && !!String(cloudCfg.serverUrl || '').trim(); } catch(e) { return false; } }
   function nsServerCfg(){
@@ -22947,7 +22957,14 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
       ok = true;
     } catch(e) {
       try { nsSetPill('error'); } catch(e2) {}
-      try { setSyncStatus('error', 'નિષ્ફળ'); if (force) { appendSyncLog('Cloud Sync ભૂલ: ' + (e.message || 'અજાણી ભૂલ'), 'err'); showToast('❌ ' + (e.message || 'Cloud Sync નિષ્ફળ')); } } catch(e2) {}
+      try {
+        var syncErrorText = String(e && e.message || 'અજાણી ભૂલ');
+        setSyncStatus('error', 'નિષ્ફળ');
+        if (force) {
+          appendSyncLog('Cloud Sync ભૂલ: ' + syncErrorText, 'err');
+          showToast('❌ ' + syncErrorText);
+        } else nsRecordBackgroundSyncError('Cloud Sync', e);
+      } catch(e2) {}
     }
     nsSyncBusy = false;
     return ok;
@@ -22974,7 +22991,12 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
         try { setSyncStatus('idle', 'ડેટા નથી'); appendSyncLog('Cloudમાં હજી Ledger data નથી', 'info'); showToast('ℹ️ Cloudમાં હજી ડેટા નથી'); } catch(e) {}
       }
     } catch(e) {
-      try { nsSetPill('error'); setSyncStatus('error', 'નિષ્ફળ'); if (force) { appendSyncLog('Cloud Pull ભૂલ: ' + (e.message || 'અજાણી ભૂલ'), 'err'); showToast('❌ ' + (e.message || 'Cloud Pull નિષ્ફળ')); } } catch(e2) {}
+      try {
+        nsSetPill('error');
+        setSyncStatus('error', 'નિષ્ફળ');
+        if (force) { appendSyncLog('Cloud Pull ભૂલ: ' + (e.message || 'અજાણી ભૂલ'), 'err'); showToast('❌ ' + (e.message || 'Cloud Pull નિષ્ફળ')); }
+        else nsRecordBackgroundSyncError('Cloud Pull', e);
+      } catch(e2) {}
     }
     nsSyncBusy = false;
     return ok;
@@ -23005,6 +23027,9 @@ window.__AYM_SINGLE_FILE_NO_SW = true;
   /* ઝડપી આપોઆપ સિંક: દર 5 સેકન્ડે તપાસ (પહેલાં 20 સેકન્ડ હતું) */
   setInterval(nsAutoPullCheck, 20000);
   setTimeout(nsAutoPullCheck, 1500);
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden) setTimeout(nsAutoPullCheck, 500);
+  });
   /* કોઈ પણ મોટી ક્રિયા પછી તરત મોકલો (રાહ ન જોવી પડે) */
   window.aymPullNow = function () { try { nsLastPullTs = 0; return nsAutoPullCheck(); } catch (e) { return false; } };
   window.aymSyncNow = function () {
