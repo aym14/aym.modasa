@@ -33909,8 +33909,19 @@ var APP = { version: '1.2.96', code: 96 };
   function commit() {
     if (!admin()) { msg('🔒 ફક્ત એડમિન ફેરફાર કરી શકે', false); return false; }
     uiDirty = true;
-    try { persistAll(); } catch (e) { toLegacy(); saveAccounts(); }
-    uiDirty = false;
+    /* Update the legacy arrays BEFORE persistAll saves them. The persistAll
+       wrapper reconciles accounts after saving, so reversing this order would
+       write the previous categories/modules and resurrect deleted rows on reload. */
+    try {
+      toLegacy();
+      uiDirty = false;
+      var persisted = persistAll();
+      if (persisted === false) saveAccounts();
+    } catch (e) {
+      toLegacy();
+      uiDirty = false;
+      saveAccounts();
+    }
     reconcile(true);
     refreshApp();
     render();
@@ -45628,10 +45639,10 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   }
 }
 </style>
-<style id="settings-heading-inline-title-v1-2-100">
+<style id="settings-heading-inline-title-v1-2-101">
 @media screen {
   body #settingsModal .settings-section-heading {
-    grid-template-columns:max-content minmax(0,1fr) max-content !important;
+    grid-template-columns:max-content minmax(0,1fr) max-content max-content !important;
     grid-template-rows:auto auto auto !important;
     align-items:center !important;
     column-gap:10px !important;
@@ -45653,12 +45664,13 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
     overflow-wrap:anywhere !important;
   }
   body #settingsModal .settings-section-heading > .aym-settings-close {
-    grid-column:3 !important;
+    grid-column:4 !important;
     grid-row:1 !important;
   }
   body #settingsModal .settings-section-heading > .ws-settings-back {
     grid-column:3 !important;
-    grid-row:2 !important;
+    grid-row:1 !important;
+    justify-self:end !important;
   }
   body #settingsModal .settings-section-heading > .la-header-search,
   body #settingsModal .settings-section-heading > .la-header-party-controls {
@@ -45676,6 +45688,7 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   body #settingsModal .settings-section-heading > span { font-size:16px !important; }
   body #settingsModal .settings-section-heading > h2 { font-size:17px !important; line-height:1.25 !important; padding-left:8px !important; }
   body #settingsModal .settings-section-heading > .aym-settings-close { width:38px !important; height:38px !important; min-width:38px !important; }
+  body #settingsModal .settings-section-heading > .ws-settings-back { padding:8px 10px !important; font-size:12px !important; white-space:nowrap !important; }
 }
 </style>
  <script data-aym-mobile-email-login="1" src="./party-mobile-email-login.js?v=mobile-password-login-12"></script>
