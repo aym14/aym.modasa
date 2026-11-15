@@ -16,7 +16,7 @@ const manifest = JSON.parse(fs.readFileSync('site/manifest.json', 'utf8'));
 JSON.parse(fs.readFileSync('site/licensing-config.json', 'utf8'));
 for (const icon of manifest.icons) assert.ok(fs.existsSync('site/' + icon.src));
 assert.match(html, /name="viewport"[^>]*width=device-width/i, 'responsive viewport metadata is required');
-assert.match(html, /admin-account-recovery\.js\?v=admin-recovery-1/, 'Admin account recovery must load on the login page');
+assert.match(html, /admin-account-recovery\.js\?v=admin-recovery-2/, 'Admin account recovery must load on the login page');
 assert.match(fs.readFileSync('site/admin-account-recovery.js', 'utf8'), /await supabaseEnsureAdmin\(\)/, 'Admin recovery must use the protected organization membership check');
 assert.match(fs.readFileSync('site/admin-account-recovery.js', 'utf8'), /button\.hidden = !!username && username\.type === 'tel'/, 'Admin recovery must stay hidden during Party login');
 assert.match(html, /aym_org_members\?select=organization_id,role,is_active[\s\S]*?role=eq\.admin/, 'Admin authorization must require active organization Admin membership');
