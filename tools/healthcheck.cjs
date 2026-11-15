@@ -10,11 +10,15 @@ for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi))
 new vm.Script(fs.readFileSync('site/sw.js', 'utf8'));
 new vm.Script(fs.readFileSync('site/party-cloud.js', 'utf8'));
 new vm.Script(fs.readFileSync('site/party-mobile-email-login.js', 'utf8'));
+new vm.Script(fs.readFileSync('site/admin-account-recovery.js', 'utf8'));
 new vm.Script(fs.readFileSync('site/party-requests.js', 'utf8'));
 const manifest = JSON.parse(fs.readFileSync('site/manifest.json', 'utf8'));
 JSON.parse(fs.readFileSync('site/licensing-config.json', 'utf8'));
 for (const icon of manifest.icons) assert.ok(fs.existsSync('site/' + icon.src));
 assert.match(html, /name="viewport"[^>]*width=device-width/i, 'responsive viewport metadata is required');
+assert.match(html, /admin-account-recovery\.js\?v=admin-recovery-1/, 'Admin account recovery must load on the login page');
+assert.match(fs.readFileSync('site/admin-account-recovery.js', 'utf8'), /aym_org_members[\s\S]*?role=eq\.admin/, 'Admin recovery must verify protected organization membership');
+assert.match(fs.readFileSync('site/sw.js', 'utf8'), /'\.\/admin-account-recovery\.js'/, 'Admin recovery must be included in the offline app shell');
 assert.match(html, /party_invite/, 'invite registration entry point is required');
 assert.match(html, /registerPartyByInvite/, 'verified Party registration API is required');
 assert.match(html, /completeInviteRegistration/, 'verified Party password setup is required');
