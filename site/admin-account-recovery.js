@@ -164,5 +164,8 @@
   }
 
   addUi();
+  document.addEventListener('DOMContentLoaded', addUi, { once: true });
+  window.setTimeout(addUi, 250);
+  window.setTimeout(addUi, 1000);
   new MutationObserver(addUi).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['type', 'class', 'aria-selected'] });
 })();
