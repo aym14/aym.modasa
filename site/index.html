@@ -45797,5 +45797,31 @@ body.ns2026 .login-card .login-sub{font-size:.72rem!important;letter-spacing:.2e
   body #settingsModal .ws-setting-card { min-height:46px !important; }
 }
 </style>
+<script id="aym-online-supabase-defaults-v1">
+(function () {
+  'use strict';
+  function applyPublicSupabaseConfig(config) {
+    if (!config || typeof config !== 'object') return;
+    var url = String(config.supabaseUrl || '').trim();
+    var key = String(config.publishableKey || config.supabaseAnonKey || '').trim();
+    if (!/^https:\/\/[a-z0-9.-]+\.supabase\.co$/i.test(url) || !/^sb_publishable_[A-Za-z0-9_-]+$/.test(key)) return;
+    var changed = false;
+    if (!cloudCfg.supabaseUrl) { cloudCfg.supabaseUrl = url; changed = true; }
+    if (!cloudCfg.supabaseAnonKey) { cloudCfg.supabaseAnonKey = key; changed = true; }
+    if (changed) saveCloudConfig(cloudCfg);
+    var urlInput = document.getElementById('supabaseUrl');
+    var keyInput = document.getElementById('supabaseAnonKey');
+    if (urlInput && !urlInput.value) urlInput.value = cloudCfg.supabaseUrl;
+    if (keyInput && !keyInput.value) keyInput.value = cloudCfg.supabaseAnonKey;
+  }
+  try {
+    var responsePromise = fetch('./licensing-config.json', { cache: 'no-store', credentials: 'omit' });
+    responsePromise.then(function (response) {
+      if (!response.ok) throw new Error('Supabase public config unavailable');
+      return response.json();
+    }).then(applyPublicSupabaseConfig).catch(function () {});
+  } catch (_) {}
+})();
+</script>
 </body>
 </html>
