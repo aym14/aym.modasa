@@ -20372,7 +20372,10 @@ let entries = load(S.entries, []),
   })(load(S.logo, D.logo)),
   reportColSettings = load(S.reportCols, D.reportCols),
   users = load(S.users, D.users),
-  currentSession = load(S.session, null),
+  // A shared Party QR must never resume this browser's cached Admin session.
+  // The normal boot path below clears the saved session and keeps the login
+  // screen visible until the Party signs in and receives their cloud snapshot.
+  currentSession = new URLSearchParams(location.search).get('login') === 'party' ? null : load(S.session, null),
   messages = load(S.messages, []),
   loginHistory = load(S.loginHistory, []),
   moduleRecords = load(S.moduleRecords, []),

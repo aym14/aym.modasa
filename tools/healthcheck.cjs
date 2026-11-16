@@ -30,6 +30,7 @@ assert.match(html, /completeInviteRegistration/, 'verified Party password setup 
 assert.match(fs.readFileSync('site/party-cloud.js', 'utf8'), /party-requests\.js\?v=party-request-button-2/, 'request UI cache version must be explicit');
 assert.match(html, /party-cloud\.js\?v=party-portal-latest-data-2/, 'latest Party cloud loader must reach existing clients');
 assert.match(html, /existingSession&&existingSession\.role!=='party'/, 'Party session restore must refresh the latest cloud ledger while preserving Admin sessions');
+assert.match(html, /new URLSearchParams\(location\.search\)\.get\('login'\) === 'party' \? null : load\(S\.session, null\)/, 'public Party QR route must not resume a locally cached Admin session');
 assert.match(fs.readFileSync('site/party-mobile-email-login.js', 'utf8'), /function clearLocalLedgerSession\(\)\{try\{localStorage\.removeItem\('fm_session_v1'\)/, 'successful Party login must clear stale local ledger sessions');
 assert.match(fs.readFileSync('site/party-mobile-email-login.js', 'utf8'), /clearLocalLedgerSession\(\);\s*localStorage\.setItem\('aym_phone_auth_v1'/, 'Party login must restore from the authenticated cloud snapshot after reload');
 assert.match(fs.readFileSync('site/party-cloud.js', 'utf8'), /cache:'no-store'/, 'Party ledger projection must be fetched fresh from the network');
