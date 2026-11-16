@@ -28,7 +28,11 @@ assert.match(html, /party_invite/, 'invite registration entry point is required'
 assert.match(html, /registerPartyByInvite/, 'verified Party registration API is required');
 assert.match(html, /completeInviteRegistration/, 'verified Party password setup is required');
 assert.match(fs.readFileSync('site/party-cloud.js', 'utf8'), /party-requests\.js\?v=party-request-button-2/, 'request UI cache version must be explicit');
-assert.match(html, /party-cloud\.js\?v=party-available-guarantors-1/, 'updated Party cloud loader must reach existing clients');
+assert.match(html, /party-cloud\.js\?v=party-portal-latest-data-2/, 'latest Party cloud loader must reach existing clients');
+assert.match(html, /existingSession&&existingSession\.role!=='party'/, 'Party session restore must refresh the latest cloud ledger while preserving Admin sessions');
+assert.match(fs.readFileSync('site/party-mobile-email-login.js', 'utf8'), /function clearLocalLedgerSession\(\)\{try\{localStorage\.removeItem\('fm_session_v1'\)/, 'successful Party login must clear stale local ledger sessions');
+assert.match(fs.readFileSync('site/party-mobile-email-login.js', 'utf8'), /clearLocalLedgerSession\(\);\s*localStorage\.setItem\('aym_phone_auth_v1'/, 'Party login must restore from the authenticated cloud snapshot after reload');
+assert.match(fs.readFileSync('site/party-cloud.js', 'utf8'), /cache:'no-store'/, 'Party ledger projection must be fetched fresh from the network');
 assert.match(html, /usernameField\.type = isPartyLogin \? 'tel' : 'text'/, 'Party login must use a mobile field');
 assert.match(html, /window\.AYMPartyPasswordLogin\.login\(usernameInput, pw/, 'Party login must submit inline without opening a login dialog');
 assert.match(fs.readFileSync('supabase/functions/party-password-auth/index.ts', 'utf8'), /findTarget\(url, serviceKey, mobile\)/, 'Party password login must resolve the registered mobile server-side');

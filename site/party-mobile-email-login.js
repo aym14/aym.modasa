@@ -44,6 +44,7 @@
   function showError(root,message){root.querySelector('.error').style.color='';root.querySelector('.error').textContent=message;}
   function authLogout(c,access){if(access)fetch(c.url+'/auth/v1/logout',{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+access}}).catch(function(){});}
   function authHeaders(c){return {apikey:c.key,Authorization:'Bearer '+c.key,'Content-Type':'application/json'};}
+  function clearLocalLedgerSession(){try{localStorage.removeItem('fm_session_v1');}catch(_){} }
   async function signIn(root,password){
     var c=state.config||await cfg();state.config=c;
     var result=await postJson(c.url+'/functions/v1/party-password-auth',{'apikey':c.key,'Content-Type':'application/json'},{action:'login',email:state.email,password:password});
@@ -59,6 +60,7 @@
     var identities=Array.from(new Set(matches.map(function(row){return String(row.organization_id)+':'+String(row.party_ref);} )));
     if(identities.length!==1){authLogout(c,auth.access_token);var mappingError=new Error('Party record mapping failed.');mappingError.code=identities.length?'party_mobile_ambiguous':'party_record_not_synced';throw mappingError;}
     var partyMobile='';matches.forEach(function(row){(row.data&&row.data.parties||[]).forEach(function(p){if(String(p.id||'')===String(row.party_ref||''))partyMobile=norm(p.mobile);});});
+    clearLocalLedgerSession();
     localStorage.setItem('aym_phone_auth_v1',JSON.stringify({access_token:auth.access_token,refresh_token:auth.refresh_token,expires_at:Date.now()+Number(auth.expires_in||3600)*1000,user_id:user.id,phone:partyMobile?'+91'+partyMobile:'',email:state.email,portal:true,authMode:'party_password',supabaseUrl:c.url,publishableKey:c.key}));
     root.querySelector('.error').style.color='#087f70';root.querySelector('.error').textContent='Party ખાતું ખોલી રહ્યા છીએ…';
     setTimeout(function(){location.reload();},250);
@@ -81,6 +83,7 @@
       var partyData=matches.length===1&&matches[0].data;
       var partyRow=partyData&&Array.isArray(partyData.parties)&&partyData.parties.find(function(p){return p&&String(p.id)===String(party.party_ref)&&String(p.email||'').trim().toLowerCase()===String(party.email).trim().toLowerCase();});
       if(!partyRow)throw new Error('party_record_not_synced');
+      clearLocalLedgerSession();
       localStorage.setItem('aym_phone_auth_v1',JSON.stringify({access_token:auth.access_token,refresh_token:auth.refresh_token,expires_at:Date.now()+Number(auth.expires_in||3600)*1000,user_id:user.id,phone:'+91'+mobile,email:String(party.email).trim().toLowerCase(),portal:true,authMode:'party_password',supabaseUrl:c.url,publishableKey:c.key}));
       if(error)error.textContent='Party ડેશબોર્ડ ખોલી રહ્યા છીએ…';
       setTimeout(function(){location.reload();},250);
